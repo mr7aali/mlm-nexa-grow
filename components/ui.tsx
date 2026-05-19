@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Copy, X } from "lucide-react";
+import { forwardRef } from "react";
 import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
@@ -51,9 +52,10 @@ export function Button({
   );
 }
 
-export function Input({ className, ...props }: InputHTMLAttributes<HTMLInputElement>) {
+export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>(function Input({ className, ...props }, ref) {
   return (
     <input
+      ref={ref}
       className={cn(
         "h-12 w-full rounded-2xl border border-white/10 bg-elevated/70 px-4 text-foreground outline-none transition placeholder:text-muted focus:border-gold/70 focus:ring-4 focus:ring-gold/10",
         className,
@@ -61,15 +63,13 @@ export function Input({ className, ...props }: InputHTMLAttributes<HTMLInputElem
       {...props}
     />
   );
-}
+});
 
-export function Select({
-  className,
-  children,
-  ...props
-}: React.SelectHTMLAttributes<HTMLSelectElement> & { children: ReactNode }) {
+export const Select = forwardRef<HTMLSelectElement, React.SelectHTMLAttributes<HTMLSelectElement> & { children: ReactNode }>(
+  function Select({ className, children, ...props }, ref) {
   return (
     <select
+      ref={ref}
       className={cn(
         "h-12 w-full rounded-2xl border border-white/10 bg-elevated/70 px-4 text-foreground outline-none transition focus:border-gold/70 focus:ring-4 focus:ring-gold/10",
         className,
@@ -79,11 +79,12 @@ export function Select({
       {children}
     </select>
   );
-}
+});
 
-export function Textarea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
+export const Textarea = forwardRef<HTMLTextAreaElement, React.TextareaHTMLAttributes<HTMLTextAreaElement>>(function Textarea(props, ref) {
   return (
     <textarea
+      ref={ref}
       {...props}
       className={cn(
         "min-h-28 w-full rounded-2xl border border-white/10 bg-elevated/70 px-4 py-3 text-foreground outline-none transition placeholder:text-muted focus:border-gold/70 focus:ring-4 focus:ring-gold/10",
@@ -91,7 +92,7 @@ export function Textarea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement
       )}
     />
   );
-}
+});
 
 export function Badge({ children, tone = "gold" }: { children: ReactNode; tone?: "gold" | "green" | "blue" | "red" | "purple" | "muted" }) {
   const tones = {

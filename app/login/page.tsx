@@ -2,15 +2,19 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowRight } from "lucide-react";
 import { Button, Card, Input } from "@/components/ui";
 
+const demoEmail = "rafi@nexagrow.demo";
+const demoPassword = "123456";
+
 const schema = z.object({
   email: z.string().email("সঠিক ইমেইল লিখুন"),
-  password: z.string().min(6, "পাসওয়ার্ড লিখুন"),
+  password: z.string().min(6, "কমপক্ষে ৬ অক্ষরের পাসওয়ার্ড দিন"),
   remember: z.boolean().optional(),
 });
 
@@ -18,14 +22,25 @@ type LoginForm = z.infer<typeof schema>;
 
 export default function LoginPage() {
   const router = useRouter();
+  const [message, setMessage] = useState("");
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<LoginForm>({
     resolver: zodResolver(schema),
-    defaultValues: { remember: true },
+    defaultValues: { email: demoEmail, password: demoPassword, remember: true },
   });
+
+  function onSubmit(values: LoginForm) {
+    if (values.email.trim().toLowerCase() === demoEmail && values.password === demoPassword) {
+      setMessage("লগইন সফল হয়েছে। ড্যাশবোর্ডে নেওয়া হচ্ছে...");
+      router.push("/dashboard");
+      return;
+    }
+
+    setMessage("ডেমো লগইনের জন্য rafi@nexagrow.demo এবং 123456 ব্যবহার করুন।");
+  }
 
   return (
     <main className="grid min-h-screen place-items-center bg-[radial-gradient(circle_at_top,rgba(232,184,75,0.16),transparent_36%),#0A0A0F] px-4 py-10">
@@ -37,7 +52,11 @@ export default function LoginPage() {
         <h1 className="heading-gradient text-center text-4xl font-black">লগইন করুন</h1>
         <p className="mt-3 text-center text-muted">ডেমো ড্যাশবোর্ডে প্রবেশ করুন</p>
 
-        <form className="mt-8 space-y-5" onSubmit={handleSubmit(() => router.push("/dashboard"))}>
+        <div className="mt-6 rounded-2xl border border-gold/20 bg-gold/10 px-4 py-3 text-sm text-gold-light">
+          ডেমো ইমেইল: {demoEmail} · পাসওয়ার্ড: {demoPassword}
+        </div>
+
+        <form className="mt-8 space-y-5" onSubmit={handleSubmit(onSubmit)}>
           <label className="block">
             <span className="mb-2 block text-sm text-muted">ইমেইল</span>
             <Input {...register("email")} placeholder="name@example.com" />
@@ -58,8 +77,11 @@ export default function LoginPage() {
           <Button className="w-full" type="submit">
             ড্যাশবোর্ডে যান <ArrowRight size={17} />
           </Button>
+          {message ? <p className="rounded-2xl border border-gold/20 bg-gold/10 px-4 py-3 text-sm text-gold-light">{message}</p> : null}
         </form>
-        <p className="mt-6 text-center text-sm text-muted">নতুন সদস্য? <Link href="/register" className="text-gold-light">রেজিস্টার করুন</Link></p>
+        <p className="mt-6 text-center text-sm text-muted">
+          নতুন সদস্য? <Link href="/register" className="text-gold-light">রেজিস্টার করুন</Link>
+        </p>
       </Card>
     </main>
   );

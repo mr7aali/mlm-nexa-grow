@@ -72,7 +72,7 @@ export default function ReferralsPage() {
           </thead>
           <tbody>
             {rows.map((item) => (
-              <tr key={item.id} onClick={() => setSelected(item)} className="cursor-pointer border-t border-white/7 hover:bg-white/[0.03]">
+              <tr key={item.id} onClick={() => setSelected(item)} className="cursor-pointer border-t border-line hover:bg-gold/10">
                 <td className="px-5 py-4 font-semibold">{item.name}</td>
                 <td className="px-5 py-4 text-muted">{item.phone}</td>
                 <td className="px-5 py-4">লেভেল {toBn(item.level)}</td>

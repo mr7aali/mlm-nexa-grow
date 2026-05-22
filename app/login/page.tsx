@@ -43,10 +43,10 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="grid min-h-screen place-items-center bg-[radial-gradient(circle_at_top,rgba(232,184,75,0.16),transparent_36%),#0A0A0F] px-4 py-10">
+    <main className="grid min-h-screen place-items-center bg-[radial-gradient(circle_at_top,rgba(232,82,10,0.14),transparent_36%),#FFF8F4] px-4 py-10">
       <Card className="w-full max-w-lg p-6 md:p-8">
         <Link href="/" className="mx-auto mb-6 flex w-max items-center gap-3">
-          <span className="grid h-12 w-12 place-items-center rounded-full bg-gradient-to-br from-gold-light to-purple-light font-display font-black text-black">NG</span>
+          <span className="grid h-12 w-12 place-items-center rounded-full bg-gold font-display font-black text-white">NG</span>
           <span className="font-display text-2xl font-black text-gold-light">NexaGrow</span>
         </Link>
         <h1 className="heading-gradient text-center text-4xl font-black">লগইন করুন</h1>
@@ -60,12 +60,12 @@ export default function LoginPage() {
           <label className="block">
             <span className="mb-2 block text-sm text-muted">ইমেইল</span>
             <Input {...register("email")} placeholder="name@example.com" />
-            {errors.email ? <span className="mt-2 block text-sm text-red-200">{errors.email.message}</span> : null}
+            {errors.email ? <span className="mt-2 block text-sm text-gold">{errors.email.message}</span> : null}
           </label>
           <label className="block">
             <span className="mb-2 block text-sm text-muted">পাসওয়ার্ড</span>
             <Input type="password" {...register("password")} placeholder="••••••••" />
-            {errors.password ? <span className="mt-2 block text-sm text-red-200">{errors.password.message}</span> : null}
+            {errors.password ? <span className="mt-2 block text-sm text-gold">{errors.password.message}</span> : null}
           </label>
           <div className="flex items-center justify-between gap-4 text-sm">
             <label className="flex items-center gap-2 text-muted">

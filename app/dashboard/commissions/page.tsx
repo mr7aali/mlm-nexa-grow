@@ -50,7 +50,7 @@ export default function CommissionsPage() {
         <h3 className="mb-5 text-2xl font-bold">কমিশন ইতিহাস</h3>
         <div className="space-y-4">
           {commissionHistory.map((item) => (
-            <div key={item.id} className="flex flex-col justify-between gap-3 rounded-2xl border border-white/7 bg-elevated p-4 md:flex-row md:items-center">
+            <div key={item.id} className="flex flex-col justify-between gap-3 rounded-2xl border border-line bg-elevated p-4 md:flex-row md:items-center">
               <div>
                 <p className="font-bold">{item.level}</p>
                 <p className="text-sm text-muted">{item.date}</p>

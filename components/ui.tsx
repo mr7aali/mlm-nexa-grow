@@ -43,8 +43,8 @@ export function Button({
         "inline-flex min-h-11 items-center justify-center gap-2 px-5 py-2.5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50",
         variant === "primary" && "gold-button",
         variant === "outline" && "outline-gold hover:bg-gold/10",
-        variant === "ghost" && "rounded-full text-muted hover:bg-white/5 hover:text-foreground",
-        variant === "danger" && "rounded-full border border-red-400/40 bg-red-500/10 text-red-200 hover:bg-red-500/20",
+        variant === "ghost" && "rounded-full text-muted hover:bg-gold/10 hover:text-gold",
+        variant === "danger" && "rounded-full border border-foreground bg-foreground text-white hover:bg-gold-dark/90",
         className,
       )}
       {...props}
@@ -57,7 +57,7 @@ export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputE
     <input
       ref={ref}
       className={cn(
-        "h-12 w-full rounded-2xl border border-white/10 bg-elevated/70 px-4 text-foreground outline-none transition placeholder:text-muted focus:border-gold/70 focus:ring-4 focus:ring-gold/10",
+        "h-12 w-full rounded-2xl border border-line bg-white px-4 text-foreground outline-none transition placeholder:text-muted focus:border-gold focus:ring-4 focus:ring-gold/10",
         className,
       )}
       {...props}
@@ -71,7 +71,7 @@ export const Select = forwardRef<HTMLSelectElement, React.SelectHTMLAttributes<H
     <select
       ref={ref}
       className={cn(
-        "h-12 w-full rounded-2xl border border-white/10 bg-elevated/70 px-4 text-foreground outline-none transition focus:border-gold/70 focus:ring-4 focus:ring-gold/10",
+        "h-12 w-full rounded-2xl border border-line bg-white px-4 text-foreground outline-none transition focus:border-gold focus:ring-4 focus:ring-gold/10",
         className,
       )}
       {...props}
@@ -87,7 +87,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, React.TextareaHTMLAttrib
       ref={ref}
       {...props}
       className={cn(
-        "min-h-28 w-full rounded-2xl border border-white/10 bg-elevated/70 px-4 py-3 text-foreground outline-none transition placeholder:text-muted focus:border-gold/70 focus:ring-4 focus:ring-gold/10",
+        "min-h-28 w-full rounded-2xl border border-line bg-white px-4 py-3 text-foreground outline-none transition placeholder:text-muted focus:border-gold focus:ring-4 focus:ring-gold/10",
         props.className,
       )}
     />
@@ -96,12 +96,12 @@ export const Textarea = forwardRef<HTMLTextAreaElement, React.TextareaHTMLAttrib
 
 export function Badge({ children, tone = "gold" }: { children: ReactNode; tone?: "gold" | "green" | "blue" | "red" | "purple" | "muted" }) {
   const tones = {
-    gold: "border-gold/35 bg-gold/10 text-gold-light",
-    green: "border-emerald-400/35 bg-emerald-400/10 text-emerald-200",
-    blue: "border-sky-400/35 bg-sky-400/10 text-sky-200",
-    red: "border-red-400/35 bg-red-400/10 text-red-200",
-    purple: "border-purple-light/35 bg-purple-light/10 text-purple-100",
-    muted: "border-white/10 bg-white/5 text-muted",
+    gold: "border-gold bg-gold/10 text-gold",
+    green: "border-gold bg-gold/10 text-gold",
+    blue: "border-gold-light bg-gold-light/10 text-gold",
+    red: "border-foreground bg-foreground/10 text-foreground",
+    purple: "border-gold-light bg-gold-light/20 text-gold",
+    muted: "border-line bg-elevated text-muted",
   };
 
   return <span className={cn("inline-flex rounded-full border px-3 py-1 text-xs font-semibold", tones[tone])}>{children}</span>;
@@ -109,16 +109,16 @@ export function Badge({ children, tone = "gold" }: { children: ReactNode; tone?:
 
 export function Progress({ value, color = "gold" }: { value: number; color?: "gold" | "green" | "blue" | "amber" | "red" | "purple" }) {
   const colors = {
-    gold: "from-gold-light to-gold-dark",
-    green: "from-emerald-300 to-emerald-600",
-    blue: "from-sky-300 to-sky-600",
-    amber: "from-amber-200 to-amber-600",
-    red: "from-red-300 to-red-600",
-    purple: "from-purple-light to-purple-accent",
+    gold: "from-gold to-gold-light",
+    green: "from-purple-light to-gold",
+    blue: "from-gold-light to-gold",
+    amber: "from-purple-light to-gold-light",
+    red: "from-foreground to-gold",
+    purple: "from-purple-light to-gold",
   };
 
   return (
-    <div className="h-2.5 overflow-hidden rounded-full bg-white/8">
+    <div className="h-2.5 overflow-hidden rounded-full bg-elevated">
       <motion.div
         initial={{ width: 0 }}
         animate={{ width: `${Math.min(100, Math.max(0, value))}%` }}
@@ -167,15 +167,15 @@ export function Modal({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/70 p-4 backdrop-blur-sm">
       <motion.div
         initial={{ opacity: 0, scale: 0.96, y: 12 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        className="max-h-[88vh] w-full max-w-xl overflow-y-auto rounded-[20px] border border-white/10 bg-surface p-5 shadow-2xl"
+        className="max-h-[88vh] w-full max-w-xl overflow-y-auto rounded-[20px] border border-line bg-surface p-5 shadow-2xl"
       >
         <div className="mb-4 flex items-center justify-between gap-3">
           <h3 className="heading-gradient text-2xl font-bold">{title}</h3>
-          <button aria-label="বন্ধ করুন" onClick={onClose} className="rounded-full p-2 text-muted hover:bg-white/5 hover:text-foreground">
+          <button aria-label="বন্ধ করুন" onClick={onClose} className="rounded-full p-2 text-muted hover:bg-gold/10 hover:text-gold">
             <X size={20} />
           </button>
         </div>

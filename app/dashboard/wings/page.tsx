@@ -8,11 +8,11 @@ import { initials, toBn } from "@/lib/utils";
 
 const depthClass: Record<number, string> = {
   0: "border-gold/50 bg-gold/10",
-  1: "border-emerald-400/40 bg-emerald-400/10",
-  2: "border-sky-400/40 bg-sky-400/10",
-  3: "border-amber-400/40 bg-amber-400/10",
-  4: "border-red-400/40 bg-red-400/10",
-  5: "border-purple-light/40 bg-purple-light/10",
+  1: "border-gold bg-gold/10",
+  2: "border-gold-light bg-gold-light/10",
+  3: "border-line bg-elevated",
+  4: "border-foreground/30 bg-foreground/5",
+  5: "border-line bg-gold-light/10",
   6: "border-gold/50 bg-gold/10",
 };
 
@@ -58,7 +58,7 @@ export default function WingsPage() {
             <option value="all">সব লেভেল</option>
             {[1, 2, 3, 4, 5, 6].map((item) => <option key={item} value={item}>লেভেল {toBn(item)}</option>)}
           </Select>
-          <label className="flex h-12 items-center gap-2 rounded-2xl border border-white/10 bg-elevated/70 px-4 text-sm text-muted">
+          <label className="flex h-12 items-center gap-2 rounded-2xl border border-line bg-elevated/70 px-4 text-sm text-muted">
             <input type="checkbox" checked={activeOnly} onChange={(event) => setActiveOnly(event.target.checked)} className="accent-gold" />
             শুধু সক্রিয়
           </label>
@@ -100,7 +100,7 @@ function TreeView({
   return (
     <div className="pl-4">
       <div className="flex items-center gap-3 py-3">
-        <button onClick={() => hasChildren && toggle(node.id)} className="grid h-8 w-8 place-items-center rounded-full border border-white/10 text-muted">
+        <button onClick={() => hasChildren && toggle(node.id)} className="grid h-8 w-8 place-items-center rounded-full border border-line text-muted">
           {hasChildren ? expanded[node.id] ? <Minus size={15} /> : <Plus size={15} /> : null}
         </button>
         <div className={`flex min-w-[360px] items-center gap-3 rounded-[18px] border p-4 ${depthClass[node.level] ?? depthClass[6]}`}>
@@ -116,7 +116,7 @@ function TreeView({
         </div>
       </div>
       {childrenVisible ? (
-        <div className="ml-4 border-l border-white/10">
+        <div className="ml-4 border-l border-line">
           {node.children?.map((child) => (
             <TreeView key={child.id} node={child} expanded={expanded} toggle={toggle} filter={filter} />
           ))}

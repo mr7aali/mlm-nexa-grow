@@ -25,24 +25,24 @@ export default function Home() {
 
   return (
     <main className="min-h-screen overflow-hidden bg-background text-foreground">
-      <nav className="sticky top-0 z-40 border-b border-white/7 bg-background/82 backdrop-blur-xl">
+      <nav className="sticky top-0 z-40 border-b border-gold bg-gold text-white backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
           <Link href="/" className="flex items-center gap-3">
-            <span className="grid h-11 w-11 place-items-center rounded-full bg-gradient-to-br from-gold-light to-purple-light font-display font-black text-black">NG</span>
-            <span className="font-display text-xl font-black text-gold-light">NexaGrow</span>
+            <span className="grid h-11 w-11 place-items-center rounded-full bg-elevated font-display font-black text-gold">NG</span>
+            <span className="font-display text-xl font-black text-white">NexaGrow</span>
           </Link>
-          <div className="hidden items-center gap-7 text-sm text-muted md:flex">
-            <a href="#products" className="hover:text-gold-light">পণ্য</a>
-            <a href="#plan" className="hover:text-gold-light">কমিশন</a>
-            <a href="#calculator" className="hover:text-gold-light">ক্যালকুলেটর</a>
-            <Link href="/login" className="hover:text-gold-light">লগইন</Link>
+          <div className="hidden items-center gap-7 text-sm text-white/85 md:flex">
+            <a href="#products" className="hover:text-white">পণ্য</a>
+            <a href="#plan" className="hover:text-white">কমিশন</a>
+            <a href="#calculator" className="hover:text-white">ক্যালকুলেটর</a>
+            <Link href="/login" className="hover:text-white">লগইন</Link>
           </div>
-          <Link href="/register" className="gold-button px-5 py-2.5 text-sm font-bold">যোগ দিন</Link>
+          <Link href="/register" className="rounded-full bg-elevated px-5 py-2.5 text-sm font-bold text-gold transition hover:bg-elevated/90">যোগ দিন</Link>
         </div>
       </nav>
 
-      <section className="hero-grid relative min-h-[calc(100vh-76px)] overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,rgba(168,85,247,0.24),transparent_34%),radial-gradient(circle_at_18%_78%,rgba(232,184,75,0.13),transparent_30%)]" />
+      <section className="hero-grid relative min-h-[calc(100vh-76px)] overflow-hidden bg-gold text-white">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,rgba(255,255,255,0.18),transparent_34%),radial-gradient(circle_at_18%_78%,rgba(255,164,114,0.38),transparent_30%)]" />
         {Array.from({ length: 18 }).map((_, index) => (
           <span
             key={index}
@@ -53,17 +53,17 @@ export default function Home() {
         <div className="relative mx-auto grid max-w-7xl items-center gap-10 px-4 py-20 lg:min-h-[calc(100vh-76px)] lg:grid-cols-[1.1fr_0.9fr]">
           <motion.div initial={{ opacity: 0, y: 26 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
             <Badge>ফ্রন্টএন্ড ডেমো নেটওয়ার্ক প্ল্যাটফর্ম</Badge>
-            <h1 className="heading-gradient mt-6 max-w-4xl text-5xl font-black leading-tight md:text-7xl">
+            <h1 className="heading-gradient mt-6 max-w-4xl text-5xl font-black leading-tight !text-white md:text-7xl">
               আপনার নেটওয়ার্ক দিয়ে আয় করুন লক্ষাধিক টাকা
             </h1>
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-muted">
+            <p className="mt-6 max-w-2xl text-lg leading-8 text-white/90">
               NexaGrow একটি সম্পূর্ণ mock MLM referral UI, যেখানে পণ্য, রেফারেল ট্রি, কমিশন, আয় ও admin panel একসঙ্গে দেখা যায়।
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link href="/register" className="gold-button inline-flex items-center justify-center gap-2 px-7 py-3 font-bold">
                 রেজিস্টার করুন <ArrowRight size={18} />
               </Link>
-              <Link href="/dashboard" className="outline-gold inline-flex items-center justify-center gap-2 px-7 py-3 font-bold">
+              <Link href="/dashboard" className="inline-flex items-center justify-center gap-2 rounded-full border border-elevated bg-transparent px-7 py-3 font-bold text-white transition hover:bg-gold-light/20">
                 ডেমো ড্যাশবোর্ড
               </Link>
             </div>
@@ -82,7 +82,7 @@ export default function Home() {
           </motion.div>
 
           <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.15 }} className="relative">
-            <div className="absolute inset-10 rounded-full bg-purple-light/20 blur-3xl" />
+            <div className="absolute inset-10 rounded-full bg-gold-light/20 blur-3xl" />
             <Card className="relative p-6">
               <div className="mb-6 flex items-center justify-between">
                 <div>
@@ -91,7 +91,7 @@ export default function Home() {
                 </div>
                 <Sparkles className="text-gold-light" size={34} />
               </div>
-              <div className="rounded-[18px] border border-white/10 bg-elevated p-4 text-sm text-muted">{referralLink()}</div>
+              <div className="rounded-[18px] border border-line bg-elevated p-4 text-sm text-muted">{referralLink()}</div>
               <div className="mt-6 space-y-4">
                 {commissionLevels.slice(0, 4).map((item) => (
                   <div key={item.level}>
@@ -126,10 +126,10 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="plan" className="bg-[#0d0d15] px-4 py-20">
+      <section id="plan" className="bg-elevated px-4 py-20">
         <div className="mx-auto max-w-7xl">
           <SectionHeading title="৬ লেভেলের কমিশন প্ল্যান" text="প্রয়োজনীয় আইডি, সম্ভাব্য আয় এবং ভিজুয়াল অগ্রগতি এক নজরে।" />
-          <div className="overflow-x-auto rounded-[20px] border border-white/7 bg-surface scrollbar-soft">
+          <div className="overflow-x-auto rounded-[20px] border border-line bg-surface scrollbar-soft">
             <table className="w-full min-w-[760px] text-left">
               <thead className="bg-elevated text-sm text-muted">
                 <tr>
@@ -143,7 +143,7 @@ export default function Home() {
                 {commissionLevels.map((item, index) => {
                   const percent = (item.earning / commissionLevels[5].earning) * 100;
                   return (
-                    <tr key={item.level} className="border-t border-white/7">
+                    <tr key={item.level} className="border-t border-line">
                       <td className="px-5 py-5"><Badge tone={index === 0 ? "green" : index === 1 ? "blue" : index === 3 ? "red" : index === 4 ? "purple" : "gold"}>লেভেল {toBn(item.level)}</Badge></td>
                       <td className="px-5 py-5">{toBn(item.required)} আইডি</td>
                       <td className="px-5 py-5 font-bold text-gold-light">{taka(item.earning)}</td>
@@ -183,7 +183,7 @@ export default function Home() {
         </div>
         <Card className="p-6">
           <label className="text-sm text-muted">লেভেল নির্বাচন করুন</label>
-          <select value={level} onChange={(event) => setLevel(Number(event.target.value))} className="mt-2 h-12 w-full rounded-2xl border border-white/10 bg-elevated px-4 outline-none focus:border-gold">
+          <select value={level} onChange={(event) => setLevel(Number(event.target.value))} className="mt-2 h-12 w-full rounded-2xl border border-line bg-elevated px-4 outline-none focus:border-gold">
             {commissionLevels.map((item) => <option key={item.level} value={item.level}>লেভেল {toBn(item.level)}</option>)}
           </select>
           <div className="mt-6 rounded-[20px] border border-gold/20 bg-gold/10 p-6">
@@ -199,7 +199,7 @@ export default function Home() {
           {testimonials.map((item) => (
             <Card key={item.name} asMotion>
               <div className="flex items-center gap-3">
-                <div className="grid h-12 w-12 place-items-center rounded-full bg-purple-light/20 text-gold-light">{item.name[0]}</div>
+                <div className="grid h-12 w-12 place-items-center rounded-full bg-gold-light/20 text-gold-light">{item.name[0]}</div>
                 <div>
                   <h3 className="font-bold">{item.name}</h3>
                   <Badge>{taka(item.earning)} আয়</Badge>
@@ -212,10 +212,10 @@ export default function Home() {
       </section>
 
       <section className="px-4 py-20">
-        <div className="mx-auto max-w-6xl overflow-hidden rounded-[28px] border border-purple-light/20 bg-[radial-gradient(circle_at_50%_0%,rgba(168,85,247,0.38),rgba(26,26,38,1)_45%)] p-8 text-center md:p-14">
+        <div className="mx-auto max-w-6xl overflow-hidden rounded-[28px] border border-line bg-[radial-gradient(circle_at_50%_0%,rgba(232,82,10,0.24),rgba(26,26,26,1)_45%)] p-8 text-center md:p-14">
           <Gift className="mx-auto text-gold-light" size={42} />
-          <h2 className="heading-gradient mt-4 text-4xl font-black md:text-6xl">আজই নেটওয়ার্ক শুরু করুন</h2>
-          <p className="mx-auto mt-4 max-w-2xl text-muted">সবকিছু frontend-only mock data দিয়ে তৈরি, তাই দ্রুত UI flow পরীক্ষা করা যায়।</p>
+          <h2 className="heading-gradient mt-4 text-4xl font-black !text-white md:text-6xl">আজই নেটওয়ার্ক শুরু করুন</h2>
+          <p className="mx-auto mt-4 max-w-2xl text-white/80">সবকিছু frontend-only mock data দিয়ে তৈরি, তাই দ্রুত UI flow পরীক্ষা করা যায়।</p>
           <Link href="/register" className="gold-button mt-8 inline-flex items-center gap-2 px-8 py-3 font-bold">
             রেজিস্টার করুন <Copy size={17} />
           </Link>

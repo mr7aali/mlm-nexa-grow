@@ -20,7 +20,7 @@ export default function ProductsPage() {
       <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
         {products.map((product) => (
           <Card key={product.id} className="flex flex-col">
-            <div className="grid h-20 w-full place-items-center rounded-[18px] bg-gradient-to-br from-gold/15 to-purple-light/15 text-4xl text-gold-light">{product.icon}</div>
+            <div className="grid h-20 w-full place-items-center rounded-[18px] bg-gradient-to-br from-gold/15 to-gold-light/15 text-4xl text-gold-light">{product.icon}</div>
             <div className="mt-4 flex items-center justify-between gap-3">
               <Badge tone="purple">{product.category}</Badge>
               <span className="font-bold text-gold-light">{taka(product.price)}</span>
@@ -35,14 +35,14 @@ export default function ProductsPage() {
       <Modal open={Boolean(selected)} title={selected?.name ?? "পণ্য"} onClose={() => setSelected(null)}>
         {selected ? (
           <div className="space-y-5">
-            <div className="rounded-[18px] border border-white/7 bg-elevated p-4">
+            <div className="rounded-[18px] border border-line bg-elevated p-4">
               <p className="text-sm text-muted">পূর্ণ বিবরণ</p>
               <p className="mt-2 leading-8">{selected.full}</p>
               <p className="mt-3 font-bold text-gold-light">{taka(selected.price)}</p>
             </div>
             <div>
               <p className="mb-2 text-sm text-muted">প্রোডাক্ট রেফারেল লিংক</p>
-              <div className="break-all rounded-2xl border border-white/10 bg-elevated p-4 text-sm text-gold-light">{link}</div>
+              <div className="break-all rounded-2xl border border-line bg-elevated p-4 text-sm text-gold-light">{link}</div>
             </div>
             <div className="grid gap-3 sm:grid-cols-3">
               <CopyButton value={link} label="লিংক কপি" />

@@ -16,7 +16,7 @@ const tiroBangla = Tiro_Bangla({
 });
 
 export const metadata: Metadata = {
-  title: "NexaGrow | নেটওয়ার্ক আয়ের ড্যাশবোর্ড",
+  title: "GIOTO | নেটওয়ার্ক আয়ের ড্যাশবোর্ড",
   description: "ফ্রন্টএন্ড-অনলি MLM রেফারেল নেটওয়ার্ক UI",
 };
 

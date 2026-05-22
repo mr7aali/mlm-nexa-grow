@@ -33,7 +33,7 @@ export default function DashboardPage() {
                   <p className="text-sm text-muted">{String(label)}</p>
                   <p className="mt-2 text-3xl font-black text-gold-light">{String(value)}</p>
                 </div>
-                <TypedIcon className="text-purple-light" size={32} />
+                <TypedIcon className="text-gold" size={32} />
               </div>
             </Card>
           );
@@ -50,7 +50,7 @@ export default function DashboardPage() {
           <Progress value={50} color="gold" />
           <div className="mt-6 grid gap-3 md:grid-cols-3">
             {commissionLevels.slice(0, 3).map((item) => (
-              <div key={item.level} className="rounded-2xl border border-white/7 bg-elevated p-4">
+              <div key={item.level} className="rounded-2xl border border-line bg-elevated p-4">
                 <p className="text-sm text-muted">লেভেল {toBn(item.level)}</p>
                 <p className="mt-1 font-bold text-gold-light">{toBn(item.current)} / {toBn(item.required)} আইডি</p>
               </div>
@@ -61,7 +61,7 @@ export default function DashboardPage() {
         <Card className="p-6">
           <h3 className="text-2xl font-bold">দ্রুত রেফার</h3>
           <p className="mt-2 text-sm leading-7 text-muted">এই demo link কপি করে registration page-এ referral code auto-fill দেখা যাবে।</p>
-          <div className="mt-4 break-all rounded-2xl border border-white/10 bg-elevated p-4 text-sm text-gold-light">{link}</div>
+          <div className="mt-4 break-all rounded-2xl border border-line bg-elevated p-4 text-sm text-gold-light">{link}</div>
           <Button className="mt-4 w-full" onClick={() => navigator.clipboard?.writeText(link)}>
             <Copy size={16} /> এক ক্লিকে কপি
           </Button>
@@ -73,7 +73,7 @@ export default function DashboardPage() {
           <h3 className="mb-4 text-2xl font-bold">নোটিফিকেশন</h3>
           <div className="space-y-3">
             {notifications.map((item) => (
-              <div key={item} className="rounded-2xl border border-white/7 bg-elevated/80 px-4 py-3 text-sm text-muted">{item}</div>
+              <div key={item} className="rounded-2xl border border-line bg-elevated/80 px-4 py-3 text-sm text-muted">{item}</div>
             ))}
           </div>
         </Card>
@@ -81,7 +81,7 @@ export default function DashboardPage() {
           <h3 className="mb-4 text-2xl font-bold">সাম্প্রতিক কার্যক্রম</h3>
           <div className="space-y-3">
             {activities.map((activity) => (
-              <div key={activity.id} className="flex items-center justify-between gap-4 rounded-2xl border border-white/7 bg-elevated/80 px-4 py-3">
+              <div key={activity.id} className="flex items-center justify-between gap-4 rounded-2xl border border-line bg-elevated/80 px-4 py-3">
                 <span className="text-sm">{activity.text}</span>
                 <span className="shrink-0 text-xs text-muted">{activity.time}</span>
               </div>

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, Copy, Gift, Network, Sparkles, UserPlus, WalletCards } from "lucide-react";
+import { BrandLogo } from "@/components/brand-logo";
 import { Badge, Button, Card, Progress, SectionHeading } from "@/components/ui";
 import { commissionLevels, products } from "@/lib/mock-data";
 import { referralLink, taka, toBn } from "@/lib/utils";
@@ -28,8 +29,7 @@ export default function Home() {
       <nav className="sticky top-0 z-40 border-b border-gold bg-gold text-white backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
           <Link href="/" className="flex items-center gap-3">
-            <span className="grid h-11 w-11 place-items-center rounded-full bg-elevated font-display font-black text-gold">NG</span>
-            <span className="font-display text-xl font-black text-white">NexaGrow</span>
+            <BrandLogo className="h-12 w-12" priority />
           </Link>
           <div className="hidden items-center gap-7 text-sm text-white/85 md:flex">
             <a href="#products" className="hover:text-white">পণ্য</a>
@@ -57,7 +57,7 @@ export default function Home() {
               আপনার নেটওয়ার্ক দিয়ে আয় করুন লক্ষাধিক টাকা
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-white/90">
-              NexaGrow একটি সম্পূর্ণ mock MLM referral UI, যেখানে পণ্য, রেফারেল ট্রি, কমিশন, আয় ও admin panel একসঙ্গে দেখা যায়।
+              GIOTO একটি সম্পূর্ণ mock MLM referral UI, যেখানে পণ্য, রেফারেল ট্রি, কমিশন, আয় ও admin panel একসঙ্গে দেখা যায়।
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link href="/register" className="gold-button inline-flex items-center justify-center gap-2 px-7 py-3 font-bold">

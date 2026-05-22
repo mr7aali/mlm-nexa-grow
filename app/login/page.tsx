@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowRight } from "lucide-react";
+import { BrandLogo } from "@/components/brand-logo";
 import { Button, Card, Input } from "@/components/ui";
 
 const demoEmail = "rafi@nexagrow.demo";
@@ -46,8 +47,7 @@ export default function LoginPage() {
     <main className="grid min-h-screen place-items-center bg-[radial-gradient(circle_at_top,rgba(232,82,10,0.14),transparent_36%),#FFF8F4] px-4 py-10">
       <Card className="w-full max-w-lg p-6 md:p-8">
         <Link href="/" className="mx-auto mb-6 flex w-max items-center gap-3">
-          <span className="grid h-12 w-12 place-items-center rounded-full bg-gold font-display font-black text-white">NG</span>
-          <span className="font-display text-2xl font-black text-gold-light">NexaGrow</span>
+          <BrandLogo className="h-16 w-16" priority />
         </Link>
         <h1 className="heading-gradient text-center text-4xl font-black">লগইন করুন</h1>
         <p className="mt-3 text-center text-muted">ডেমো ড্যাশবোর্ডে প্রবেশ করুন</p>

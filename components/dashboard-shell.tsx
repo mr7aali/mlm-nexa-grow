@@ -17,6 +17,7 @@ import {
   Users,
   X,
 } from "lucide-react";
+import { BrandLogo } from "@/components/brand-logo";
 import { Button } from "@/components/ui";
 import { cn } from "@/lib/utils";
 
@@ -39,8 +40,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     <aside className={cn("flex h-full flex-col border-r border-gold bg-sidebar text-white transition-all", collapsed ? "w-20" : "w-72")}>
       <div className="flex h-20 items-center justify-between px-5">
         <Link href="/" className="flex items-center gap-3">
-          <span className="grid h-11 w-11 place-items-center rounded-full bg-elevated font-display text-lg font-black text-gold">NG</span>
-          {!collapsed ? <span className="font-display text-xl font-black text-white">NexaGrow</span> : null}
+          <BrandLogo className="h-12 w-12" priority />
         </Link>
         <button onClick={() => setCollapsed((value) => !value)} className="hidden rounded-full p-2 text-white/80 hover:bg-gold-light/20 hover:text-white lg:block">
           {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}

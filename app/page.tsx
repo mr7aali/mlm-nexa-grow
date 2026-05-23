@@ -5,17 +5,15 @@ import Image from "next/image";
 import { useMemo, useState } from "react";
 import { ArrowRight, Copy, Gift, Layers3, Mail, MapPin, Menu, Network, Phone, ShieldCheck, ShoppingBag, Sparkles, Tag, UserPlus, WalletCards, X } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
-import { Badge, Card, Progress, SectionHeading } from "@/components/ui";
+import { Badge, Card, SectionHeading } from "@/components/ui";
 import { commissionLevels, products } from "@/lib/mock-data";
-import { referralLink, taka, toBn } from "@/lib/utils";
+import { taka, toBn } from "@/lib/utils";
 
 const testimonials = [
   { name: "তানিয়া", text: "প্রথম মাসেই নিজের পরিচিত নেটওয়ার্ক সাজিয়ে নিয়মিত আয়ের পথ দেখেছি।", earning: 12000 },
   { name: "মাহিন", text: "ড্যাশবোর্ডে লেভেল ট্র্যাকিং থাকায় কে কোথায় আছে পরিষ্কার বোঝা যায়।", earning: 28500 },
   { name: "সাবিহা", text: "পণ্য রেফার করা, লিংক কপি করা আর কমিশন দেখা খুব সহজ।", earning: 8200 },
 ];
-
-const rowColors = ["green", "blue", "amber", "red", "purple", "gold"] as const;
 
 function FacebookIcon({ size = 18, className }: { size?: number; className?: string }) {
   return (
@@ -117,28 +115,49 @@ export default function Home() {
           </div>
 
           <div className="relative">
-            <div className="absolute inset-10 rounded-full bg-gold-light/20 blur-3xl" />
-            <Card className="relative p-6">
-              <div className="mb-6 flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted">আপনার রেফার লিংক</p>
-                  <h2 className="heading-gradient text-3xl font-bold">NXG-RAFI-2048</h2>
-                </div>
-                <Sparkles className="text-gold-light" size={34} />
+            <div className="absolute inset-6 rounded-full bg-white/20 blur-3xl" />
+            <div className="relative overflow-hidden rounded-[32px] border border-white/25 bg-white/10 p-6 shadow-2xl backdrop-blur md:p-8">
+              <div className="flex items-center justify-between gap-4">
+                <BrandLogo className="h-20 w-52 sm:h-24 sm:w-72" framed={false} variant="wide" />
+                <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-white/15 text-white">
+                  <Sparkles size={24} />
+                </span>
               </div>
-              <div className="rounded-[18px] border border-line bg-elevated p-4 text-sm text-muted">{referralLink()}</div>
-              <div className="mt-6 space-y-4">
-                {commissionLevels.slice(0, 4).map((item) => (
-                  <div key={item.level}>
-                    <div className="mb-2 flex justify-between text-sm">
-                      <span>লেভেল {toBn(item.level)} · {toBn(item.required)} আইডি</span>
-                      <span className="text-gold-light">{taka(item.earning)}</span>
+
+              <div className="mt-8 grid gap-3">
+                {[
+                  [ShoppingBag, "পণ্য নির্বাচন", "পছন্দের পণ্য দেখে দ্রুত অর্ডার করুন"],
+                  [Network, "নেটওয়ার্ক বৃদ্ধি", "রেফারেল শেয়ার করে সদস্য যুক্ত করুন"],
+                  [WalletCards, "আয়ের হিসাব", "ড্যাশবোর্ডে ইনকাম ও অগ্রগতি দেখুন"],
+                ].map(([Icon, title, text]) => {
+                  const TypedIcon = Icon as typeof ShoppingBag;
+                  return (
+                    <div key={String(title)} className="flex items-center gap-4 rounded-2xl border border-white/15 bg-white/12 p-4 text-left">
+                      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-white text-gold">
+                        <TypedIcon size={20} />
+                      </span>
+                      <span>
+                        <span className="block text-base font-black text-white">{String(title)}</span>
+                        <span className="mt-1 block text-sm leading-6 text-white/75">{String(text)}</span>
+                      </span>
                     </div>
-                    <Progress value={(item.current / item.required) * 100} color={rowColors[item.level - 1]} />
+                  );
+                })}
+              </div>
+
+              <div className="mt-6 grid grid-cols-3 gap-3 text-center">
+                {[
+                  ["৮+", "Product"],
+                  ["৬", "Level"],
+                  ["২৪/৭", "Support"],
+                ].map(([value, label]) => (
+                  <div key={label} className="rounded-2xl border border-white/15 bg-white/10 p-4">
+                    <p className="text-2xl font-black text-white">{value}</p>
+                    <p className="mt-1 text-xs font-semibold text-white/65">{label}</p>
                   </div>
                 ))}
               </div>
-            </Card>
+            </div>
           </div>
         </div>
       </section>

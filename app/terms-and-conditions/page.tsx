@@ -5,29 +5,29 @@ import { BrandLogo } from "@/components/brand-logo";
 
 export const metadata: Metadata = {
   title: "Terms and Conditions | GIOTO",
-  description: "GIOTO demo platform terms and conditions.",
+  description: "GIOTO Bangladesh terms and conditions.",
 };
 
 const terms = [
   {
-    title: "Demo purpose",
-    text: "GIOTO একটি frontend-only mock MLM referral UI। এখানে দেখানো income, commission, user, product এবং admin data বাস্তব financial promise নয়।",
+    title: "Platform purpose",
+    text: "GIOTO Bangladesh পণ্য বিক্রয়, রেফারেল ব্যবস্থাপনা, কমিশন ট্র্যাকিং এবং সদস্য ড্যাশবোর্ড পরিচালনার জন্য তৈরি একটি digital commerce platform।",
   },
   {
     title: "Account ও access",
-    text: "Login, registration এবং admin panel demo flow দেখানোর জন্য রাখা হয়েছে। এগুলো real authentication বা protected account system হিসেবে ব্যবহারযোগ্য নয়।",
+    text: "Login, registration এবং admin panel নির্ধারিত সদস্য ও পরিচালনা টিমের ব্যবহারের জন্য। আপনার account credential নিরাপদ রাখা আপনার দায়িত্ব।",
   },
   {
     title: "Product ও checkout",
-    text: "Product catalog, checkout form, order ID এবং payment method শুধু UI preview। কোনো real order, delivery বা payment processing সম্পন্ন হয় না।",
+    text: "Product catalog, checkout form, order ID এবং payment method অর্ডার গ্রহণ, যাচাই এবং ডেলিভারি সহায়তার জন্য ব্যবহৃত হয়।",
   },
   {
     title: "Referral ও commission",
-    text: "Referral link, level progress এবং commission calculation mock data থেকে তৈরি। এগুলো কোনো guaranteed earning বা legal MLM plan হিসেবে বিবেচ্য নয়।",
+    text: "Referral link, level progress এবং commission calculation নির্ধারিত plan, active referral এবং approved order activity-এর ভিত্তিতে বিবেচিত হবে।",
   },
   {
     title: "ব্যবহারের দায়িত্ব",
-    text: "এই demo UI testing, presentation বা learning purpose-এ ব্যবহার করা যেতে পারে। বাস্তব ব্যবসায়িক ব্যবহারের আগে authentication, backend validation, compliance এবং legal review দরকার।",
+    text: "Platform ব্যবহারের সময় প্রযোজ্য আইন, company policy, payment rule এবং fair usage guideline অনুসরণ করতে হবে।",
   },
 ];
 
@@ -55,7 +55,7 @@ export default function TermsAndConditionsPage() {
           <p className="text-sm font-semibold text-gold-light">GIOTO terms</p>
           <h1 className="mt-3 text-4xl font-black leading-tight md:text-6xl">Terms and Conditions</h1>
           <p className="mt-5 text-lg leading-8 text-muted">
-            এই demo website ব্যবহার করার আগে নিচের শর্তগুলো জেনে নিন।
+            GIOTO Bangladesh ব্যবহার করার আগে নিচের শর্তগুলো জেনে নিন।
           </p>
         </div>
 

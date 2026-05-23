@@ -55,11 +55,11 @@ function RegisterForm() {
           <BrandLogo className="h-16 w-16" priority />
         </Link>
         <h1 className="heading-gradient text-center text-4xl font-black">নতুন অ্যাকাউন্ট খুলুন</h1>
-        <p className="mt-3 text-center text-muted">ফ্রন্টএন্ড ডেমো রেজিস্ট্রেশন ফর্ম</p>
+        <p className="mt-3 text-center text-muted">GIOTO Bangladesh সদস্য নেটওয়ার্কে যুক্ত হন</p>
 
         <form
           className="mt-8 space-y-5"
-          onSubmit={handleSubmit(() => setSuccess("ডেমো রেজিস্ট্রেশন সম্পন্ন হয়েছে। এখন ড্যাশবোর্ড দেখা যাবে।"))}
+          onSubmit={handleSubmit(() => setSuccess("রেজিস্ট্রেশন সম্পন্ন হয়েছে। এখন সদস্য ড্যাশবোর্ড দেখা যাবে।"))}
         >
           <Field label="পুরো নাম" error={errors.fullName?.message}><Input {...register("fullName")} placeholder="আপনার নাম" /></Field>
           <Field label="ইমেইল" error={errors.email?.message}><Input {...register("email")} placeholder="name@example.com" /></Field>

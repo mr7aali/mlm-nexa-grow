@@ -10,8 +10,8 @@ import { ArrowRight } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
 import { Button, Card, Input } from "@/components/ui";
 
-const demoEmail = "rafi@nexagrow.demo";
-const demoPassword = "123456";
+const memberEmail = "rafi@giotobangladesh.com";
+const memberPassword = "123456";
 
 const schema = z.object({
   email: z.string().email("সঠিক ইমেইল লিখুন"),
@@ -30,17 +30,17 @@ export default function LoginPage() {
     formState: { errors },
   } = useForm<LoginForm>({
     resolver: zodResolver(schema),
-    defaultValues: { email: demoEmail, password: demoPassword, remember: true },
+    defaultValues: { email: memberEmail, password: memberPassword, remember: true },
   });
 
   function onSubmit(values: LoginForm) {
-    if (values.email.trim().toLowerCase() === demoEmail && values.password === demoPassword) {
+    if (values.email.trim().toLowerCase() === memberEmail && values.password === memberPassword) {
       setMessage("লগইন সফল হয়েছে। ড্যাশবোর্ডে নেওয়া হচ্ছে...");
       router.push("/dashboard");
       return;
     }
 
-    setMessage("ডেমো লগইনের জন্য rafi@nexagrow.demo এবং 123456 ব্যবহার করুন।");
+    setMessage("প্রবেশের জন্য rafi@giotobangladesh.com এবং 123456 ব্যবহার করুন।");
   }
 
   return (
@@ -50,10 +50,10 @@ export default function LoginPage() {
           <BrandLogo className="h-16 w-16" priority />
         </Link>
         <h1 className="heading-gradient text-center text-4xl font-black">লগইন করুন</h1>
-        <p className="mt-3 text-center text-muted">ডেমো ড্যাশবোর্ডে প্রবেশ করুন</p>
+        <p className="mt-3 text-center text-muted">আপনার সদস্য ড্যাশবোর্ডে প্রবেশ করুন</p>
 
         <div className="mt-6 rounded-2xl border border-gold/20 bg-gold/10 px-4 py-3 text-sm text-gold-light">
-          ডেমো ইমেইল: {demoEmail} · পাসওয়ার্ড: {demoPassword}
+          ইমেইল: {memberEmail} · পাসওয়ার্ড: {memberPassword}
         </div>
 
         <form className="mt-8 space-y-5" onSubmit={handleSubmit(onSubmit)}>

@@ -5,17 +5,17 @@ import { BrandLogo } from "@/components/brand-logo";
 
 export const metadata: Metadata = {
   title: "Privacy Policy | GIOTO",
-  description: "GIOTO demo platform privacy policy.",
+  description: "GIOTO Bangladesh privacy policy.",
 };
 
 const sections = [
   {
-    title: "আমরা কী তথ্য দেখাই",
-    text: "এই ওয়েবসাইটটি একটি frontend-only demo UI। এখানে দেখানো নাম, আয়, পণ্য, রেফারেল এবং ড্যাশবোর্ড ডেটা mock data হিসেবে ব্যবহার করা হয়েছে।",
+    title: "আমরা কী তথ্য ব্যবহার করি",
+    text: "GIOTO Bangladesh সদস্য নিবন্ধন, রেফারেল, অর্ডার এবং ড্যাশবোর্ড ব্যবস্থাপনার জন্য প্রয়োজনীয় প্রোফাইল ও কার্যক্রম সম্পর্কিত তথ্য ব্যবহার করে।",
   },
   {
     title: "ফর্ম ডেটা",
-    text: "লগইন, রেজিস্ট্রেশন, checkout বা profile form-এ দেওয়া তথ্য কোনো backend server-এ সংরক্ষণ করা হয় না। এগুলো শুধু UI flow প্রদর্শনের জন্য ব্যবহৃত হয়।",
+    text: "লগইন, রেজিস্ট্রেশন, checkout বা profile form-এ দেওয়া তথ্য সদস্য সেবা, অর্ডার সহায়তা এবং যোগাযোগের উদ্দেশ্যে ব্যবহার করা হতে পারে।",
   },
   {
     title: "Clipboard ও sharing",
@@ -23,11 +23,11 @@ const sections = [
   },
   {
     title: "Cookies ও tracking",
-    text: "এই demo version কোনো analytics, advertising tracker বা custom cookie ব্যবহার করে না। Browser বা hosting platform তাদের নিজস্ব technical data process করতে পারে।",
+    text: "সাইটের নিরাপত্তা, পারফরম্যান্স এবং ব্যবহারযোগ্যতা উন্নত করতে প্রয়োজনীয় technical data ও cookie ব্যবহার করা হতে পারে।",
   },
   {
     title: "ডেটা নিরাপত্তা",
-    text: "যেহেতু এটি real account system নয়, তাই sensitive personal information বা payment credential এই demo form-এ ব্যবহার না করাই ভালো।",
+    text: "ব্যবহারকারীর তথ্য সুরক্ষিত রাখতে access control, validation এবং নিরাপদ data handling practice অনুসরণ করা হয়।",
   },
 ];
 
@@ -55,7 +55,7 @@ export default function PrivacyPolicyPage() {
           <p className="text-sm font-semibold text-gold-light">GIOTO policy</p>
           <h1 className="mt-3 text-4xl font-black leading-tight md:text-6xl">Privacy Policy</h1>
           <p className="mt-5 text-lg leading-8 text-muted">
-            GIOTO demo website ব্যবহার করলে আপনার তথ্য কীভাবে handle করা হয়, তার সহজ ব্যাখ্যা।
+            GIOTO Bangladesh ব্যবহার করলে আপনার তথ্য কীভাবে handle করা হয়, তার সহজ ব্যাখ্যা।
           </p>
         </div>
 
@@ -74,7 +74,7 @@ export default function PrivacyPolicyPage() {
             Contact
           </p>
           <p className="mt-2 leading-8 text-muted">
-            Privacy নিয়ে প্রশ্ন থাকলে hello@gioto.demo ঠিকানায় যোগাযোগ করতে পারেন।
+            Privacy নিয়ে প্রশ্ন থাকলে support@giotobangladesh.com ঠিকানায় যোগাযোগ করতে পারেন।
           </p>
         </div>
       </section>

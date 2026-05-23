@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowRight, Copy, Gift, Mail, MapPin, Network, Phone, ShoppingBag, Sparkles, Tag, UserPlus, WalletCards } from "lucide-react";
+import { ArrowRight, Copy, Gift, Layers3, Mail, MapPin, Network, Phone, ShieldCheck, ShoppingBag, Sparkles, Tag, UserPlus, WalletCards } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
 import { Badge, Card, Progress, SectionHeading } from "@/components/ui";
 import { commissionLevels, products } from "@/lib/mock-data";
@@ -34,6 +34,7 @@ export default function Home() {
           </Link>
           <div className="hidden items-center gap-7 text-sm text-white/85 md:flex">
             <Link href="/products" className="hover:text-white">পণ্য</Link>
+            <a href="#about" className="hover:text-white">আমাদের সম্পর্কে</a>
             <a href="#calculator" className="hover:text-white">ক্যালকুলেটর</a>
             <Link href="/login" className="hover:text-white">লগইন</Link>
           </div>
@@ -52,19 +53,19 @@ export default function Home() {
         ))}
         <div className="relative mx-auto grid max-w-7xl items-center gap-10 px-4 py-14 md:py-16 lg:grid-cols-[1.1fr_0.9fr]">
           <motion.div initial={{ opacity: 0, y: 26 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
-            <Badge>ফ্রন্টএন্ড ডেমো নেটওয়ার্ক প্ল্যাটফর্ম</Badge>
+            <Badge>ডিজিটাল নেটওয়ার্ক কমার্স প্ল্যাটফর্ম</Badge>
             <h1 className="heading-gradient mt-6 max-w-4xl text-5xl font-black leading-tight !text-white md:text-7xl">
               আপনার নেটওয়ার্ক দিয়ে আয় করুন লক্ষাধিক টাকা
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-white/90">
-              GIOTO একটি সম্পূর্ণ mock MLM referral UI, যেখানে পণ্য, রেফারেল ট্রি, কমিশন, আয় ও admin panel একসঙ্গে দেখা যায়।
+              GIOTO Bangladesh পণ্য বিক্রয়, রেফারেল নেটওয়ার্ক, কমিশন ট্র্যাকিং এবং সদস্য ব্যবস্থাপনাকে এক জায়গায় সহজ করে।
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link href="/register" className="gold-button inline-flex items-center justify-center gap-2 px-7 py-3 font-bold">
                 রেজিস্টার করুন <ArrowRight size={18} />
               </Link>
               <Link href="/dashboard" className="inline-flex items-center justify-center gap-2 rounded-full border border-elevated bg-transparent px-7 py-3 font-bold text-white transition hover:bg-gold-light/20">
-                ডেমো ড্যাশবোর্ড
+                সদস্য ড্যাশবোর্ড
               </Link>
             </div>
           </motion.div>
@@ -147,13 +148,73 @@ export default function Home() {
         </div>
       </section>
 
+      <section id="about" className="bg-elevated px-4 py-20">
+        <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[1fr_0.9fr] lg:items-center">
+          <div>
+            <p className="mb-3 text-sm font-semibold text-gold-light">আমাদের সম্পর্কে</p>
+            <h2 className="heading-gradient text-3xl font-black leading-tight md:text-5xl">
+              পণ্য, রেফারেল ও আয়ের পুরো যাত্রা এক জায়গায় পরিচালনার সহজ প্ল্যাটফর্ম
+            </h2>
+            <p className="mt-5 max-w-2xl text-base leading-8 text-muted md:text-lg">
+              GIOTO Bangladesh এমন একটি সদস্যভিত্তিক commerce platform, যেখানে product catalog, referral journey,
+              commission progress, checkout এবং member dashboard একই অভিজ্ঞতায় সাজানো হয়েছে।
+            </p>
+
+            <div className="mt-8 grid gap-4 sm:grid-cols-2">
+              {[
+                [ShieldCheck, "স্বচ্ছ আয়ের পথ", "রেফারেল, অর্ডার এবং কমিশনের অগ্রগতি পরিষ্কারভাবে দেখা যায়।"],
+                [Layers3, "একসঙ্গে সব module", "Products, referrals, earnings ও profile একই platform-এ।"],
+              ].map(([Icon, title, text]) => {
+                const TypedIcon = Icon as typeof ShieldCheck;
+                return (
+                  <div key={String(title)} className="rounded-[18px] border border-line bg-surface p-5">
+                    <TypedIcon className="text-gold-light" size={28} />
+                    <h3 className="mt-4 text-xl font-bold">{String(title)}</h3>
+                    <p className="mt-2 leading-7 text-muted">{String(text)}</p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <Card className="overflow-hidden p-0">
+            <div className="bg-gold p-6 text-white">
+              <p className="text-sm text-white/75">GIOTO overview</p>
+              <h3 className="mt-2 text-3xl font-black">Referral commerce system</h3>
+            </div>
+            <div className="grid gap-0 sm:grid-cols-3">
+              {[
+                ["৪", "Product categories"],
+                ["৬", "Commission levels"],
+                ["২৪", "Active referrals"],
+              ].map(([value, label]) => (
+                <div key={label} className="border-b border-line p-5 sm:border-b-0 sm:border-r last:border-r-0">
+                  <p className="text-3xl font-black text-gold-light">{value}</p>
+                  <p className="mt-1 text-sm text-muted">{label}</p>
+                </div>
+              ))}
+            </div>
+            <div className="space-y-4 p-6">
+              {["পণ্য নির্বাচন করুন", "রেফারেল লিংক শেয়ার করুন", "আয় ও অগ্রগতি ট্র্যাক করুন"].map((item, index) => (
+                <div key={item} className="flex items-center gap-4 rounded-2xl border border-line bg-elevated p-4">
+                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-gold text-sm font-black text-white">
+                    {toBn(index + 1)}
+                  </span>
+                  <p className="font-semibold">{item}</p>
+                </div>
+              ))}
+            </div>
+          </Card>
+        </div>
+      </section>
+
       <section className="mx-auto max-w-7xl px-4 py-20">
         <SectionHeading title="কীভাবে কাজ করে" />
         <div className="grid gap-5 md:grid-cols-3">
           {[
-            [UserPlus, "রেজিস্টার", "রেফার কোড দিয়ে demo account form পূরণ করুন।"],
+            [UserPlus, "রেজিস্টার", "রেফার কোড দিয়ে সদস্য অ্যাকাউন্ট তৈরি করুন।"],
             [Network, "রেফার", "আপনার অনন্য লিংক শেয়ার করে network দেখুন।"],
-            [WalletCards, "আয়", "লেভেল পূর্ণ হলে mock commission tracker আপডেট হয়।"],
+            [WalletCards, "আয়", "লেভেল পূর্ণ হলে কমিশন অগ্রগতি আপডেট হয়।"],
           ].map(([Icon, title, text]) => {
             const TypedIcon = Icon as typeof UserPlus;
             return (
@@ -169,7 +230,7 @@ export default function Home() {
 
       <section id="calculator" className="mx-auto grid max-w-7xl gap-6 px-4 py-20 lg:grid-cols-2">
         <div>
-          <SectionHeading title="আয় ক্যালকুলেটর" text="লেভেল নির্বাচন করলে cumulative mock earning সঙ্গে সঙ্গে দেখা যাবে।" />
+          <SectionHeading title="আয় ক্যালকুলেটর" text="লেভেল নির্বাচন করলে সম্ভাব্য cumulative earning সঙ্গে সঙ্গে দেখা যাবে।" />
         </div>
         <Card className="p-6">
           <label className="text-sm text-muted">লেভেল নির্বাচন করুন</label>
@@ -207,7 +268,7 @@ export default function Home() {
         <div className="mx-auto max-w-6xl overflow-hidden rounded-[28px] border border-line bg-[radial-gradient(circle_at_50%_0%,rgba(232,82,10,0.24),rgba(26,26,26,1)_45%)] p-8 text-center md:p-14">
           <Gift className="mx-auto text-gold-light" size={42} />
           <h2 className="heading-gradient mt-4 text-4xl font-black !text-white md:text-6xl">আজই নেটওয়ার্ক শুরু করুন</h2>
-          <p className="mx-auto mt-4 max-w-2xl text-white/80">সবকিছু frontend-only mock data দিয়ে তৈরি, তাই দ্রুত UI flow পরীক্ষা করা যায়।</p>
+          <p className="mx-auto mt-4 max-w-2xl text-white/80">পণ্য শেয়ার করুন, নতুন সদস্য যুক্ত করুন এবং এক জায়গা থেকে আয়ের অগ্রগতি দেখুন।</p>
           <Link href="/register" className="gold-button mt-8 inline-flex items-center gap-2 px-8 py-3 font-bold">
             রেজিস্টার করুন <Copy size={17} />
           </Link>
@@ -226,6 +287,7 @@ export default function Home() {
             <h3 className="text-sm font-bold uppercase text-white/50">নেভিগেশন</h3>
             <div className="mt-5 grid gap-3 text-sm">
               <Link href="/products" className="text-white/75 transition hover:text-gold-light">পণ্য</Link>
+              <a href="#about" className="text-white/75 transition hover:text-gold-light">আমাদের সম্পর্কে</a>
               <a href="#calculator" className="text-white/75 transition hover:text-gold-light">ক্যালকুলেটর</a>
               <Link href="/dashboard" className="text-white/75 transition hover:text-gold-light">ড্যাশবোর্ড</Link>
               <Link href="/admin" className="text-white/75 transition hover:text-gold-light">অ্যাডমিন</Link>
@@ -246,7 +308,7 @@ export default function Home() {
             <h3 className="text-sm font-bold uppercase text-white/50">সাপোর্ট</h3>
             <div className="mt-5 space-y-3 text-sm text-white/75">
               <p className="flex items-center gap-3"><Phone size={16} className="text-gold-light" /> +880 1711-223344</p>
-              <p className="flex items-center gap-3"><Mail size={16} className="text-gold-light" /> hello@gioto.demo</p>
+              <p className="flex items-center gap-3"><Mail size={16} className="text-gold-light" /> support@giotobangladesh.com</p>
               <p className="flex items-center gap-3"><MapPin size={16} className="text-gold-light" /> Dhaka, Bangladesh</p>
             </div>
             <Link href="/register" className="mt-6 inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-bold text-foreground transition hover:bg-gold-light hover:text-white">
@@ -257,9 +319,10 @@ export default function Home() {
 
         <div className="border-t border-white/10 px-4 py-5">
           <div className="mx-auto flex max-w-7xl flex-col gap-3 text-sm text-white/50 md:flex-row md:items-center md:justify-between">
-            <p>(c) 2026 GIOTO. Demo UI only.</p>
+            <p>(c) 2026 GIOTO Bangladesh. All rights reserved.</p>
             <div className="flex flex-wrap gap-4">
               <a href="#products" className="transition hover:text-gold-light">Products</a>
+              <a href="#about" className="transition hover:text-gold-light">About</a>
               <a href="#calculator" className="transition hover:text-gold-light">Calculator</a>
               <Link href="/privacy-policy" className="transition hover:text-gold-light">Privacy Policy</Link>
               <Link href="/terms-and-conditions" className="transition hover:text-gold-light">Terms</Link>

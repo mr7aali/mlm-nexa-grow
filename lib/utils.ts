@@ -12,7 +12,7 @@ export function taka(value: number) {
 }
 
 export function referralLink(code = "NXG-RAFI-2048") {
-  return `https://nexagrow.demo/register?ref=${code}`;
+  return `https://giotobangladesh.com/register?ref=${code}`;
 }
 
 export function initials(name: string) {

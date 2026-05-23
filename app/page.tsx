@@ -17,6 +17,38 @@ const testimonials = [
 
 const rowColors = ["green", "blue", "amber", "red", "purple", "gold"] as const;
 
+function FacebookIcon({ size = 18, className }: { size?: number; className?: string }) {
+  return (
+    <svg aria-hidden="true" className={className} width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M14.2 8.1V6.6c0-.8.5-1 1-1h1.9V2.3L14.5 2c-3 0-4.8 1.8-4.8 5v1.1H6.9v3.7h2.8V22h4.1V11.8h2.8l.5-3.7h-3Z" />
+    </svg>
+  );
+}
+
+function YouTubeIcon({ size = 18, className }: { size?: number; className?: string }) {
+  return (
+    <svg aria-hidden="true" className={className} width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M21.6 7.2s-.2-1.6-.9-2.3c-.9-.9-1.8-.9-2.3-1C15.2 3.7 12 3.7 12 3.7s-3.2 0-6.4.2c-.5.1-1.4.1-2.3 1-.7.7-.9 2.3-.9 2.3S2.2 9.1 2.2 11v1.8c0 1.9.2 3.8.2 3.8s.2 1.6.9 2.3c.9.9 2.1.9 2.6 1 1.9.2 6.1.2 6.1.2s3.2 0 6.4-.3c.5 0 1.4-.1 2.3-1 .7-.7.9-2.3.9-2.3s.2-1.9.2-3.8V11c0-1.9-.2-3.8-.2-3.8ZM10.1 14.9V8.4l5.8 3.3-5.8 3.2Z" />
+    </svg>
+  );
+}
+
+function XSocialIcon({ size = 18, className }: { size?: number; className?: string }) {
+  return (
+    <svg aria-hidden="true" className={className} width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M14.7 10.4 22 2h-1.7l-6.4 7.3L8.8 2H3l7.7 11L3 22h1.7l6.8-7.8L17 22h5.8l-8.1-11.6Zm-2.4 2.7-.8-1.1-6.2-8.7H8l5 7.1.8 1.1 6.5 9.2h-2.7l-5.3-7.6Z" />
+    </svg>
+  );
+}
+
+function TikTokIcon({ size = 18, className }: { size?: number; className?: string }) {
+  return (
+    <svg aria-hidden="true" className={className} width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M16.6 2c.3 2.3 1.6 3.8 3.9 4v3.5c-1.3.1-2.6-.3-3.8-1.1v6.8c0 4.4-3 6.8-6.4 6.8-3.1 0-5.8-2.3-5.8-5.6 0-3.6 2.9-5.7 6.3-5.7.4 0 .8 0 1.1.1v3.7a3.9 3.9 0 0 0-1.3-.2c-1.4 0-2.5.8-2.5 2 0 1.3 1.1 2 2.3 2 1.4 0 2.4-.8 2.4-2.8V2h3.8Z" />
+    </svg>
+  );
+}
+
 export default function Home() {
   const [level, setLevel] = useState(2);
   const total = useMemo(
@@ -291,10 +323,32 @@ export default function Home() {
 
       <footer className="border-t border-line bg-foreground text-white">
         <div className="mx-auto grid max-w-7xl grid-cols-2 gap-x-8 gap-y-9 px-4 py-10 lg:grid-cols-[1.2fr_0.75fr_0.75fr_1fr] lg:gap-10 lg:py-12">
-          <div className="col-span-2 flex flex-col items-center text-center lg:col-span-1 lg:items-start lg:text-left">
+          <div className="col-span-2 flex flex-col items-center text-center lg:col-span-1">
             <Link href="/" className="inline-flex w-fit items-center">
               <BrandLogo className="h-28 w-72 max-w-full sm:w-[26rem] lg:h-32 lg:w-[32rem]" framed={false} variant="wide" />
             </Link>
+            <div className="mt-5 flex items-center justify-center gap-3">
+              {[
+                { label: "Facebook", href: "https://facebook.com", icon: FacebookIcon },
+                { label: "YouTube", href: "https://youtube.com", icon: YouTubeIcon },
+                { label: "X", href: "https://x.com", icon: XSocialIcon },
+                { label: "TikTok", href: "https://www.tiktok.com", icon: TikTokIcon },
+              ].map((item) => {
+                const Icon = item.icon;
+                return (
+                  <a
+                    key={item.label}
+                    href={item.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label={item.label}
+                    className="grid h-10 w-10 place-items-center rounded-full border border-white/15 bg-white/10 text-white/75 transition hover:border-gold-light hover:bg-gold-light hover:text-white"
+                  >
+                    <Icon size={18} />
+                  </a>
+                );
+              })}
+            </div>
           </div>
 
           <div>

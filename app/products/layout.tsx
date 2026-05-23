@@ -7,7 +7,7 @@ export default function PublicProductsLayout({ children }: { children: React.Rea
       <nav className="sticky top-0 z-40 border-b border-gold bg-gold text-white">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4">
           <Link href="/" className="flex items-center gap-3">
-            <BrandLogo className="h-12 w-12" priority />
+            <BrandLogo className="h-14 w-56" priority framed={false} variant="wide" />
           </Link>
 
           <div className="flex items-center gap-4 text-sm font-semibold text-white/85 md:gap-7">

@@ -3,8 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useMemo, useState } from "react";
-import { motion } from "framer-motion";
-import { ArrowRight, Copy, Gift, Layers3, Mail, MapPin, Network, Phone, ShieldCheck, ShoppingBag, Sparkles, Tag, UserPlus, WalletCards } from "lucide-react";
+import { ArrowRight, Copy, Gift, Layers3, Mail, MapPin, Menu, Network, Phone, ShieldCheck, ShoppingBag, Sparkles, Tag, UserPlus, WalletCards, X } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
 import { Badge, Card, Progress, SectionHeading } from "@/components/ui";
 import { commissionLevels, products } from "@/lib/mock-data";
@@ -28,9 +27,9 @@ export default function Home() {
   return (
     <main className="min-h-screen overflow-hidden bg-background text-foreground">
       <nav className="sticky top-0 z-40 border-b border-gold bg-gold text-white backdrop-blur-xl">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
-          <Link href="/" className="flex items-center gap-3">
-            <BrandLogo className="h-14 w-56" priority framed={false} variant="wide" />
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 md:py-4">
+          <Link href="/" className="flex min-w-0 items-center gap-3">
+            <BrandLogo className="h-11 w-28 sm:h-12 sm:w-44 md:h-14 md:w-56" priority framed={false} variant="wide" />
           </Link>
           <div className="hidden items-center gap-7 text-sm text-white/85 md:flex">
             <Link href="/products" className="hover:text-white">পণ্য</Link>
@@ -38,7 +37,22 @@ export default function Home() {
             <a href="#calculator" className="hover:text-white">ক্যালকুলেটর</a>
             <Link href="/login" className="hover:text-white">লগইন</Link>
           </div>
-          <Link href="/register" className="rounded-full bg-elevated px-5 py-2.5 text-sm font-bold text-gold transition hover:bg-elevated/90">যোগ দিন</Link>
+          <div className="flex items-center gap-2">
+            <Link href="/register" className="shrink-0 rounded-full bg-elevated px-4 py-2 text-sm font-bold text-gold transition hover:bg-elevated/90 sm:px-5 sm:py-2.5">যোগ দিন</Link>
+            <details className="group relative md:hidden">
+              <summary className="grid h-10 w-10 cursor-pointer list-none place-items-center rounded-full border border-white/25 text-white transition hover:bg-white/10 [&::-webkit-details-marker]:hidden">
+                <Menu className="group-open:hidden" size={20} />
+                <X className="hidden group-open:block" size={20} />
+                <span className="sr-only">মেনু</span>
+              </summary>
+              <div className="absolute right-0 top-12 z-50 w-56 overflow-hidden rounded-2xl border border-white/15 bg-gold p-2 text-sm font-semibold text-white shadow-2xl">
+                <Link href="/products" className="block rounded-xl px-4 py-3 transition hover:bg-white/10">পণ্য</Link>
+                <a href="#about" className="block rounded-xl px-4 py-3 transition hover:bg-white/10">আমাদের সম্পর্কে</a>
+                <a href="#calculator" className="block rounded-xl px-4 py-3 transition hover:bg-white/10">ক্যালকুলেটর</a>
+                <Link href="/login" className="block rounded-xl px-4 py-3 transition hover:bg-white/10">লগইন</Link>
+              </div>
+            </details>
+          </div>
         </div>
       </nav>
 
@@ -52,7 +66,7 @@ export default function Home() {
           />
         ))}
         <div className="relative mx-auto grid max-w-7xl items-center gap-10 px-4 py-14 md:py-16 lg:grid-cols-[1.1fr_0.9fr]">
-          <motion.div initial={{ opacity: 0, y: 26 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
+          <div>
             <Badge>ডিজিটাল নেটওয়ার্ক কমার্স প্ল্যাটফর্ম</Badge>
             <h1 className="heading-gradient mt-6 max-w-4xl text-5xl font-black leading-tight !text-white md:text-7xl">
               আপনার নেটওয়ার্ক দিয়ে আয় করুন লক্ষাধিক টাকা
@@ -68,9 +82,9 @@ export default function Home() {
                 সদস্য ড্যাশবোর্ড
               </Link>
             </div>
-          </motion.div>
+          </div>
 
-          <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.15 }} className="relative">
+          <div className="relative">
             <div className="absolute inset-10 rounded-full bg-gold-light/20 blur-3xl" />
             <Card className="relative p-6">
               <div className="mb-6 flex items-center justify-between">
@@ -93,7 +107,7 @@ export default function Home() {
                 ))}
               </div>
             </Card>
-          </motion.div>
+          </div>
         </div>
       </section>
 
@@ -276,16 +290,16 @@ export default function Home() {
       </section>
 
       <footer className="border-t border-line bg-foreground text-white">
-        <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 lg:grid-cols-[1.15fr_0.8fr_0.8fr_1fr]">
-          <div className="flex flex-col">
+        <div className="mx-auto grid max-w-7xl grid-cols-2 gap-x-8 gap-y-9 px-4 py-10 lg:grid-cols-[1.2fr_0.75fr_0.75fr_1fr] lg:gap-10 lg:py-12">
+          <div className="col-span-2 flex flex-col items-center text-center lg:col-span-1 lg:items-start lg:text-left">
             <Link href="/" className="inline-flex w-fit items-center">
-              <BrandLogo className="h-32 w-[32rem] max-w-full" framed={false} variant="wide" />
+              <BrandLogo className="h-28 w-72 max-w-full sm:w-[26rem] lg:h-32 lg:w-[32rem]" framed={false} variant="wide" />
             </Link>
           </div>
 
           <div>
             <h3 className="text-sm font-bold uppercase text-white/50">নেভিগেশন</h3>
-            <div className="mt-5 grid gap-3 text-sm">
+            <div className="mt-4 grid gap-3 text-sm">
               <Link href="/products" className="text-white/75 transition hover:text-gold-light">পণ্য</Link>
               <a href="#about" className="text-white/75 transition hover:text-gold-light">আমাদের সম্পর্কে</a>
               <a href="#calculator" className="text-white/75 transition hover:text-gold-light">ক্যালকুলেটর</a>
@@ -296,7 +310,7 @@ export default function Home() {
 
           <div>
             <h3 className="text-sm font-bold uppercase text-white/50">অ্যাকাউন্ট</h3>
-            <div className="mt-5 grid gap-3 text-sm">
+            <div className="mt-4 grid gap-3 text-sm">
               <Link href="/login" className="text-white/75 transition hover:text-gold-light">লগইন</Link>
               <Link href="/register" className="text-white/75 transition hover:text-gold-light">রেজিস্টার</Link>
               <Link href="/dashboard/profile" className="text-white/75 transition hover:text-gold-light">প্রোফাইল</Link>
@@ -304,11 +318,11 @@ export default function Home() {
             </div>
           </div>
 
-          <div>
+          <div className="col-span-2 lg:col-span-1">
             <h3 className="text-sm font-bold uppercase text-white/50">সাপোর্ট</h3>
-            <div className="mt-5 space-y-3 text-sm text-white/75">
+            <div className="mt-4 grid gap-3 text-sm text-white/75 sm:grid-cols-2 lg:block lg:space-y-3">
               <p className="flex items-center gap-3"><Phone size={16} className="text-gold-light" /> +880 1711-223344</p>
-              <p className="flex items-center gap-3"><Mail size={16} className="text-gold-light" /> support@giotobangladesh.com</p>
+              <p className="flex min-w-0 items-center gap-3"><Mail size={16} className="shrink-0 text-gold-light" /> <span className="break-all">support@giotobangladesh.com</span></p>
               <p className="flex items-center gap-3"><MapPin size={16} className="text-gold-light" /> Dhaka, Bangladesh</p>
             </div>
             <Link href="/register" className="mt-6 inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-bold text-foreground transition hover:bg-gold-light hover:text-white">
@@ -318,9 +332,9 @@ export default function Home() {
         </div>
 
         <div className="border-t border-white/10 px-4 py-5">
-          <div className="mx-auto flex max-w-7xl flex-col gap-3 text-sm text-white/50 md:flex-row md:items-center md:justify-between">
+          <div className="mx-auto flex max-w-7xl flex-col items-center gap-3 text-center text-sm text-white/50 md:flex-row md:items-center md:justify-between md:text-left">
             <p>(c) 2026 GIOTO Bangladesh. All rights reserved.</p>
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 md:justify-end">
               <a href="#products" className="transition hover:text-gold-light">Products</a>
               <a href="#about" className="transition hover:text-gold-light">About</a>
               <a href="#calculator" className="transition hover:text-gold-light">Calculator</a>

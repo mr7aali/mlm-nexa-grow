@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { Copy, X } from "lucide-react";
 import { forwardRef } from "react";
 import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode } from "react";
@@ -9,26 +8,11 @@ import { cn } from "@/lib/utils";
 export function Card({
   children,
   className,
-  asMotion = false,
 }: {
   children: ReactNode;
   className?: string;
   asMotion?: boolean;
 }) {
-  if (asMotion) {
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 14 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-80px" }}
-        transition={{ duration: 0.45 }}
-        className={cn("nexa-card p-5", className)}
-      >
-        {children}
-      </motion.div>
-    );
-  }
-
   return <div className={cn("nexa-card p-5", className)}>{children}</div>;
 }
 
@@ -119,10 +103,8 @@ export function Progress({ value, color = "gold" }: { value: number; color?: "go
 
   return (
     <div className="h-2.5 overflow-hidden rounded-full bg-elevated">
-      <motion.div
-        initial={{ width: 0 }}
-        animate={{ width: `${Math.min(100, Math.max(0, value))}%` }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
+      <div
+        style={{ width: `${Math.min(100, Math.max(0, value))}%` }}
         className={cn("h-full rounded-full bg-gradient-to-r", colors[color])}
       />
     </div>
@@ -168,11 +150,7 @@ export function Modal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/70 p-4 backdrop-blur-sm">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.96, y: 12 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        className="max-h-[88vh] w-full max-w-xl overflow-y-auto rounded-[20px] border border-line bg-surface p-5 shadow-2xl"
-      >
+      <div className="max-h-[88vh] w-full max-w-xl overflow-y-auto rounded-[20px] border border-line bg-surface p-5 shadow-2xl">
         <div className="mb-4 flex items-center justify-between gap-3">
           <h3 className="heading-gradient text-2xl font-bold">{title}</h3>
           <button aria-label="বন্ধ করুন" onClick={onClose} className="rounded-full p-2 text-muted hover:bg-gold/10 hover:text-gold">
@@ -180,7 +158,7 @@ export function Modal({
           </button>
         </div>
         {children}
-      </motion.div>
+      </div>
     </div>
   );
 }

@@ -111,6 +111,30 @@ body {
   50% { transform: translate3d(16px, -34px, 0) scale(1.28); opacity: 0.9; }
 }
 
+.testimonial-marquee {
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+
+.testimonial-track {
+  animation: testimonial-marquee 24s linear infinite;
+}
+
+.testimonial-marquee:hover .testimonial-track {
+  animation-play-state: paused;
+}
+
+@keyframes testimonial-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(calc(-50% - 10px)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .testimonial-track {
+    animation: none;
+  }
+}
+
 .scrollbar-soft::-webkit-scrollbar {
   height: 8px;
   width: 8px;

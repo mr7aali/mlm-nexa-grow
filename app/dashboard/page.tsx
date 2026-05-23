@@ -60,7 +60,7 @@ export default function DashboardPage() {
 
         <Card className="p-6">
           <h3 className="text-2xl font-bold">দ্রুত রেফার</h3>
-          <p className="mt-2 text-sm leading-7 text-muted">এই demo link কপি করে registration page-এ referral code auto-fill দেখা যাবে।</p>
+          <p className="mt-2 text-sm leading-7 text-muted">এই রেফারেল লিংক কপি করে নতুন সদস্যকে রেজিস্ট্রেশন পেজে আমন্ত্রণ জানাতে পারবেন।</p>
           <div className="mt-4 break-all rounded-2xl border border-line bg-elevated p-4 text-sm text-gold-light">{link}</div>
           <Button className="mt-4 w-full" onClick={() => navigator.clipboard?.writeText(link)}>
             <Copy size={16} /> এক ক্লিকে কপি

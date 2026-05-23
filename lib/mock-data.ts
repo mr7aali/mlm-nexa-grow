@@ -100,7 +100,7 @@ export const products = [
     stock: "সীমিত স্টক",
     sku: "NXG-HOM-118",
     delivery: "সারা দেশে ২-৫ দিন",
-    description: "গৃহস্থালি প্রয়োজনীয় পণ্যের curated demo package।",
+    description: "গৃহস্থালি প্রয়োজনীয় পণ্যের curated lifestyle package।",
     full: "দৈনন্দিন গৃহস্থালি কাজ সহজ করার জন্য প্রয়োজনীয় হোম কেয়ার আইটেম ও ব্যবহার নির্দেশিকা দিয়ে সাজানো লাইফস্টাইল প্যাক।",
     highlights: ["হোম এসেনশিয়াল কম্বো", "পরিবারের দৈনন্দিন ব্যবহারের জন্য", "সীমিত স্টক অফার"],
     includes: ["হোম কেয়ার প্যাক", "ক্লিনিং সাপোর্ট আইটেম", "ব্যবহার নির্দেশিকা"],
@@ -119,12 +119,12 @@ export function getProductById(id: string) {
 }
 
 export const users = [
-  { id: "u1", name: "রাফি হাসান", email: "rafi@nexagrow.demo", phone: "০১৭১১-২২৩৩৪৪", level: 2, status: "Active", referralCode: "NXG-RAFI-2048", joined: "১২ জানুয়ারি ২০২৬", earned: 800, referrals: 18 },
-  { id: "u2", name: "তানিয়া আক্তার", email: "tania@nexagrow.demo", phone: "০১৮২২-১১২২৩৩", level: 1, status: "Active", referralCode: "NXG-TANIA-102", joined: "১৮ জানুয়ারি ২০২৬", earned: 200, referrals: 7 },
-  { id: "u3", name: "মাহিন রহমান", email: "mahin@nexagrow.demo", phone: "০১৯৩৩-৪৪৫৫৬৬", level: 2, status: "Active", referralCode: "NXG-MAHIN-310", joined: "২৫ জানুয়ারি ২০২৬", earned: 600, referrals: 16 },
-  { id: "u4", name: "সাবিহা নূর", email: "sabiha@nexagrow.demo", phone: "০১৬৪৪-৯৯৮৮৭৭", level: 1, status: "Inactive", referralCode: "NXG-SABIHA-088", joined: "০২ ফেব্রুয়ারি ২০২৬", earned: 0, referrals: 4 },
-  { id: "u5", name: "আরমান কবির", email: "arman@nexagrow.demo", phone: "০১৫৫৫-৭৭৬৬৫৫", level: 3, status: "Active", referralCode: "NXG-ARMAN-777", joined: "০৮ ফেব্রুয়ারি ২০২৬", earned: 2800, referrals: 48 },
-  { id: "u6", name: "নাদিয়া ইসলাম", email: "nadia@nexagrow.demo", phone: "০১৩৬৬-১২১২১২", level: 1, status: "Banned", referralCode: "NXG-NADIA-501", joined: "১৫ ফেব্রুয়ারি ২০২৬", earned: 200, referrals: 6 },
+  { id: "u1", name: "রাফি হাসান", email: "rafi@giotobangladesh.com", phone: "০১৭১১-২২৩৩৪৪", level: 2, status: "Active", referralCode: "NXG-RAFI-2048", joined: "১২ জানুয়ারি ২০২৬", earned: 800, referrals: 18 },
+  { id: "u2", name: "তানিয়া আক্তার", email: "tania@giotobangladesh.com", phone: "০১৮২২-১১২২৩৩", level: 1, status: "Active", referralCode: "NXG-TANIA-102", joined: "১৮ জানুয়ারি ২০২৬", earned: 200, referrals: 7 },
+  { id: "u3", name: "মাহিন রহমান", email: "mahin@giotobangladesh.com", phone: "০১৯৩৩-৪৪৫৫৬৬", level: 2, status: "Active", referralCode: "NXG-MAHIN-310", joined: "২৫ জানুয়ারি ২০২৬", earned: 600, referrals: 16 },
+  { id: "u4", name: "সাবিহা নূর", email: "sabiha@giotobangladesh.com", phone: "০১৬৪৪-৯৯৮৮৭৭", level: 1, status: "Inactive", referralCode: "NXG-SABIHA-088", joined: "০২ ফেব্রুয়ারি ২০২৬", earned: 0, referrals: 4 },
+  { id: "u5", name: "আরমান কবির", email: "arman@giotobangladesh.com", phone: "০১৫৫৫-৭৭৬৬৫৫", level: 3, status: "Active", referralCode: "NXG-ARMAN-777", joined: "০৮ ফেব্রুয়ারি ২০২৬", earned: 2800, referrals: 48 },
+  { id: "u6", name: "নাদিয়া ইসলাম", email: "nadia@giotobangladesh.com", phone: "০১৩৬৬-১২১২১২", level: 1, status: "Banned", referralCode: "NXG-NADIA-501", joined: "১৫ ফেব্রুয়ারি ২০২৬", earned: 200, referrals: 6 },
 ];
 
 export const referrals = Array.from({ length: 24 }, (_, index) => {

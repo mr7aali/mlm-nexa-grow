@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowRight, Copy, Gift, Network, Sparkles, UserPlus, WalletCards } from "lucide-react";
+import { ArrowRight, Copy, Gift, Network, ShoppingBag, Sparkles, Tag, UserPlus, WalletCards } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
-import { Badge, Button, Card, Progress, SectionHeading } from "@/components/ui";
+import { Badge, Card, Progress, SectionHeading } from "@/components/ui";
 import { commissionLevels, products } from "@/lib/mock-data";
 import { referralLink, taka, toBn } from "@/lib/utils";
 
@@ -32,7 +33,7 @@ export default function Home() {
             <BrandLogo className="h-12 w-12" priority />
           </Link>
           <div className="hidden items-center gap-7 text-sm text-white/85 md:flex">
-            <a href="#products" className="hover:text-white">পণ্য</a>
+            <Link href="/products" className="hover:text-white">পণ্য</Link>
             <a href="#plan" className="hover:text-white">কমিশন</a>
             <a href="#calculator" className="hover:text-white">ক্যালকুলেটর</a>
             <Link href="/login" className="hover:text-white">লগইন</Link>
@@ -109,17 +110,50 @@ export default function Home() {
       </section>
 
       <section id="products" className="mx-auto max-w-7xl px-4 py-20">
-        <SectionHeading title="রেফার করার মতো পণ্য" text="প্রতিটি পণ্যের জন্য আলাদা mock referral action রাখা হয়েছে।" />
+        <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div>
+            <p className="mb-3 text-sm font-semibold text-gold-light">অনলাইন শপ</p>
+            <h2 className="heading-gradient text-3xl font-bold leading-tight md:text-5xl">জনপ্রিয় পণ্য</h2>
+            <p className="mt-4 max-w-2xl text-base leading-8 text-muted md:text-lg">
+              সরাসরি পণ্য কিনতে dedicated public product page থেকে details ও checkout করুন।
+            </p>
+          </div>
+          <Link href="/products" className="outline-gold inline-flex w-fit items-center justify-center gap-2 px-5 py-2.5 text-sm font-bold transition hover:bg-gold/10">
+            <ShoppingBag size={17} />
+            সব পণ্য
+          </Link>
+        </div>
+
         <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
           {products.map((product) => (
-            <Card key={product.id} asMotion>
-              <div className="grid h-14 w-14 place-items-center rounded-2xl bg-gold/10 text-2xl text-gold-light">{product.icon}</div>
-              <Badge tone="purple">{product.category}</Badge>
-              <h3 className="mt-4 text-xl font-bold">{product.name}</h3>
-              <p className="mt-2 min-h-20 text-sm leading-7 text-muted">{product.description}</p>
-              <div className="mt-4 flex items-center justify-between">
-                <span className="text-lg font-black text-gold-light">{taka(product.price)}</span>
-                <Button variant="outline">রেফার করুন</Button>
+            <Card key={product.id} asMotion className="flex min-h-full flex-col overflow-hidden p-0">
+              <Link href={`/products/${product.id}`} className="relative block aspect-[4/3] overflow-hidden bg-elevated">
+                <Image
+                  src={product.image}
+                  alt={product.name}
+                  fill
+                  sizes="(min-width: 1024px) 25vw, (min-width: 768px) 50vw, 100vw"
+                  className="object-cover transition duration-300 hover:scale-105"
+                />
+                <span className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-foreground px-3 py-1 text-xs font-bold text-white">
+                  <Tag size={14} />
+                  {product.offer}
+                </span>
+              </Link>
+
+              <div className="flex flex-1 flex-col p-5">
+                <Badge tone="purple">{product.category}</Badge>
+                <h3 className="mt-4 text-xl font-bold">{product.name}</h3>
+                <p className="mt-2 flex-1 text-sm leading-7 text-muted">{product.description}</p>
+                <div className="mt-4 flex items-end justify-between gap-3">
+                  <div>
+                    <p className="text-lg font-black text-gold-light">{taka(product.price)}</p>
+                    <p className="text-xs text-muted line-through">{taka(product.originalPrice)}</p>
+                  </div>
+                  <Link href={`/products/${product.id}/checkout`} className="gold-button inline-flex min-h-10 items-center justify-center gap-2 px-4 py-2 text-sm font-bold">
+                    কিনুন
+                  </Link>
+                </div>
               </div>
             </Card>
           ))}

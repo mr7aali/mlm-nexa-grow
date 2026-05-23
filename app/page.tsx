@@ -34,7 +34,6 @@ export default function Home() {
           </Link>
           <div className="hidden items-center gap-7 text-sm text-white/85 md:flex">
             <Link href="/products" className="hover:text-white">পণ্য</Link>
-            <a href="#plan" className="hover:text-white">কমিশন</a>
             <a href="#calculator" className="hover:text-white">ক্যালকুলেটর</a>
             <Link href="/login" className="hover:text-white">লগইন</Link>
           </div>
@@ -42,7 +41,7 @@ export default function Home() {
         </div>
       </nav>
 
-      <section className="hero-grid relative min-h-[calc(100vh-76px)] overflow-hidden bg-gold text-white">
+      <section className="hero-grid relative overflow-hidden bg-gold text-white">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,rgba(255,255,255,0.18),transparent_34%),radial-gradient(circle_at_18%_78%,rgba(255,164,114,0.38),transparent_30%)]" />
         {Array.from({ length: 18 }).map((_, index) => (
           <span
@@ -51,7 +50,7 @@ export default function Home() {
             style={{ left: `${(index * 17) % 100}%`, top: `${18 + ((index * 23) % 72)}%`, animationDelay: `${index * 0.35}s` }}
           />
         ))}
-        <div className="relative mx-auto grid max-w-7xl items-center gap-10 px-4 py-20 lg:min-h-[calc(100vh-76px)] lg:grid-cols-[1.1fr_0.9fr]">
+        <div className="relative mx-auto grid max-w-7xl items-center gap-10 px-4 py-14 md:py-16 lg:grid-cols-[1.1fr_0.9fr]">
           <motion.div initial={{ opacity: 0, y: 26 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
             <Badge>ফ্রন্টএন্ড ডেমো নেটওয়ার্ক প্ল্যাটফর্ম</Badge>
             <h1 className="heading-gradient mt-6 max-w-4xl text-5xl font-black leading-tight !text-white md:text-7xl">
@@ -67,18 +66,6 @@ export default function Home() {
               <Link href="/dashboard" className="inline-flex items-center justify-center gap-2 rounded-full border border-elevated bg-transparent px-7 py-3 font-bold text-white transition hover:bg-gold-light/20">
                 ডেমো ড্যাশবোর্ড
               </Link>
-            </div>
-            <div className="mt-10 grid max-w-2xl grid-cols-3 gap-3">
-              {[
-                ["সক্রিয় সদস্য", "১২,৪৮০"],
-                ["সর্বোচ্চ আয়", "৳৩,৬২,৮০০"],
-                ["লেভেল", "৬"],
-              ].map(([label, value]) => (
-                <Card key={label} className="p-4 text-center">
-                  <p className="text-xl font-black text-gold-light md:text-3xl">{value}</p>
-                  <p className="mt-1 text-xs text-muted md:text-sm">{label}</p>
-                </Card>
-              ))}
             </div>
           </motion.div>
 
@@ -160,37 +147,6 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="plan" className="bg-elevated px-4 py-20">
-        <div className="mx-auto max-w-7xl">
-          <SectionHeading title="৬ লেভেলের কমিশন প্ল্যান" text="প্রয়োজনীয় আইডি, সম্ভাব্য আয় এবং ভিজুয়াল অগ্রগতি এক নজরে।" />
-          <div className="overflow-x-auto rounded-[20px] border border-line bg-surface scrollbar-soft">
-            <table className="w-full min-w-[760px] text-left">
-              <thead className="bg-elevated text-sm text-muted">
-                <tr>
-                  <th className="px-5 py-4">লেভেল</th>
-                  <th className="px-5 py-4">প্রয়োজনীয় আইডি</th>
-                  <th className="px-5 py-4">আয়</th>
-                  <th className="px-5 py-4">অগ্রগতি</th>
-                </tr>
-              </thead>
-              <tbody>
-                {commissionLevels.map((item, index) => {
-                  const percent = (item.earning / commissionLevels[5].earning) * 100;
-                  return (
-                    <tr key={item.level} className="border-t border-line">
-                      <td className="px-5 py-5"><Badge tone={index === 0 ? "green" : index === 1 ? "blue" : index === 3 ? "red" : index === 4 ? "purple" : "gold"}>লেভেল {toBn(item.level)}</Badge></td>
-                      <td className="px-5 py-5">{toBn(item.required)} আইডি</td>
-                      <td className="px-5 py-5 font-bold text-gold-light">{taka(item.earning)}</td>
-                      <td className="px-5 py-5"><Progress value={percent} color={rowColors[index]} /></td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
       <section className="mx-auto max-w-7xl px-4 py-20">
         <SectionHeading title="কীভাবে কাজ করে" />
         <div className="grid gap-5 md:grid-cols-3">
@@ -229,9 +185,10 @@ export default function Home() {
 
       <section className="mx-auto max-w-7xl px-4 py-20">
         <SectionHeading title="সদস্যদের গল্প" />
-        <div className="grid gap-5 md:grid-cols-3">
-          {testimonials.map((item) => (
-            <Card key={item.name} asMotion>
+        <div className="testimonial-marquee overflow-hidden">
+          <div className="testimonial-track flex w-max gap-5">
+          {[...testimonials, ...testimonials].map((item, index) => (
+            <Card key={`${item.name}-${index}`} className="w-[300px] shrink-0 md:w-[380px]">
               <div className="flex items-center gap-3">
                 <div className="grid h-12 w-12 place-items-center rounded-full bg-gold-light/20 text-gold-light">{item.name[0]}</div>
                 <div>
@@ -242,6 +199,7 @@ export default function Home() {
               <p className="mt-4 leading-8 text-muted">{item.text}</p>
             </Card>
           ))}
+          </div>
         </div>
       </section>
 

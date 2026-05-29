@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowRight, Copy, Gift, Layers3, Mail, MapPin, Menu, Network, Phone, ShieldCheck, ShoppingBag, Sparkles, Tag, UserPlus, WalletCards, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Copy, Gift, Layers3, Mail, MapPin, Menu, Network, Phone, ShieldCheck, ShoppingBag, Sparkles, Tag, UserPlus, WalletCards, X } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
 import { Badge, Card, SectionHeading } from "@/components/ui";
 import { commissionLevels, products } from "@/lib/mock-data";
@@ -143,6 +143,14 @@ export default function Home() {
 
     return () => window.clearInterval(timer);
   }, []);
+
+  function showPreviousSlide() {
+    setActiveSlide((current) => (current - 1 + slideImages.length) % slideImages.length);
+  }
+
+  function showNextSlide() {
+    setActiveSlide((current) => (current + 1) % slideImages.length);
+  }
 
   return (
     <main className="min-h-screen overflow-hidden bg-background text-foreground">
@@ -285,6 +293,22 @@ export default function Home() {
               />
             ))}
           </div>
+          <button
+            type="button"
+            aria-label="Previous slide"
+            onClick={showPreviousSlide}
+            className="absolute left-0 top-1/2 grid h-12 w-12 -translate-y-1/2 place-items-center bg-white text-gold shadow-lg transition hover:bg-gold hover:text-white sm:left-4 sm:rounded-full"
+          >
+            <ArrowLeft size={22} />
+          </button>
+          <button
+            type="button"
+            aria-label="Next slide"
+            onClick={showNextSlide}
+            className="absolute right-0 top-1/2 grid h-12 w-12 -translate-y-1/2 place-items-center bg-white text-gold shadow-lg transition hover:bg-gold hover:text-white sm:right-4 sm:rounded-full"
+          >
+            <ArrowRight size={22} />
+          </button>
         </div>
       </section>
 

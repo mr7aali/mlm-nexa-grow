@@ -6,6 +6,8 @@ import { env, isProduction } from "../../config/env";
 import {
   findUserByEmail,
   findUserById,
+  ActivityModel,
+  ReferralModel,
   RefreshTokenModel,
   UserModel,
   toPublicUser,
@@ -89,6 +91,15 @@ export async function register(values: {
     throw new HttpError(409, "This email is already registered");
   }
 
+  const sponsorCode = values.referralCode?.trim();
+  const sponsor = sponsorCode
+    ? await UserModel.findOne({ referralCode: sponsorCode })
+    : null;
+
+  if (sponsorCode && !sponsor) {
+    throw new HttpError(400, "Referral code is invalid");
+  }
+
   const user = await UserModel.create({
     id: randomUUID(),
     name: values.fullName,
@@ -101,8 +112,42 @@ export async function register(values: {
     earned: 0,
     referrals: 0,
     role: "member",
+    referredByUserId: sponsor?.id ?? null,
+    referredByCode: sponsorCode || null,
     passwordHash: await bcrypt.hash(values.password, 10),
   });
+
+  if (sponsor) {
+    const directReferrals = await ReferralModel.countDocuments({
+      ownerUserId: sponsor.id,
+    });
+
+    await Promise.all([
+      ReferralModel.create({
+        id: randomUUID(),
+        ownerUserId: sponsor.id,
+        userId: user.id,
+        name: user.name,
+        phone: user.phone,
+        level: 1,
+        joinDate: user.joined,
+        referralCount: 0,
+        status: "Active",
+        commissionEarned: 0,
+        downline: 0,
+      }),
+      ActivityModel.create({
+        id: randomUUID(),
+        ownerUserId: sponsor.id,
+        text: `${user.name} joined your network`,
+        time: new Date().toISOString(),
+      }),
+      UserModel.updateOne(
+        { id: sponsor.id },
+        { $set: { referrals: directReferrals + 1 } },
+      ),
+    ]);
+  }
 
   return createAuthPayload(user, res);
 }

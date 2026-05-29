@@ -15,18 +15,18 @@ import { setCredentials } from "@/lib/auth-slice";
 import { useAppDispatch } from "@/lib/hooks";
 
 const schema = z.object({
-  fullName: z.string().min(3, "পুরো নাম লিখুন"),
-  email: z.string().email("সঠিক ইমেইল লিখুন"),
-  phone: z.string().min(8, "সঠিক ফোন নম্বর লিখুন"),
-  password: z.string().min(6, "কমপক্ষে ৬ অক্ষরের পাসওয়ার্ড দিন"),
+  fullName: z.string().min(3, "Enter your full name"),
+  email: z.string().email("Enter a valid email"),
+  phone: z.string().min(8, "Enter a valid phone number"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
   referralCode: z.string().optional(),
 });
 
-type RegisterForm = z.infer<typeof schema>;
+type RegisterFormValues = z.infer<typeof schema>;
 
 export default function RegisterPage() {
   return (
-    <Suspense fallback={<main className="grid min-h-screen place-items-center bg-background text-muted">লোড হচ্ছে...</main>}>
+    <Suspense fallback={<main className="grid min-h-screen place-items-center bg-background text-muted">Loading...</main>}>
       <RegisterForm />
     </Suspense>
   );
@@ -37,32 +37,35 @@ function RegisterForm() {
   const searchParams = useSearchParams();
   const dispatch = useAppDispatch();
   const [registerMember, { isLoading }] = useRegisterMutation();
-  const [success, setSuccess] = useState("");
+  const [message, setMessage] = useState("");
   const {
     register,
     handleSubmit,
     watch,
     setValue,
     formState: { errors },
-  } = useForm<RegisterForm>({
+  } = useForm<RegisterFormValues>({
     resolver: zodResolver(schema),
     defaultValues: { referralCode: "" },
   });
-  const referralCode = watch("referralCode");
+  const referralCode = watch("referralCode")?.trim();
 
   useEffect(() => {
     const ref = searchParams.get("ref");
     if (ref) setValue("referralCode", ref);
   }, [searchParams, setValue]);
 
-  async function handleRegisterSubmit(values: RegisterForm) {
+  async function handleRegisterSubmit(values: RegisterFormValues) {
     try {
-      const auth = await registerMember(values).unwrap();
+      const auth = await registerMember({
+        ...values,
+        referralCode: values.referralCode?.trim() || undefined,
+      }).unwrap();
       dispatch(setCredentials(auth));
-      setSuccess("Registration completed. Redirecting to dashboard...");
+      setMessage("Registration completed. Redirecting to dashboard...");
       router.push("/dashboard");
     } catch (error) {
-      setSuccess(getApiErrorMessage(error, "Registration failed"));
+      setMessage(getApiErrorMessage(error, "Registration failed"));
     }
   }
 
@@ -72,27 +75,38 @@ function RegisterForm() {
         <Link href="/" className="mx-auto mb-6 flex w-max items-center gap-3">
           <BrandLogo className="h-16 w-16" priority />
         </Link>
-        <h1 className="heading-gradient text-center text-4xl font-black">নতুন অ্যাকাউন্ট খুলুন</h1>
-        <p className="mt-3 text-center text-muted">GIOTO Bangladesh সদস্য নেটওয়ার্কে যুক্ত হন</p>
+        <h1 className="heading-gradient text-center text-4xl font-black">Create your account</h1>
+        <p className="mt-3 text-center text-muted">Join the GIOTO Bangladesh member network.</p>
 
-        <form
-          className="mt-8 space-y-5"
-          onSubmit={handleSubmit(handleRegisterSubmit)}
-        >
-          <Field label="পুরো নাম" error={errors.fullName?.message}><Input {...register("fullName")} placeholder="আপনার নাম" /></Field>
-          <Field label="ইমেইল" error={errors.email?.message}><Input {...register("email")} placeholder="name@example.com" /></Field>
-          <Field label="ফোন" error={errors.phone?.message}><Input {...register("phone")} placeholder="০১৭XXXXXXXX" /></Field>
-          <Field label="পাসওয়ার্ড" error={errors.password?.message}><Input type="password" {...register("password")} placeholder="••••••••" /></Field>
-          <Field label="রেফারেল কোড" error={errors.referralCode?.message}>
-            <Input {...register("referralCode")} placeholder="NXG-RAFI-2048" />
-            {referralCode ? <p className="mt-2 rounded-2xl bg-gold/10 px-4 py-2 text-sm text-gold-light">রেফারার: রাফি হাসান</p> : null}
+        <form className="mt-8 space-y-5" onSubmit={handleSubmit(handleRegisterSubmit)}>
+          <Field label="Full name" error={errors.fullName?.message}>
+            <Input {...register("fullName")} placeholder="Your name" />
           </Field>
-          {success ? <p className="rounded-2xl border border-gold/20 bg-gold/10 px-4 py-3 text-sm text-gold">{success}</p> : null}
+          <Field label="Email" error={errors.email?.message}>
+            <Input {...register("email")} placeholder="name@example.com" />
+          </Field>
+          <Field label="Phone" error={errors.phone?.message}>
+            <Input {...register("phone")} placeholder="01XXXXXXXXX" />
+          </Field>
+          <Field label="Password" error={errors.password?.message}>
+            <Input type="password" {...register("password")} placeholder="At least 6 characters" />
+          </Field>
+          <Field label="Referral code" error={errors.referralCode?.message}>
+            <Input {...register("referralCode")} placeholder="Optional sponsor code" />
+            {referralCode ? (
+              <p className="mt-2 rounded-2xl bg-gold/10 px-4 py-2 text-sm text-gold-light">
+                Sponsor code: {referralCode}
+              </p>
+            ) : null}
+          </Field>
+          {message ? <p className="rounded-2xl border border-gold/20 bg-gold/10 px-4 py-3 text-sm text-gold">{message}</p> : null}
           <Button className="w-full" type="submit" disabled={isLoading}>
-            রেজিস্টার করুন <ArrowRight size={17} />
+            Register <ArrowRight size={17} />
           </Button>
         </form>
-        <p className="mt-6 text-center text-sm text-muted">আগেই অ্যাকাউন্ট আছে? <Link href="/login" className="text-gold-light">লগইন করুন</Link></p>
+        <p className="mt-6 text-center text-sm text-muted">
+          Already have an account? <Link href="/login" className="text-gold-light">Log in</Link>
+        </p>
       </Card>
     </main>
   );

@@ -1,17 +1,15 @@
 export const cn = (...classes: Array<string | false | null | undefined>) =>
   classes.filter(Boolean).join(" ");
 
-const banglaDigits = ["০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"];
-
 export function toBn(value: string | number) {
-  return String(value).replace(/\d/g, (digit) => banglaDigits[Number(digit)]);
+  return String(value);
 }
 
 export function taka(value: number) {
-  return `৳${toBn(value.toLocaleString("en-IN"))}`;
+  return `BDT ${value.toLocaleString("en-IN")}`;
 }
 
-export function referralLink(code = "NXG-RAFI-2048") {
+export function referralLink(code: string) {
   return `https://giotobangladesh.com/register?ref=${code}`;
 }
 

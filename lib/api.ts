@@ -11,6 +11,8 @@ import type {
   ApiResponse,
   AuthPayload,
   AuthUser,
+  AdminUser,
+  AdminWithdrawal,
   CommissionsResponse,
   DashboardResponse,
   EarningsResponse,
@@ -75,6 +77,8 @@ export const api = createApi({
     "Referrals",
     "Wings",
     "Earnings",
+    "AdminUsers",
+    "AdminWithdrawals",
   ],
   endpoints: (builder) => ({
     login: builder.mutation<AuthPayload, { email: string; password: string }>({
@@ -209,18 +213,71 @@ export const api = createApi({
       transformResponse: unwrap<{ id: string }>,
       invalidatesTags: ["Earnings", "Dashboard"],
     }),
+    getAdminUsers: builder.query<AdminUser[], void>({
+      query: () => "/admin/users",
+      transformResponse: unwrap<AdminUser[]>,
+      providesTags: ["AdminUsers"],
+    }),
+    updateAdminUserStatus: builder.mutation<
+      AdminUser,
+      { userId: string; status: AdminUser["status"] }
+    >({
+      query: ({ userId, status }) => ({
+        url: `/admin/users/${userId}/status`,
+        method: "PATCH",
+        body: { status },
+      }),
+      transformResponse: unwrap<AdminUser>,
+      invalidatesTags: ["AdminUsers"],
+    }),
+    creditAdminCommission: builder.mutation<
+      { user: AdminUser; note: string },
+      { user: string; amount: number; note: string }
+    >({
+      query: (body) => ({ url: "/admin/commissions/credit", method: "POST", body }),
+      transformResponse: unwrap<{ user: AdminUser; note: string }>,
+      invalidatesTags: ["AdminUsers"],
+    }),
+    getAdminWithdrawals: builder.query<AdminWithdrawal[], void>({
+      query: () => "/admin/withdrawals",
+      transformResponse: unwrap<AdminWithdrawal[]>,
+      providesTags: ["AdminWithdrawals"],
+    }),
+    updateAdminWithdrawalStatus: builder.mutation<
+      AdminWithdrawal,
+      { withdrawalId: string; status: AdminWithdrawal["status"] }
+    >({
+      query: ({ withdrawalId, status }) => ({
+        url: `/admin/withdrawals/${withdrawalId}/status`,
+        method: "PATCH",
+        body: { status },
+      }),
+      transformResponse: unwrap<AdminWithdrawal>,
+      invalidatesTags: ["AdminWithdrawals"],
+    }),
+    broadcastNotification: builder.mutation<
+      { delivered: boolean },
+      { message: string }
+    >({
+      query: (body) => ({ url: "/admin/broadcasts", method: "POST", body }),
+      transformResponse: unwrap<{ delivered: boolean }>,
+    }),
   }),
 });
 
 export const {
   useChangePasswordMutation,
   useCreateOrderMutation,
+  useCreditAdminCommissionMutation,
+  useBroadcastNotificationMutation,
   useCreateWithdrawalMutation,
   useForgotPasswordMutation,
   useGetCommissionsQuery,
   useGetDashboardQuery,
   useGetEarningsQuery,
   useGetMeQuery,
+  useGetAdminUsersQuery,
+  useGetAdminWithdrawalsQuery,
   useGetProductQuery,
   useGetProductsQuery,
   useGetReferralsQuery,
@@ -229,6 +286,8 @@ export const {
   useLogoutMutation,
   useRegisterMutation,
   useResetPasswordMutation,
+  useUpdateAdminUserStatusMutation,
+  useUpdateAdminWithdrawalStatusMutation,
   useUpdateProfileMutation,
   useVerifyOtpMutation,
 } = api;

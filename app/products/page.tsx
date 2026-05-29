@@ -1,39 +1,41 @@
-import type { Metadata } from "next";
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, ShoppingBag, Tag } from "lucide-react";
-import { products } from "@/lib/mock-data";
+import { useGetProductsQuery } from "@/lib/api";
 import { taka } from "@/lib/utils";
 
-export const metadata: Metadata = {
-  title: "পণ্য কিনুন | GIOTO",
-  description: "GIOTO public product catalog, product details and checkout flow.",
-};
-
 export default function PublicProductsPage() {
+  const { data, isLoading } = useGetProductsQuery();
+  const products = data ?? [];
+
   return (
     <div>
       <section className="border-b border-line bg-elevated px-4 py-10">
         <div className="mx-auto flex max-w-7xl flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
-            <p className="text-sm font-semibold text-gold-light">অনলাইন শপ</p>
-            <h1 className="mt-2 text-4xl font-black leading-tight md:text-6xl">পণ্য কিনুন</h1>
+            <p className="text-sm font-semibold text-gold-light">Online shop</p>
+            <h1 className="mt-2 text-4xl font-black leading-tight md:text-6xl">Products</h1>
             <p className="mt-4 max-w-2xl leading-8 text-muted">
-              এখানে সরাসরি পণ্য দেখা, বিস্তারিত জানা এবং checkout করা যাবে।
+              Products are loaded from the live backend. No catalog item is shown unless it exists in MongoDB.
             </p>
           </div>
           <div className="inline-flex w-fit items-center gap-2 rounded-full border border-line bg-surface px-4 py-2 text-sm font-semibold text-gold-light">
             <ShoppingBag size={17} />
-            {products.length} টি পণ্য
+            {products.length} products
           </div>
         </div>
       </section>
 
       <section className="mx-auto max-w-7xl px-4 py-10">
+        {isLoading ? <p className="text-sm text-muted">Loading products...</p> : null}
+
         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-          {products.map((product) => {
+          {products.length ? products.map((product) => {
             const detailsHref = `/products/${product.id}`;
             const checkoutHref = `/products/${product.id}/checkout`;
+            const highlights = product.highlights ?? [];
 
             return (
               <article key={product.id} className="nexa-card group flex min-h-full flex-col overflow-hidden bg-surface">
@@ -45,10 +47,12 @@ export default function PublicProductsPage() {
                     sizes="(min-width: 1280px) 25vw, (min-width: 768px) 50vw, 100vw"
                     className="object-cover transition duration-300 group-hover:scale-105"
                   />
-                  <span className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-foreground px-3 py-1 text-xs font-bold text-white">
-                    <Tag size={14} />
-                    {product.offer}
-                  </span>
+                  {product.offer ? (
+                    <span className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-foreground px-3 py-1 text-xs font-bold text-white">
+                      <Tag size={14} />
+                      {product.offer}
+                    </span>
+                  ) : null}
                 </Link>
 
                 <div className="flex flex-1 flex-col p-5">
@@ -56,7 +60,7 @@ export default function PublicProductsPage() {
                     <span className="inline-flex rounded-full border border-gold-light bg-gold-light/20 px-3 py-1 text-xs font-semibold text-gold">
                       {product.category}
                     </span>
-                    <span className="text-xs font-semibold text-gold-light">{product.stock}</span>
+                    {product.stock ? <span className="text-xs font-semibold text-gold-light">{product.stock}</span> : null}
                   </div>
 
                   <h2 className="mt-4 text-xl font-bold">{product.name}</h2>
@@ -65,44 +69,48 @@ export default function PublicProductsPage() {
                   <div className="mt-4 rounded-2xl border border-line bg-elevated p-3">
                     <div className="flex flex-wrap items-end justify-between gap-2">
                       <div>
-                        <p className="text-xs text-muted">অফার মূল্য</p>
+                        <p className="text-xs text-muted">Offer price</p>
                         <p className="text-xl font-black text-gold-light">{taka(product.price)}</p>
                       </div>
                       <div className="text-right">
                         <p className="text-xs text-muted line-through">{taka(product.originalPrice)}</p>
-                        <p className="text-xs font-semibold text-foreground">সাশ্রয় {taka(product.originalPrice - product.price)}</p>
+                        <p className="text-xs font-semibold text-foreground">Save {taka(product.originalPrice - product.price)}</p>
                       </div>
                     </div>
                   </div>
 
-                  <div className="mt-4 space-y-2">
-                    {product.highlights.slice(0, 2).map((item) => (
-                      <p key={item} className="flex items-start gap-2 text-sm leading-6 text-muted">
-                        <CheckCircle2 className="mt-1 shrink-0 text-gold-light" size={15} />
-                        {item}
-                      </p>
-                    ))}
-                  </div>
+                  {highlights.length ? (
+                    <div className="mt-4 space-y-2">
+                      {highlights.slice(0, 2).map((item) => (
+                        <p key={item} className="flex items-start gap-2 text-sm leading-6 text-muted">
+                          <CheckCircle2 className="mt-1 shrink-0 text-gold-light" size={15} />
+                          {item}
+                        </p>
+                      ))}
+                    </div>
+                  ) : null}
 
                   <div className="mt-5 grid gap-2 sm:grid-cols-2">
                     <Link
                       href={detailsHref}
                       className="outline-gold inline-flex min-h-11 items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold transition hover:bg-gold/10"
                     >
-                      বিস্তারিত
+                      Details
                     </Link>
                     <Link
                       href={checkoutHref}
                       className="gold-button inline-flex min-h-11 items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold"
                     >
-                      কিনুন
+                      Buy
                       <ArrowRight size={16} />
                     </Link>
                   </div>
                 </div>
               </article>
             );
-          })}
+          }) : (
+            <p className="text-sm text-muted">No products are available yet.</p>
+          )}
         </div>
       </section>
     </div>

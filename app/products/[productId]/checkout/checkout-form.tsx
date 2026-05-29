@@ -2,10 +2,9 @@
 
 import { FormEvent, useMemo, useState } from "react";
 import { CheckCircle2, CreditCard, Minus, Plus, Smartphone, Truck } from "lucide-react";
-import type { Product } from "@/lib/mock-data";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { useCreateOrderMutation } from "@/lib/api";
-import type { Order } from "@/lib/api-types";
+import type { Order, Product } from "@/lib/api-types";
 import { taka } from "@/lib/utils";
 
 export function CheckoutForm({ product }: { product: Product }) {

@@ -11,7 +11,7 @@ async function bootstrap() {
 
   app.listen(env.port, () => {
     console.log(`GIOTO API running on http://localhost:${env.port}`);
-    console.log(`MongoDB connected: ${env.mongodbUri}`);
+    console.log("MongoDB connected");
   });
 }
 

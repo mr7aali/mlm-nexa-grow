@@ -3,7 +3,6 @@
 import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import { Badge, Card, Input, Modal, Select } from "@/components/ui";
-import { referrals } from "@/lib/mock-data";
 import { useGetReferralsQuery } from "@/lib/api";
 import type { Referral } from "@/lib/api-types";
 import { taka, toBn } from "@/lib/utils";
@@ -14,11 +13,10 @@ export default function ReferralsPage() {
   const [query, setQuery] = useState("");
   const [level, setLevel] = useState("all");
   const [status, setStatus] = useState("all");
-  const [date, setDate] = useState("");
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState<Referral | null>(null);
-  const { data } = useGetReferralsQuery();
-  const referralRows = data?.rows ?? referrals;
+  const { data, isLoading } = useGetReferralsQuery();
+  const referralRows = useMemo(() => data?.rows ?? [], [data?.rows]);
 
   const filtered = useMemo(() => {
     return referralRows.filter((item) => {
@@ -34,36 +32,40 @@ export default function ReferralsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <p className="text-sm text-gold-light">সদস্য তালিকা</p>
-        <h2 className="heading-gradient text-4xl font-black">রেফারেল বিস্তারিত</h2>
+        <p className="text-sm text-gold-light">Member list</p>
+        <h2 className="heading-gradient text-4xl font-black">Referrals</h2>
       </div>
+
+      {isLoading ? <p className="text-sm text-muted">Loading referrals...</p> : null}
 
       <div className="grid gap-5 md:grid-cols-3">
         {[
-          ["ডাইরেক্ট রেফারেল", "১৮"],
-          ["মোট নেটওয়ার্ক", "৪২"],
-          ["এই মাসের নতুন", "১১"],
+          ["Direct referrals", toBn(data?.summary.directReferrals ?? 0)],
+          ["Total network", toBn(data?.summary.totalNetwork ?? 0)],
+          ["New this month", toBn(data?.summary.newThisMonth ?? 0)],
         ].map(([label, value]) => (
-          <Card key={label}><p className="text-sm text-muted">{label}</p><p className="mt-2 text-3xl font-black text-gold-light">{value}</p></Card>
+          <Card key={label}>
+            <p className="text-sm text-muted">{label}</p>
+            <p className="mt-2 text-3xl font-black text-gold-light">{value}</p>
+          </Card>
         ))}
       </div>
 
       <Card className="p-5">
-        <div className="grid gap-3 lg:grid-cols-[1fr_150px_160px_180px]">
+        <div className="grid gap-3 lg:grid-cols-[1fr_150px_160px]">
           <div className="relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" size={16} />
-            <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="নাম বা ফোন খুঁজুন" className="pl-10" />
+            <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search name or phone" className="pl-10" />
           </div>
           <Select value={level} onChange={(e) => { setLevel(e.target.value); setPage(1); }}>
-            <option value="all">সব লেভেল</option>
-            {[1, 2, 3, 4, 5, 6].map((item) => <option key={item} value={item}>লেভেল {toBn(item)}</option>)}
+            <option value="all">All levels</option>
+            {[1, 2, 3, 4, 5, 6].map((item) => <option key={item} value={item}>Level {toBn(item)}</option>)}
           </Select>
           <Select value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }}>
-            <option value="all">সব স্ট্যাটাস</option>
-            <option value="Active">সক্রিয়</option>
-            <option value="Inactive">নিষ্ক্রিয়</option>
+            <option value="all">All status</option>
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
           </Select>
-          <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
         </div>
       </Card>
 
@@ -71,34 +73,38 @@ export default function ReferralsPage() {
         <table className="w-full min-w-[980px] text-left text-sm">
           <thead className="bg-elevated text-muted">
             <tr>
-              {["নাম", "ফোন", "লেভেল", "যোগদান", "নিজস্ব রেফারেল", "স্ট্যাটাস", "কমিশন"].map((head) => <th key={head} className="px-5 py-4">{head}</th>)}
+              {["Name", "Phone", "Level", "Joined", "Own referrals", "Status", "Commission"].map((head) => <th key={head} className="px-5 py-4">{head}</th>)}
             </tr>
           </thead>
           <tbody>
-            {rows.map((item) => (
+            {rows.length ? rows.map((item) => (
               <tr key={item.id} onClick={() => setSelected(item)} className="cursor-pointer border-t border-line hover:bg-gold/10">
                 <td className="px-5 py-4 font-semibold">{item.name}</td>
                 <td className="px-5 py-4 text-muted">{item.phone}</td>
-                <td className="px-5 py-4">লেভেল {toBn(item.level)}</td>
+                <td className="px-5 py-4">Level {toBn(item.level)}</td>
                 <td className="px-5 py-4 text-muted">{item.joinDate}</td>
                 <td className="px-5 py-4">{toBn(item.referralCount)}</td>
-                <td className="px-5 py-4"><Badge tone={item.status === "Active" ? "green" : "muted"}>{item.status === "Active" ? "সক্রিয়" : "নিষ্ক্রিয়"}</Badge></td>
+                <td className="px-5 py-4"><Badge tone={item.status === "Active" ? "green" : "muted"}>{item.status}</Badge></td>
                 <td className="px-5 py-4 text-gold-light">{taka(item.commissionEarned)}</td>
               </tr>
-            ))}
+            )) : (
+              <tr>
+                <td className="px-5 py-8 text-center text-muted" colSpan={7}>No referrals yet.</td>
+              </tr>
+            )}
           </tbody>
         </table>
       </Card>
 
       <div className="flex items-center justify-between">
-        <p className="text-sm text-muted">পৃষ্ঠা {toBn(page)} / {toBn(totalPages)}</p>
+        <p className="text-sm text-muted">Page {toBn(page)} / {toBn(totalPages)}</p>
         <div className="flex gap-2">
-          <button disabled={page === 1} onClick={() => setPage((old) => Math.max(1, old - 1))} className="outline-gold px-4 py-2 disabled:opacity-40">আগের</button>
-          <button disabled={page === totalPages} onClick={() => setPage((old) => Math.min(totalPages, old + 1))} className="gold-button px-4 py-2 disabled:opacity-40">পরের</button>
+          <button disabled={page === 1} onClick={() => setPage((old) => Math.max(1, old - 1))} className="outline-gold px-4 py-2 disabled:opacity-40">Previous</button>
+          <button disabled={page === totalPages} onClick={() => setPage((old) => Math.min(totalPages, old + 1))} className="gold-button px-4 py-2 disabled:opacity-40">Next</button>
         </div>
       </div>
 
-      <Modal open={Boolean(selected)} title="সদস্য প্রোফাইল" onClose={() => setSelected(null)}>
+      <Modal open={Boolean(selected)} title="Member profile" onClose={() => setSelected(null)}>
         {selected ? (
           <div className="space-y-4">
             <div className="flex items-center gap-4">
@@ -109,8 +115,8 @@ export default function ReferralsPage() {
               </div>
             </div>
             <div className="grid gap-3 md:grid-cols-2">
-              <Card><p className="text-sm text-muted">ডাউনলাইন</p><p className="text-2xl font-black text-gold-light">{toBn(selected.downline)}</p></Card>
-              <Card><p className="text-sm text-muted">কমিশন</p><p className="text-2xl font-black text-gold-light">{taka(selected.commissionEarned)}</p></Card>
+              <Card><p className="text-sm text-muted">Downline</p><p className="text-2xl font-black text-gold-light">{toBn(selected.downline)}</p></Card>
+              <Card><p className="text-sm text-muted">Commission</p><p className="text-2xl font-black text-gold-light">{taka(selected.commissionEarned)}</p></Card>
             </div>
           </div>
         ) : null}

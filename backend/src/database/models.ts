@@ -1,9 +1,13 @@
 import { Schema, model, models } from "mongoose";
-import type { Product } from "../../../lib/mock-data";
 import type {
+  ActivityRecord,
   AppUser,
+  CommissionHistoryRecord,
+  EarningsMonthRecord,
   Order,
+  ProductRecord,
   PublicUser,
+  ReferralRecord,
   RefreshSession,
   WithdrawalRequest,
 } from "../types/domain";
@@ -13,6 +17,7 @@ export type RefreshTokenRecord = RefreshSession & {
 };
 
 type NotificationRecord = {
+  ownerUserId?: string;
   message: string;
 };
 
@@ -46,6 +51,8 @@ const userSchema = new Schema<AppUser>(
     earned: { type: Number, required: true, default: 0 },
     referrals: { type: Number, required: true, default: 0 },
     role: { type: String, enum: ["member", "admin"], required: true },
+    referredByUserId: { type: String, default: null, index: true },
+    referredByCode: { type: String, default: null },
     passwordHash: { type: String, required: true },
     resetOtp: String,
     resetOtpExpiresAt: Number,
@@ -95,22 +102,78 @@ const withdrawalSchema = new Schema<WithdrawalRequest>(
   { timestamps: true },
 );
 
-const productSchema = new Schema<Product>(
+const productSchema = new Schema<ProductRecord>(
   {
     id: { type: String, required: true, unique: true, index: true },
   },
   { strict: false, timestamps: true },
 );
 
-const looseSchema = new Schema(
+const commissionLevelSchema = new Schema(
   {
-    id: { type: String, index: true },
+    level: { type: Number, required: true, unique: true, index: true },
+    required: { type: Number, required: true },
+    earning: { type: Number, required: true },
+    current: { type: Number, required: true, default: 0 },
+    color: { type: String, required: true },
+    status: { type: String, required: true },
   },
-  { strict: false, timestamps: true },
+  { timestamps: true },
+);
+
+const referralSchema = new Schema<ReferralRecord>(
+  {
+    id: { type: String, required: true, unique: true, index: true },
+    ownerUserId: { type: String, required: true, index: true },
+    userId: { type: String, required: true, index: true },
+    name: { type: String, required: true },
+    phone: { type: String, required: true },
+    level: { type: Number, required: true },
+    joinDate: { type: String, required: true },
+    referralCount: { type: Number, required: true, default: 0 },
+    status: { type: String, required: true },
+    commissionEarned: { type: Number, required: true, default: 0 },
+    downline: { type: Number, required: true, default: 0 },
+  },
+  { timestamps: true },
+);
+
+const activitySchema = new Schema<ActivityRecord>(
+  {
+    id: { type: String, required: true, unique: true, index: true },
+    ownerUserId: { type: String, required: true, index: true },
+    text: { type: String, required: true },
+    time: { type: String, required: true },
+  },
+  { timestamps: true },
+);
+
+const commissionHistorySchema = new Schema<CommissionHistoryRecord>(
+  {
+    id: { type: String, required: true, unique: true, index: true },
+    userId: { type: String, required: true, index: true },
+    level: { type: String, required: true },
+    date: { type: String, required: true },
+    amount: { type: Number, required: true },
+    status: { type: String, required: true },
+  },
+  { timestamps: true },
+);
+
+const earningsMonthSchema = new Schema<EarningsMonthRecord>(
+  {
+    id: { type: String, required: true, unique: true, index: true },
+    userId: { type: String, required: true, index: true },
+    month: { type: String, required: true },
+    income: { type: Number, required: true, default: 0 },
+    pending: { type: Number, required: true, default: 0 },
+  },
+  { timestamps: true },
 );
 
 const notificationSchema = new Schema<NotificationRecord>(
   {
+    ownerUserId: { type: String, index: true },
     message: { type: String, required: true },
   },
   { timestamps: true },
@@ -135,17 +198,17 @@ export const WithdrawalModel =
   models.Withdrawal ||
   model<WithdrawalRequest>("Withdrawal", withdrawalSchema);
 export const ProductModel =
-  models.Product || model<Product>("Product", productSchema);
+  models.Product || model<ProductRecord>("Product", productSchema);
 export const CommissionLevelModel =
-  models.CommissionLevel || model("CommissionLevel", looseSchema);
+  models.CommissionLevel || model("CommissionLevel", commissionLevelSchema);
 export const ReferralModel =
-  models.Referral || model("Referral", looseSchema);
+  models.Referral || model<ReferralRecord>("Referral", referralSchema);
 export const ActivityModel =
-  models.Activity || model("Activity", looseSchema);
+  models.Activity || model<ActivityRecord>("Activity", activitySchema);
 export const CommissionHistoryModel =
-  models.CommissionHistory || model("CommissionHistory", looseSchema);
+  models.CommissionHistory || model<CommissionHistoryRecord>("CommissionHistory", commissionHistorySchema);
 export const EarningsMonthModel =
-  models.EarningsMonth || model("EarningsMonth", looseSchema);
+  models.EarningsMonth || model<EarningsMonthRecord>("EarningsMonth", earningsMonthSchema);
 export const NotificationModel =
   models.Notification ||
   model<NotificationRecord>("Notification", notificationSchema);

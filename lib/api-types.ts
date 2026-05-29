@@ -1,6 +1,36 @@
-import type { LevelStatus, Product, TreeNode } from "@/lib/mock-data";
+export type LevelStatus = "Locked" | "In Progress" | "Unlocked" | "Paid";
 
-export type { Product, TreeNode };
+export type Product = {
+  id: string;
+  icon?: string;
+  image: string;
+  name: string;
+  category: string;
+  price: number;
+  originalPrice: number;
+  discountPercent?: number;
+  offer?: string;
+  offerEnds?: string;
+  commission?: number;
+  stock?: string;
+  sku: string;
+  delivery?: string;
+  description?: string;
+  full?: string;
+  highlights?: string[];
+  includes?: string[];
+  details?: Array<{ label: string; value: string }>;
+};
+
+export type TreeNode = {
+  id: string;
+  name: string;
+  level: number;
+  joined: string;
+  referrals: number;
+  active: boolean;
+  children?: TreeNode[];
+};
 
 export type Role = "member" | "admin";
 export type UserStatus = "Active" | "Inactive" | "Banned";
@@ -78,6 +108,12 @@ export type Withdrawal = {
   method: string;
   status: string;
   account?: string;
+};
+
+export type AdminUser = AuthUser;
+
+export type AdminWithdrawal = Withdrawal & {
+  userId: string;
 };
 
 export type Order = {

@@ -6,12 +6,14 @@ import {
   NotificationModel,
   UserModel,
   toPublicUser,
+  WithdrawalModel,
 } from "../../database/store";
 import { ok } from "../../utils/api-response";
 import { HttpError } from "../../utils/http-error";
 import {
   broadcastSchema,
   creditCommissionSchema,
+  updateWithdrawalStatusSchema,
   updateUserStatusSchema,
 } from "./admin.schemas";
 
@@ -68,9 +70,42 @@ adminRouter.post(
   },
 );
 
+adminRouter.get("/withdrawals", async (_req, res, next) => {
+  try {
+    const withdrawals = await WithdrawalModel.find().sort({ createdAt: -1 }).lean();
+    res.json(ok(withdrawals));
+  } catch (error) {
+    next(error);
+  }
+});
+
+adminRouter.patch(
+  "/withdrawals/:withdrawalId/status",
+  validateBody(updateWithdrawalStatusSchema),
+  async (req, res, next) => {
+    try {
+      const withdrawal = await WithdrawalModel.findOne({ id: String(req.params.withdrawalId) });
+      if (!withdrawal) throw new HttpError(404, "Withdrawal not found");
+      withdrawal.status = req.body.status;
+      await withdrawal.save();
+      res.json(ok(withdrawal, "Withdrawal status updated"));
+    } catch (error) {
+      next(error);
+    }
+  },
+);
+
 adminRouter.post("/broadcasts", validateBody(broadcastSchema), async (req, res, next) => {
   try {
-    await NotificationModel.create({ message: req.body.message });
+    const users = await UserModel.find().select("id").lean();
+    if (users.length) {
+      await NotificationModel.insertMany(
+        users.map((user) => ({
+          ownerUserId: user.id,
+          message: req.body.message,
+        })),
+      );
+    }
     res.status(201).json(ok({ delivered: true }, "Broadcast sent"));
   } catch (error) {
     next(error);

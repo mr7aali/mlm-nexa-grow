@@ -13,3 +13,7 @@ export const creditCommissionSchema = z.object({
 export const broadcastSchema = z.object({
   message: z.string().min(5),
 });
+
+export const updateWithdrawalStatusSchema = z.object({
+  status: z.enum(["Pending", "Review", "Paid", "Rejected"]),
+});

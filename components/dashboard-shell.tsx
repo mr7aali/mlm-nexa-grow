@@ -23,16 +23,16 @@ import { Button } from "@/components/ui";
 import { useGetMeQuery, useLogoutMutation } from "@/lib/api";
 import { clearCredentials } from "@/lib/auth-slice";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
-import { cn } from "@/lib/utils";
+import { cn, initials } from "@/lib/utils";
 
 const navItems = [
-  { href: "/dashboard", label: "ড্যাশবোর্ড", icon: LayoutDashboard },
-  { href: "/dashboard/wings", label: "মাই উইংস", icon: Network },
-  { href: "/dashboard/referrals", label: "রেফারেল", icon: Users },
-  { href: "/dashboard/commissions", label: "কমিশন", icon: ChartNoAxesCombined },
-  { href: "/dashboard/products", label: "পণ্য", icon: Boxes },
-  { href: "/dashboard/earnings", label: "আয়", icon: Coins },
-  { href: "/dashboard/profile", label: "প্রোফাইল", icon: User },
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/dashboard/wings", label: "My Wings", icon: Network },
+  { href: "/dashboard/referrals", label: "Referrals", icon: Users },
+  { href: "/dashboard/commissions", label: "Commissions", icon: ChartNoAxesCombined },
+  { href: "/dashboard/products", label: "Products", icon: Boxes },
+  { href: "/dashboard/earnings", label: "Earnings", icon: Coins },
+  { href: "/dashboard/profile", label: "Profile", icon: User },
 ];
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
@@ -103,7 +103,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       </nav>
 
       <div className="m-4 rounded-[18px] border border-line bg-gold-light/20 p-4 text-sm text-white">
-        {!collapsed ? "রেফার লিংক শেয়ার করে পরবর্তী লেভেল আনলক করুন" : "৳"}
+        {!collapsed ? "Share your referral link to grow your next level." : "$"}
       </div>
     </aside>
   );
@@ -120,13 +120,12 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
               <Menu size={20} />
             </Button>
             <div>
-              {activeUser ? <p className="text-xs font-semibold text-gold-light">{activeUser.name}</p> : null}
-              <p className="text-xs text-muted">স্বাগতম</p>
-              <h1 className="text-lg font-bold text-foreground">রাফি হাসান</h1>
+              <p className="text-xs text-muted">Welcome</p>
+              <h1 className="text-lg font-bold text-foreground">{activeUser?.name ?? "Member"}</h1>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <button className="relative rounded-full border border-line bg-surface p-3 text-gold-light">
+            <button className="relative rounded-full border border-line bg-surface p-3 text-gold-light" aria-label="Notifications">
               <Bell size={18} />
               <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-gold-light" />
             </button>
@@ -138,7 +137,9 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             >
               <LogOut size={18} />
             </button>
-            <div className="grid h-11 w-11 place-items-center rounded-full bg-gold font-bold text-white">রা</div>
+            <div className="grid h-11 w-11 place-items-center rounded-full bg-gold font-bold text-white">
+              {activeUser ? initials(activeUser.name) : "M"}
+            </div>
           </div>
         </header>
         <main className="px-4 py-6 md:px-8">{children}</main>

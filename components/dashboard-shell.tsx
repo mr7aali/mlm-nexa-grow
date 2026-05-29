@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import {
   Bell,
   Boxes,
@@ -11,6 +11,7 @@ import {
   ChevronRight,
   Coins,
   LayoutDashboard,
+  LogOut,
   Menu,
   Network,
   User,
@@ -19,6 +20,9 @@ import {
 } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
 import { Button } from "@/components/ui";
+import { useGetMeQuery, useLogoutMutation } from "@/lib/api";
+import { clearCredentials } from "@/lib/auth-slice";
+import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -33,8 +37,35 @@ const navItems = [
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const dispatch = useAppDispatch();
+  const accessToken = useAppSelector((state) => state.auth.accessToken);
+  const storedUser = useAppSelector((state) => state.auth.user);
+  const { data: currentUser } = useGetMeQuery(undefined, { skip: !accessToken });
+  const [logout] = useLogoutMutation();
   const [open, setOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
+  const activeUser = currentUser ?? storedUser;
+
+  useEffect(() => {
+    if (!accessToken) {
+      router.replace("/login");
+    }
+  }, [accessToken, router]);
+
+  async function handleLogout() {
+    await logout().unwrap().catch(() => undefined);
+    dispatch(clearCredentials());
+    router.replace("/login");
+  }
+
+  if (!accessToken) {
+    return (
+      <main className="grid min-h-screen place-items-center bg-background text-muted">
+        Loading...
+      </main>
+    );
+  }
 
   const sidebar = (
     <aside className={cn("flex h-full flex-col border-r border-gold bg-sidebar text-white transition-all", collapsed ? "w-20" : "w-72")}>
@@ -89,6 +120,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
               <Menu size={20} />
             </Button>
             <div>
+              {activeUser ? <p className="text-xs font-semibold text-gold-light">{activeUser.name}</p> : null}
               <p className="text-xs text-muted">স্বাগতম</p>
               <h1 className="text-lg font-bold text-foreground">রাফি হাসান</h1>
             </div>
@@ -97,6 +129,14 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             <button className="relative rounded-full border border-line bg-surface p-3 text-gold-light">
               <Bell size={18} />
               <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-gold-light" />
+            </button>
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="rounded-full border border-line bg-surface p-3 text-muted transition hover:border-gold hover:text-gold"
+              aria-label="Logout"
+            >
+              <LogOut size={18} />
             </button>
             <div className="grid h-11 w-11 place-items-center rounded-full bg-gold font-bold text-white">রা</div>
           </div>

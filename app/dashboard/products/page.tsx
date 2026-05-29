@@ -6,10 +6,13 @@ import { useState } from "react";
 import { Eye, MessageCircle, Share2, Tag } from "lucide-react";
 import { Badge, Button, CopyButton, Modal } from "@/components/ui";
 import { products } from "@/lib/mock-data";
+import { useGetProductsQuery } from "@/lib/api";
 import { referralLink, taka } from "@/lib/utils";
 
 export default function ProductsPage() {
   const [selected, setSelected] = useState<(typeof products)[number] | null>(null);
+  const { data } = useGetProductsQuery();
+  const productRows = data ?? products;
   const link = selected ? `${referralLink()}&product=${selected.id}` : "";
 
   return (
@@ -20,7 +23,7 @@ export default function ProductsPage() {
       </div>
 
       <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-        {products.map((product) => {
+        {productRows.map((product) => {
           const detailsHref = `/dashboard/products/${product.id}`;
 
           return (

@@ -9,6 +9,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, KeyRound } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
 import { Button, Card, Input } from "@/components/ui";
+import { getApiErrorMessage } from "@/lib/api-error";
+import { useResetPasswordMutation } from "@/lib/api";
 
 const schema = z
   .object({
@@ -33,6 +35,8 @@ export default function ResetPasswordPage() {
 function ResetPasswordForm() {
   const searchParams = useSearchParams();
   const identifier = searchParams.get("identifier") ?? "";
+  const resetToken = searchParams.get("token") ?? "";
+  const [resetPassword, { isLoading }] = useResetPasswordMutation();
   const [success, setSuccess] = useState("");
   const {
     register,
@@ -43,9 +47,18 @@ function ResetPasswordForm() {
     resolver: zodResolver(schema),
   });
 
-  function onSubmit() {
-    setSuccess("নতুন পাসওয়ার্ড সেট হয়েছে। এখন লগইন করতে পারবেন।");
-    reset();
+  async function handleResetSubmit(values: ResetPasswordForm) {
+    try {
+      await resetPassword({
+        identifier,
+        password: values.password,
+        resetToken,
+      }).unwrap();
+      setSuccess("Password updated. You can now sign in.");
+      reset();
+    } catch (error) {
+      setSuccess(getApiErrorMessage(error, "Password reset failed"));
+    }
   }
 
   return (
@@ -62,7 +75,7 @@ function ResetPasswordForm() {
           {identifier ? `${identifier} অ্যাকাউন্টের জন্য নতুন পাসওয়ার্ড সেট করুন।` : "আপনার নতুন পাসওয়ার্ড সেট করুন।"}
         </p>
 
-        <form className="mt-8 space-y-5" onSubmit={handleSubmit(onSubmit)}>
+        <form className="mt-8 space-y-5" onSubmit={handleSubmit(handleResetSubmit)}>
           <label className="block">
             <span className="mb-2 block text-sm text-muted">নতুন পাসওয়ার্ড</span>
             <Input type="password" {...register("password")} placeholder="••••••••" />
@@ -73,7 +86,7 @@ function ResetPasswordForm() {
             <Input type="password" {...register("confirmPassword")} placeholder="••••••••" />
             {errors.confirmPassword ? <span className="mt-2 block text-sm text-gold">{errors.confirmPassword.message}</span> : null}
           </label>
-          <Button className="w-full" type="submit">
+          <Button className="w-full" type="submit" disabled={isLoading}>
             পাসওয়ার্ড আপডেট করুন
           </Button>
           {success ? <p className="rounded-2xl border border-gold/20 bg-gold/10 px-4 py-3 text-sm text-gold-light">{success}</p> : null}

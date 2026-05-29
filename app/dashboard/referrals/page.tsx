@@ -4,6 +4,8 @@ import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import { Badge, Card, Input, Modal, Select } from "@/components/ui";
 import { referrals } from "@/lib/mock-data";
+import { useGetReferralsQuery } from "@/lib/api";
+import type { Referral } from "@/lib/api-types";
 import { taka, toBn } from "@/lib/utils";
 
 const pageSize = 10;
@@ -14,16 +16,18 @@ export default function ReferralsPage() {
   const [status, setStatus] = useState("all");
   const [date, setDate] = useState("");
   const [page, setPage] = useState(1);
-  const [selected, setSelected] = useState<(typeof referrals)[number] | null>(null);
+  const [selected, setSelected] = useState<Referral | null>(null);
+  const { data } = useGetReferralsQuery();
+  const referralRows = data?.rows ?? referrals;
 
   const filtered = useMemo(() => {
-    return referrals.filter((item) => {
+    return referralRows.filter((item) => {
       const search = `${item.name} ${item.phone}`.toLowerCase().includes(query.toLowerCase());
       const byLevel = level === "all" || String(item.level) === level;
       const byStatus = status === "all" || item.status === status;
       return search && byLevel && byStatus;
     });
-  }, [query, level, status]);
+  }, [query, level, status, referralRows]);
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const rows = filtered.slice((page - 1) * pageSize, page * pageSize);
 

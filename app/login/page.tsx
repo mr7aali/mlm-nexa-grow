@@ -9,6 +9,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowRight } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
 import { Button, Card, Input } from "@/components/ui";
+import { getApiErrorMessage } from "@/lib/api-error";
+import { useLoginMutation } from "@/lib/api";
+import { setCredentials } from "@/lib/auth-slice";
+import { useAppDispatch } from "@/lib/hooks";
 
 const memberEmail = "rafi@giotobangladesh.com";
 const memberPassword = "123456";
@@ -23,6 +27,8 @@ type LoginForm = z.infer<typeof schema>;
 
 export default function LoginPage() {
   const router = useRouter();
+  const dispatch = useAppDispatch();
+  const [login, { isLoading }] = useLoginMutation();
   const [message, setMessage] = useState("");
   const {
     register,
@@ -33,14 +39,18 @@ export default function LoginPage() {
     defaultValues: { email: memberEmail, password: memberPassword, remember: true },
   });
 
-  function onSubmit(values: LoginForm) {
-    if (values.email.trim().toLowerCase() === memberEmail && values.password === memberPassword) {
-      setMessage("লগইন সফল হয়েছে। ড্যাশবোর্ডে নেওয়া হচ্ছে...");
+  async function handleLoginSubmit(values: LoginForm) {
+    try {
+      const auth = await login({
+        email: values.email.trim().toLowerCase(),
+        password: values.password,
+      }).unwrap();
+      dispatch(setCredentials(auth));
+      setMessage("Login successful. Redirecting to dashboard...");
       router.push("/dashboard");
-      return;
+    } catch (error) {
+      setMessage(getApiErrorMessage(error, "Login failed"));
     }
-
-    setMessage("প্রবেশের জন্য rafi@giotobangladesh.com এবং 123456 ব্যবহার করুন।");
   }
 
   return (
@@ -56,7 +66,7 @@ export default function LoginPage() {
           ইমেইল: {memberEmail} · পাসওয়ার্ড: {memberPassword}
         </div>
 
-        <form className="mt-8 space-y-5" onSubmit={handleSubmit(onSubmit)}>
+        <form className="mt-8 space-y-5" onSubmit={handleSubmit(handleLoginSubmit)}>
           <label className="block">
             <span className="mb-2 block text-sm text-muted">ইমেইল</span>
             <Input {...register("email")} placeholder="name@example.com" />
@@ -74,7 +84,7 @@ export default function LoginPage() {
             </label>
             <Link href="/forgot-password" className="text-gold-light">পাসওয়ার্ড ভুলে গেছেন?</Link>
           </div>
-          <Button className="w-full" type="submit">
+          <Button className="w-full" type="submit" disabled={isLoading}>
             ড্যাশবোর্ডে যান <ArrowRight size={17} />
           </Button>
           {message ? <p className="rounded-2xl border border-gold/20 bg-gold/10 px-4 py-3 text-sm text-gold-light">{message}</p> : null}

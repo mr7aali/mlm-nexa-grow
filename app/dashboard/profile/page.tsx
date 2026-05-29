@@ -1,11 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Camera, Copy, Trash2 } from "lucide-react";
 import { Badge, Button, Card, CopyButton, Input } from "@/components/ui";
+import { getApiErrorMessage } from "@/lib/api-error";
+import { useChangePasswordMutation, useGetMeQuery, useUpdateProfileMutation } from "@/lib/api";
 import { referralLink } from "@/lib/utils";
 
 const profileSchema = z.object({
@@ -21,11 +23,39 @@ const passwordSchema = z.object({
 export default function ProfilePage() {
   const [saved, setSaved] = useState("");
   const link = referralLink();
+  const { data: me } = useGetMeQuery();
+  const [updateProfile, { isLoading: profileSaving }] = useUpdateProfileMutation();
+  const [changePassword, { isLoading: passwordSaving }] = useChangePasswordMutation();
   const profileForm = useForm<z.infer<typeof profileSchema>>({
     resolver: zodResolver(profileSchema),
     defaultValues: { fullName: "রাফি হাসান", phone: "০১৭১১-২২৩৩৪৪" },
   });
   const passwordForm = useForm<z.infer<typeof passwordSchema>>({ resolver: zodResolver(passwordSchema) });
+
+  useEffect(() => {
+    if (me) {
+      profileForm.reset({ fullName: me.name, phone: me.phone });
+    }
+  }, [me, profileForm]);
+
+  async function handleProfileSave(values: z.infer<typeof profileSchema>) {
+    try {
+      await updateProfile(values).unwrap();
+      setSaved("Profile updated.");
+    } catch (error) {
+      setSaved(getApiErrorMessage(error, "Profile update failed"));
+    }
+  }
+
+  async function handlePasswordSave(values: z.infer<typeof passwordSchema>) {
+    try {
+      await changePassword(values).unwrap();
+      passwordForm.reset();
+      setSaved("Password updated.");
+    } catch (error) {
+      setSaved(getApiErrorMessage(error, "Password update failed"));
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -52,11 +82,11 @@ export default function ProfilePage() {
 
         <Card className="p-6">
           <h3 className="mb-4 text-2xl font-bold">প্রোফাইল সম্পাদনা</h3>
-          <form className="space-y-4" onSubmit={profileForm.handleSubmit(() => setSaved("প্রোফাইল তথ্য ডেমোভাবে সংরক্ষিত হয়েছে।"))}>
+          <form className="space-y-4" onSubmit={profileForm.handleSubmit(handleProfileSave)}>
             <label className="block"><span className="mb-2 block text-sm text-muted">পুরো নাম</span><Input {...profileForm.register("fullName")} />{profileForm.formState.errors.fullName ? <span className="text-sm text-gold">{profileForm.formState.errors.fullName.message}</span> : null}</label>
             <label className="block"><span className="mb-2 block text-sm text-muted">ফোন</span><Input {...profileForm.register("phone")} />{profileForm.formState.errors.phone ? <span className="text-sm text-gold">{profileForm.formState.errors.phone.message}</span> : null}</label>
             {saved ? <p className="rounded-2xl bg-gold/10 px-4 py-3 text-sm text-gold">{saved}</p> : null}
-            <Button type="submit">সংরক্ষণ করুন</Button>
+            <Button type="submit" disabled={profileSaving}>সংরক্ষণ করুন</Button>
           </form>
         </Card>
       </div>
@@ -64,10 +94,10 @@ export default function ProfilePage() {
       <div className="grid gap-6 xl:grid-cols-2">
         <Card className="p-6">
           <h3 className="mb-4 text-2xl font-bold">পাসওয়ার্ড পরিবর্তন</h3>
-          <form className="space-y-4" onSubmit={passwordForm.handleSubmit(() => passwordForm.reset())}>
+          <form className="space-y-4" onSubmit={passwordForm.handleSubmit(handlePasswordSave)}>
             <Input type="password" {...passwordForm.register("current")} placeholder="বর্তমান পাসওয়ার্ড" />
             <Input type="password" {...passwordForm.register("next")} placeholder="নতুন পাসওয়ার্ড" />
-            <Button type="submit" variant="outline">আপডেট করুন</Button>
+            <Button type="submit" variant="outline" disabled={passwordSaving}>আপডেট করুন</Button>
           </form>
         </Card>
 

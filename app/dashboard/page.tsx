@@ -3,10 +3,15 @@
 import { Copy, Network, Sparkles, TrendingUp, WalletCards } from "lucide-react";
 import { Button, Card, CopyButton, Progress } from "@/components/ui";
 import { activities, commissionLevels, notifications } from "@/lib/mock-data";
+import { useGetDashboardQuery } from "@/lib/api";
 import { referralLink, taka, toBn } from "@/lib/utils";
 
 export default function DashboardPage() {
-  const link = referralLink();
+  const { data } = useGetDashboardQuery();
+  const link = data?.referralLink ?? referralLink();
+  const levels = data?.commissionLevels ?? commissionLevels;
+  const activityItems = data?.activities ?? activities;
+  const notificationItems = data?.notifications ?? notifications;
 
   return (
     <div className="space-y-6">
@@ -49,7 +54,7 @@ export default function DashboardPage() {
           <p className="mb-3 text-muted">৩৬ এর মধ্যে ১৮ আইডি হয়েছে — ৫০% সম্পন্ন</p>
           <Progress value={50} color="gold" />
           <div className="mt-6 grid gap-3 md:grid-cols-3">
-            {commissionLevels.slice(0, 3).map((item) => (
+            {levels.slice(0, 3).map((item) => (
               <div key={item.level} className="rounded-2xl border border-line bg-elevated p-4">
                 <p className="text-sm text-muted">লেভেল {toBn(item.level)}</p>
                 <p className="mt-1 font-bold text-gold-light">{toBn(item.current)} / {toBn(item.required)} আইডি</p>
@@ -72,7 +77,7 @@ export default function DashboardPage() {
         <Card className="p-6">
           <h3 className="mb-4 text-2xl font-bold">নোটিফিকেশন</h3>
           <div className="space-y-3">
-            {notifications.map((item) => (
+            {notificationItems.map((item) => (
               <div key={item} className="rounded-2xl border border-line bg-elevated/80 px-4 py-3 text-sm text-muted">{item}</div>
             ))}
           </div>
@@ -80,7 +85,7 @@ export default function DashboardPage() {
         <Card className="p-6">
           <h3 className="mb-4 text-2xl font-bold">সাম্প্রতিক কার্যক্রম</h3>
           <div className="space-y-3">
-            {activities.map((activity) => (
+            {activityItems.map((activity) => (
               <div key={activity.id} className="flex items-center justify-between gap-4 rounded-2xl border border-line bg-elevated/80 px-4 py-3">
                 <span className="text-sm">{activity.text}</span>
                 <span className="shrink-0 text-xs text-muted">{activity.time}</span>

@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { Download, Minus, Plus, Search } from "lucide-react";
 import { Badge, Button, Card, Input, Select } from "@/components/ui";
 import { referralTree, type TreeNode } from "@/lib/mock-data";
+import { useGetWingsQuery } from "@/lib/api";
 import { initials, toBn } from "@/lib/utils";
 
 const depthClass: Record<number, string> = {
@@ -21,8 +22,10 @@ export default function WingsPage() {
   const [level, setLevel] = useState("all");
   const [activeOnly, setActiveOnly] = useState(false);
   const [query, setQuery] = useState("");
+  const { data } = useGetWingsQuery();
+  const tree = data?.tree ?? referralTree;
 
-  const total = useMemo(() => countNodes(referralTree) - 1, []);
+  const total = useMemo(() => countNodes(tree) - 1, [tree]);
 
   return (
     <div className="space-y-6">
@@ -69,7 +72,7 @@ export default function WingsPage() {
       <Card className="overflow-x-auto p-5 scrollbar-soft">
         <div className="min-w-[760px]">
           <TreeView
-            node={referralTree}
+            node={tree}
             expanded={expanded}
             toggle={(id) => setExpanded((old) => ({ ...old, [id]: !old[id] }))}
             filter={{ level, activeOnly, query }}

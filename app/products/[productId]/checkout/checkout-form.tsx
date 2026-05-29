@@ -3,21 +3,43 @@
 import { FormEvent, useMemo, useState } from "react";
 import { CheckCircle2, CreditCard, Minus, Plus, Smartphone, Truck } from "lucide-react";
 import type { Product } from "@/lib/mock-data";
+import { getApiErrorMessage } from "@/lib/api-error";
+import { useCreateOrderMutation } from "@/lib/api";
+import type { Order } from "@/lib/api-types";
 import { taka } from "@/lib/utils";
 
 export function CheckoutForm({ product }: { product: Product }) {
   const [quantity, setQuantity] = useState(1);
   const [payment, setPayment] = useState("cash");
   const [submitted, setSubmitted] = useState(false);
+  const [order, setOrder] = useState<Order | null>(null);
+  const [message, setMessage] = useState("");
+  const [createOrder, { isLoading }] = useCreateOrderMutation();
 
   const shipping = product.price * quantity >= 1500 ? 0 : 80;
   const subtotal = product.price * quantity;
   const total = subtotal + shipping;
   const orderId = useMemo(() => `GIOTO-${product.sku.split("-").pop()}-${Date.now().toString().slice(-5)}`, [product.sku]);
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setSubmitted(true);
+    setMessage("");
+    const formData = new FormData(event.currentTarget);
+
+    try {
+      const createdOrder = await createOrder({
+        productId: product.id,
+        quantity,
+        customerName: String(formData.get("customerName") ?? ""),
+        phone: String(formData.get("phone") ?? ""),
+        address: String(formData.get("address") ?? ""),
+        paymentMethod: payment,
+      }).unwrap();
+      setOrder(createdOrder);
+      setSubmitted(true);
+    } catch (error) {
+      setMessage(getApiErrorMessage(error, "Order failed"));
+    }
   }
 
   if (submitted) {
@@ -28,11 +50,11 @@ export function CheckoutForm({ product }: { product: Product }) {
         </div>
         <h2 className="mt-5 text-3xl font-black">অর্ডার কনফার্ম হয়েছে</h2>
         <p className="mt-3 leading-8 text-muted">
-          আপনার অর্ডার নম্বর <span className="font-bold text-foreground">{orderId}</span>। আমাদের টিম ফোনে তথ্য নিশ্চিত করবে।
+          আপনার অর্ডার নম্বর <span className="font-bold text-foreground">{order?.id ?? orderId}</span>। আমাদের টিম ফোনে তথ্য নিশ্চিত করবে।
         </p>
         <div className="mt-5 rounded-2xl border border-line bg-elevated p-4">
           <p className="text-sm text-muted">মোট পেমেন্ট</p>
-          <p className="mt-1 text-3xl font-black text-gold-light">{taka(total)}</p>
+          <p className="mt-1 text-3xl font-black text-gold-light">{taka(order?.total ?? total)}</p>
         </div>
       </div>
     );
@@ -45,17 +67,18 @@ export function CheckoutForm({ product }: { product: Product }) {
       <div className="mt-5 grid gap-4 md:grid-cols-2">
         <label className="space-y-2">
           <span className="text-sm font-semibold text-muted">পুরো নাম</span>
-          <input required className="h-12 w-full rounded-2xl border border-line bg-white px-4 outline-none focus:border-gold focus:ring-4 focus:ring-gold/10" />
+          <input name="customerName" required className="h-12 w-full rounded-2xl border border-line bg-white px-4 outline-none focus:border-gold focus:ring-4 focus:ring-gold/10" />
         </label>
         <label className="space-y-2">
           <span className="text-sm font-semibold text-muted">মোবাইল নম্বর</span>
-          <input required inputMode="tel" className="h-12 w-full rounded-2xl border border-line bg-white px-4 outline-none focus:border-gold focus:ring-4 focus:ring-gold/10" />
+          <input name="phone" required inputMode="tel" className="h-12 w-full rounded-2xl border border-line bg-white px-4 outline-none focus:border-gold focus:ring-4 focus:ring-gold/10" />
         </label>
       </div>
 
       <label className="mt-4 block space-y-2">
         <span className="text-sm font-semibold text-muted">ডেলিভারি ঠিকানা</span>
         <textarea
+          name="address"
           required
           className="min-h-28 w-full rounded-2xl border border-line bg-white px-4 py-3 outline-none focus:border-gold focus:ring-4 focus:ring-gold/10"
         />
@@ -129,7 +152,9 @@ export function CheckoutForm({ product }: { product: Product }) {
         </div>
       </div>
 
-      <button type="submit" className="gold-button mt-5 inline-flex min-h-12 w-full items-center justify-center px-5 py-3 text-sm font-bold">
+      {message ? <p className="mt-5 rounded-2xl bg-gold/10 px-4 py-3 text-sm text-gold">{message}</p> : null}
+
+      <button type="submit" disabled={isLoading} className="gold-button mt-5 inline-flex min-h-12 w-full items-center justify-center px-5 py-3 text-sm font-bold disabled:cursor-not-allowed disabled:opacity-60">
         অর্ডার কনফার্ম করুন
       </button>
     </form>

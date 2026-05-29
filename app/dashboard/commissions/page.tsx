@@ -2,14 +2,18 @@
 
 import { Badge, Card, Progress } from "@/components/ui";
 import { commissionHistory, commissionLevels } from "@/lib/mock-data";
+import { useGetCommissionsQuery } from "@/lib/api";
 import { taka, toBn } from "@/lib/utils";
 
 const tone = (status: string) => status === "Paid" ? "green" : status === "In Progress" ? "blue" : status === "Unlocked" ? "gold" : "muted";
 
 export default function CommissionsPage() {
-  const totalEarned = commissionLevels.filter((item) => item.status === "Paid").reduce((sum, item) => sum + item.earning, 0);
-  const potential = commissionLevels.reduce((sum, item) => sum + item.earning, 0);
-  const currentLevel = commissionLevels.find((item) => item.status === "In Progress") ?? commissionLevels[0];
+  const { data } = useGetCommissionsQuery();
+  const levels = data?.levels ?? commissionLevels;
+  const history = data?.history ?? commissionHistory;
+  const totalEarned = data?.totalEarned ?? levels.filter((item) => item.status === "Paid").reduce((sum, item) => sum + item.earning, 0);
+  const potential = data?.potential ?? levels.reduce((sum, item) => sum + item.earning, 0);
+  const currentLevel = data?.currentLevel ?? levels.find((item) => item.status === "In Progress") ?? levels[0];
   const progress = (currentLevel.current / currentLevel.required) * 100;
   const remaining = Math.max(0, currentLevel.required - currentLevel.current);
 
@@ -60,7 +64,7 @@ export default function CommissionsPage() {
       <Card className="p-6">
         <h3 className="mb-5 text-2xl font-bold">কমিশন ইতিহাস</h3>
         <div className="space-y-4">
-          {commissionHistory.map((item) => (
+          {history.map((item) => (
             <div key={item.id} className="flex flex-col justify-between gap-3 rounded-2xl border border-line bg-elevated p-4 md:flex-row md:items-center">
               <div>
                 <p className="font-bold">{item.level}</p>

@@ -9,6 +9,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, ArrowRight, ShieldCheck } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
 import { Button, Card, Input } from "@/components/ui";
+import { getApiErrorMessage } from "@/lib/api-error";
+import { useVerifyOtpMutation } from "@/lib/api";
 
 const demoOtp = "246810";
 
@@ -30,6 +32,7 @@ function OtpVerificationForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const identifier = searchParams.get("identifier") ?? "";
+  const [verifyOtp, { isLoading }] = useVerifyOtpMutation();
   const [message, setMessage] = useState("");
   const {
     register,
@@ -40,14 +43,16 @@ function OtpVerificationForm() {
     defaultValues: { otp: demoOtp },
   });
 
-  function onSubmit(values: OtpForm) {
-    if (values.otp === demoOtp) {
-      setMessage("OTP যাচাই সফল হয়েছে।");
-      router.push(`/reset-password?identifier=${encodeURIComponent(identifier)}`);
-      return;
+  async function handleOtpSubmit(values: OtpForm) {
+    try {
+      const response = await verifyOtp({ identifier, otp: values.otp }).unwrap();
+      setMessage("OTP verified.");
+      router.push(
+        `/reset-password?identifier=${encodeURIComponent(response.identifier)}&token=${encodeURIComponent(response.resetToken)}`,
+      );
+    } catch (error) {
+      setMessage(getApiErrorMessage(error, "OTP verification failed"));
     }
-
-    setMessage("সঠিক OTP দিন। ডেমো OTP: 246810");
   }
 
   return (
@@ -68,13 +73,13 @@ function OtpVerificationForm() {
           ডেমো OTP: {demoOtp}
         </div>
 
-        <form className="mt-8 space-y-5" onSubmit={handleSubmit(onSubmit)}>
+        <form className="mt-8 space-y-5" onSubmit={handleSubmit(handleOtpSubmit)}>
           <label className="block">
             <span className="mb-2 block text-sm text-muted">OTP কোড</span>
             <Input inputMode="numeric" maxLength={6} {...register("otp")} placeholder="246810" />
             {errors.otp ? <span className="mt-2 block text-sm text-gold">{errors.otp.message}</span> : null}
           </label>
-          <Button className="w-full" type="submit">
+          <Button className="w-full" type="submit" disabled={isLoading}>
             যাচাই করুন <ArrowRight size={17} />
           </Button>
           {message ? <p className="rounded-2xl border border-gold/20 bg-gold/10 px-4 py-3 text-sm text-gold-light">{message}</p> : null}

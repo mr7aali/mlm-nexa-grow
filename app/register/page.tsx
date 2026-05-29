@@ -2,13 +2,17 @@
 
 import Link from "next/link";
 import { Suspense, useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowRight } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
 import { Button, Card, Input } from "@/components/ui";
+import { getApiErrorMessage } from "@/lib/api-error";
+import { useRegisterMutation } from "@/lib/api";
+import { setCredentials } from "@/lib/auth-slice";
+import { useAppDispatch } from "@/lib/hooks";
 
 const schema = z.object({
   fullName: z.string().min(3, "পুরো নাম লিখুন"),
@@ -29,7 +33,10 @@ export default function RegisterPage() {
 }
 
 function RegisterForm() {
+  const router = useRouter();
   const searchParams = useSearchParams();
+  const dispatch = useAppDispatch();
+  const [registerMember, { isLoading }] = useRegisterMutation();
   const [success, setSuccess] = useState("");
   const {
     register,
@@ -48,6 +55,17 @@ function RegisterForm() {
     if (ref) setValue("referralCode", ref);
   }, [searchParams, setValue]);
 
+  async function handleRegisterSubmit(values: RegisterForm) {
+    try {
+      const auth = await registerMember(values).unwrap();
+      dispatch(setCredentials(auth));
+      setSuccess("Registration completed. Redirecting to dashboard...");
+      router.push("/dashboard");
+    } catch (error) {
+      setSuccess(getApiErrorMessage(error, "Registration failed"));
+    }
+  }
+
   return (
     <main className="grid min-h-screen place-items-center bg-[radial-gradient(circle_at_top,rgba(232,82,10,0.14),transparent_38%),#FFF8F4] px-4 py-10">
       <Card className="w-full max-w-xl p-6 md:p-8">
@@ -59,7 +77,7 @@ function RegisterForm() {
 
         <form
           className="mt-8 space-y-5"
-          onSubmit={handleSubmit(() => setSuccess("রেজিস্ট্রেশন সম্পন্ন হয়েছে। এখন সদস্য ড্যাশবোর্ড দেখা যাবে।"))}
+          onSubmit={handleSubmit(handleRegisterSubmit)}
         >
           <Field label="পুরো নাম" error={errors.fullName?.message}><Input {...register("fullName")} placeholder="আপনার নাম" /></Field>
           <Field label="ইমেইল" error={errors.email?.message}><Input {...register("email")} placeholder="name@example.com" /></Field>
@@ -70,7 +88,7 @@ function RegisterForm() {
             {referralCode ? <p className="mt-2 rounded-2xl bg-gold/10 px-4 py-2 text-sm text-gold-light">রেফারার: রাফি হাসান</p> : null}
           </Field>
           {success ? <p className="rounded-2xl border border-gold/20 bg-gold/10 px-4 py-3 text-sm text-gold">{success}</p> : null}
-          <Button className="w-full" type="submit">
+          <Button className="w-full" type="submit" disabled={isLoading}>
             রেজিস্টার করুন <ArrowRight size={17} />
           </Button>
         </form>

@@ -9,6 +9,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, ArrowRight, MailCheck } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
 import { Button, Card, Input } from "@/components/ui";
+import { getApiErrorMessage } from "@/lib/api-error";
+import { useForgotPasswordMutation } from "@/lib/api";
 
 const schema = z.object({
   email: z.string().email("সঠিক ইমেইল লিখুন"),
@@ -18,6 +20,7 @@ type ForgotPasswordForm = z.infer<typeof schema>;
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
+  const [forgotPassword, { isLoading }] = useForgotPasswordMutation();
   const [message, setMessage] = useState("");
   const {
     register,
@@ -27,10 +30,16 @@ export default function ForgotPasswordPage() {
     resolver: zodResolver(schema),
   });
 
-  function onSubmit(values: ForgotPasswordForm) {
-    setMessage("OTP পাঠানো হয়েছে। ডেমো OTP: 246810");
-    const identifier = encodeURIComponent(values.email.trim());
-    router.push(`/otp-verification?identifier=${identifier}`);
+  async function handleForgotSubmit(values: ForgotPasswordForm) {
+    try {
+      const response = await forgotPassword({
+        email: values.email.trim().toLowerCase(),
+      }).unwrap();
+      setMessage(`OTP sent. Demo OTP: ${response.otp}`);
+      router.push(`/otp-verification?identifier=${encodeURIComponent(response.identifier)}`);
+    } catch (error) {
+      setMessage(getApiErrorMessage(error, "Could not send OTP"));
+    }
   }
 
   return (
@@ -45,13 +54,13 @@ export default function ForgotPasswordPage() {
         <h1 className="heading-gradient text-center text-4xl font-black">পাসওয়ার্ড রিকভার করুন</h1>
         <p className="mt-3 text-center text-muted">আপনার ইমেইল দিন, আমরা OTP পাঠাবো।</p>
 
-        <form className="mt-8 space-y-5" onSubmit={handleSubmit(onSubmit)}>
+        <form className="mt-8 space-y-5" onSubmit={handleSubmit(handleForgotSubmit)}>
           <label className="block">
             <span className="mb-2 block text-sm text-muted">ইমেইল</span>
             <Input type="email" {...register("email")} placeholder="name@example.com" />
             {errors.email ? <span className="mt-2 block text-sm text-gold">{errors.email.message}</span> : null}
           </label>
-          <Button className="w-full" type="submit">
+          <Button className="w-full" type="submit" disabled={isLoading}>
             OTP পাঠান <ArrowRight size={17} />
           </Button>
           {message ? <p className="rounded-2xl border border-gold/20 bg-gold/10 px-4 py-3 text-sm text-gold-light">{message}</p> : null}

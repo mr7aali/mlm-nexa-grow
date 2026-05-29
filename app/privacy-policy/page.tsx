@@ -5,31 +5,8 @@ import { BrandLogo } from "@/components/brand-logo";
 
 export const metadata: Metadata = {
   title: "Privacy Policy | GIOTO",
-  description: "GIOTO Bangladesh privacy policy.",
+  description: "GIOTO Bangladesh privacy and data security policy.",
 };
-
-const sections = [
-  {
-    title: "আমরা কী তথ্য ব্যবহার করি",
-    text: "GIOTO Bangladesh সদস্য নিবন্ধন, রেফারেল, অর্ডার এবং ড্যাশবোর্ড ব্যবস্থাপনার জন্য প্রয়োজনীয় প্রোফাইল ও কার্যক্রম সম্পর্কিত তথ্য ব্যবহার করে।",
-  },
-  {
-    title: "ফর্ম ডেটা",
-    text: "লগইন, রেজিস্ট্রেশন, checkout বা profile form-এ দেওয়া তথ্য সদস্য সেবা, অর্ডার সহায়তা এবং যোগাযোগের উদ্দেশ্যে ব্যবহার করা হতে পারে।",
-  },
-  {
-    title: "Clipboard ও sharing",
-    text: "কপি বাটন ব্যবহার করলে browser clipboard API দিয়ে referral link copy করা হয়। WhatsApp বা Facebook share link external website-এ open হতে পারে।",
-  },
-  {
-    title: "Cookies ও tracking",
-    text: "সাইটের নিরাপত্তা, পারফরম্যান্স এবং ব্যবহারযোগ্যতা উন্নত করতে প্রয়োজনীয় technical data ও cookie ব্যবহার করা হতে পারে।",
-  },
-  {
-    title: "ডেটা নিরাপত্তা",
-    text: "ব্যবহারকারীর তথ্য সুরক্ষিত রাখতে access control, validation এবং নিরাপদ data handling practice অনুসরণ করা হয়।",
-  },
-];
 
 export default function PrivacyPolicyPage() {
   return (
@@ -53,19 +30,35 @@ export default function PrivacyPolicyPage() {
             <ShieldCheck size={28} />
           </div>
           <p className="text-sm font-semibold text-gold-light">GIOTO policy</p>
-          <h1 className="mt-3 text-4xl font-black leading-tight md:text-6xl">Privacy Policy</h1>
+          <h1 className="mt-3 text-4xl font-black leading-tight md:text-6xl">Privacy and Data Security Policy</h1>
           <p className="mt-5 text-lg leading-8 text-muted">
-            GIOTO Bangladesh ব্যবহার করলে আপনার তথ্য কীভাবে handle করা হয়, তার সহজ ব্যাখ্যা।
+            Your privacy is highly important to us. Gioto Bangladesh is committed to protecting the personal data you share with us.
           </p>
         </div>
 
         <div className="mt-10 grid gap-5">
-          {sections.map((section) => (
-            <article key={section.title} className="rounded-[18px] border border-line bg-surface p-5 md:p-6">
-              <h2 className="text-2xl font-bold">{section.title}</h2>
-              <p className="mt-3 leading-8 text-muted">{section.text}</p>
-            </article>
-          ))}
+          <article className="rounded-[18px] border border-line bg-surface p-5 md:p-6">
+            <p className="text-sm font-bold text-gold-light">English Version</p>
+            <ul className="mt-4 list-disc space-y-3 pl-5 leading-8 text-muted">
+              <li><strong className="text-foreground">Information We Collect:</strong> We collect necessary information to process your orders smoothly, including your Name, mobile number, email address, and shipping/billing addresses. <strong className="text-foreground">We do not store your confidential pins, passwords, or card credentials.</strong></li>
+              <li><strong className="text-foreground">How We Use Your Information:</strong> The collected data is used exclusively to process, fulfill, and deliver your orders, improve our customer service, and send you promotional updates or special offers (you may opt-out/unsubscribe at any time).</li>
+              <li><strong className="text-foreground">Data Protection & Security:</strong> We implement advanced security measures, including SSL (Secure Sockets Layer) encryption, to safeguard your data against unauthorized access. We <strong className="text-foreground">do not</strong> sell, rent, or lease your personal data to third parties. Your delivery details are only shared with our trusted courier partners solely for product delivery purposes.</li>
+              <li><strong className="text-foreground">Cookies:</strong> Our website uses &quot;cookies&quot; to enhance your browsing experience. You can choose to disable cookies through your browser settings, though some features of the website may not function properly as a result.</li>
+            </ul>
+          </article>
+
+          <article className="rounded-[18px] border border-line bg-surface p-5 md:p-6">
+            <p className="text-sm font-bold text-gold-light">বাংলা সংস্করণ</p>
+            <p className="mt-3 leading-8 text-muted">
+              Gioto Bangladesh-এ আপনার ব্যক্তিগত তথ্যের নিরাপত্তা আমাদের কাছে অত্যন্ত গুরুত্বপূর্ণ। আমরা আপনার ডেটা কীভাবে সংগ্রহ এবং সুরক্ষিত রাখি তা নিচে দেওয়া হলো:
+            </p>
+            <ul className="mt-4 list-disc space-y-3 pl-5 leading-8 text-muted">
+              <li><strong className="text-foreground">তথ্য সংগ্রহ:</strong> আমরা মূলত আপনার অর্ডার সফলভাবে সম্পন্ন করার জন্য প্রয়োজনীয় তথ্য সংগ্রহ করি, যেমন: নাম, মোবাইল নম্বর, ইমেইল অ্যাড্রেস এবং পণ্য ডেলিভারির ঠিকানা। <strong className="text-foreground">আমরা আপনার কোনো গোপন পিন, পাসওয়ার্ড বা কার্ডের তথ্য সংরক্ষণ করি না।</strong></li>
+              <li><strong className="text-foreground">তথ্য ব্যবহার:</strong> আপনার সংগৃহীত তথ্য আমরা শুধুমাত্র আপনার অর্ডার প্রসেস ও সফলভাবে ডেলিভারি নিশ্চিত করতে, কাস্টমার সার্ভিসের উন্নয়ন করতে এবং আমাদের নতুন পণ্যের অফার বা প্রমোশনাল ক্যাম্পেইন সম্পর্কে আপনাকে অবহিত করতে ব্যবহার করি (আপনি চাইলে যেকোনো সময় অফার নোটিফিকেশন বন্ধ করতে পারেন)।</li>
+              <li><strong className="text-foreground">ডেটা নিরাপত্তা:</strong> আপনার তথ্য সুরক্ষিত রাখতে আমরা উন্নত এনক্রিপশন প্রযুক্তি (SSL Security) ব্যবহার করি। আমরা আপনার অনুমতি ছাড়া কোনো তৃতীয় পক্ষের কাছে আপনার ব্যক্তিগত তথ্য বিক্রি বা শেয়ার করি না। তবে ডেলিভারি পার্টনারদের (কুরিয়ার সার্ভিস) পণ্য পৌঁছানোর স্বার্থে প্রয়োজনীয় তথ্য (নাম, ঠিকানা, ফোন নম্বর) দেওয়া হয়ে থাকে।</li>
+              <li><strong className="text-foreground">কুকিজ (Cookies):</strong> আমাদের ওয়েবসাইট আপনার ব্রাউজিং অভিজ্ঞতা উন্নত করতে &apos;কুকিজ&apos; ব্যবহার করতে পারে। আপনি চাইলে আপনার ব্রাউজার সেটিং থেকে কুকিজ বন্ধ করে রাখতে পারেন, তবে এতে ওয়েবসাইটের কিছু ফিচার কাজ নাও করতে পারে।</li>
+            </ul>
+          </article>
         </div>
 
         <div className="mt-10 rounded-[18px] border border-gold/20 bg-gold/10 p-5">
@@ -74,7 +67,7 @@ export default function PrivacyPolicyPage() {
             Contact
           </p>
           <p className="mt-2 leading-8 text-muted">
-            Privacy নিয়ে প্রশ্ন থাকলে support@giotobangladesh.com ঠিকানায় যোগাযোগ করতে পারেন।
+            Privacy or data security নিয়ে কোনো প্রশ্ন থাকলে support@giotobangladesh.com ঠিকানায় যোগাযোগ করতে পারেন।
           </p>
         </div>
       </section>

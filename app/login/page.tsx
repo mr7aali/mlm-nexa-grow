@@ -72,7 +72,7 @@ export default function LoginPage() {
               <input type="checkbox" {...register("remember")} className="h-4 w-4 accent-gold" />
               মনে রাখুন
             </label>
-            <a href="#" className="text-gold-light">পাসওয়ার্ড ভুলে গেছেন?</a>
+            <Link href="/forgot-password" className="text-gold-light">পাসওয়ার্ড ভুলে গেছেন?</Link>
           </div>
           <Button className="w-full" type="submit">
             ড্যাশবোর্ডে যান <ArrowRight size={17} />

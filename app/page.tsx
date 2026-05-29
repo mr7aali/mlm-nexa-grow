@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useMemo, useState } from "react";
-import { ArrowRight, Copy, Gift, Layers3, Mail, MapPin, Menu, Network, Phone, ShieldCheck, ShoppingBag, Sparkles, Tag, UserPlus, WalletCards, X } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { ArrowLeft, ArrowRight, Copy, Gift, Layers3, Mail, MapPin, Menu, Network, Phone, ShieldCheck, ShoppingBag, Sparkles, Tag, UserPlus, WalletCards, X } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
 import { Badge, Card, SectionHeading } from "@/components/ui";
 import { commissionLevels, products } from "@/lib/mock-data";
@@ -13,6 +13,14 @@ const testimonials = [
   { name: "তানিয়া", text: "প্রথম মাসেই নিজের পরিচিত নেটওয়ার্ক সাজিয়ে নিয়মিত আয়ের পথ দেখেছি।", earning: 12000 },
   { name: "মাহিন", text: "ড্যাশবোর্ডে লেভেল ট্র্যাকিং থাকায় কে কোথায় আছে পরিষ্কার বোঝা যায়।", earning: 28500 },
   { name: "সাবিহা", text: "পণ্য রেফার করা, লিংক কপি করা আর কমিশন দেখা খুব সহজ।", earning: 8200 },
+];
+
+const slideImages = [
+  "/slide_image/WhatsApp Image 2026-05-28 at 3.10.54 PM.jpeg",
+  "/slide_image/WhatsApp Image 2026-05-28 at 3.12.24 PM.jpeg",
+  "/slide_image/WhatsApp Image 2026-05-28 at 3.14.58 PM.jpeg",
+  "/slide_image/WhatsApp Image 2026-05-28 at 3.19.59 PM.jpeg",
+  "/slide_image/WhatsApp Image 2026-05-28 at 3.32.29 PM.jpeg",
 ];
 
 function FacebookIcon({ size = 18, className }: { size?: number; className?: string }) {
@@ -47,12 +55,92 @@ function TikTokIcon({ size = 18, className }: { size?: number; className?: strin
   );
 }
 
+function PinterestIcon({ size = 18, className }: { size?: number; className?: string }) {
+  return (
+    <svg aria-hidden="true" className={className} width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12.1 2C6.6 2 3 5.6 3 10.4c0 3.2 1.8 5.1 3.5 5.1.6 0 .9-1.6.9-2.1 0-.5-1.3-1.6-1.3-3.6 0-3.1 2.4-5.4 5.6-5.4 2.7 0 4.8 1.6 4.8 4.4 0 2.1-.9 6-3.6 6-1 0-1.8-.7-1.8-1.7 0-1.5 1-2.9 1-4.4 0-2.4-3.4-2-3.4 1.1 0 .7.1 1.4.4 2l-1.6 6.8c-.3 1.2 0 3.1.1 3.2.1.1.2.1.3 0 .5-.7 1.5-2.5 1.8-3.6.1-.4.6-2.3.6-2.3.6 1.1 1.9 1.8 3.2 1.8 4.2 0 7.2-3.9 7.2-8.7C20.7 5.1 17.3 2 12.1 2Z" />
+    </svg>
+  );
+}
+
+function ThreadsIcon({ size = 18, className }: { size?: number; className?: string }) {
+  return (
+    <svg aria-hidden="true" className={className} width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <path
+        d="M16.4 11.1c-.2-3.2-1.9-5-4.8-5-2.1 0-3.8 1-4.8 2.8m9.7 5.5c-.7 2.2-2.5 3.5-5.1 3.5-3.8 0-6.2-2.8-6.2-7.1C5.2 6.5 7.7 3.8 11.8 3.8c3.8 0 6.2 2.4 6.8 6.9.3 2 .2 4.5-.4 6.1-.8 2.3-2.7 3.4-5.9 3.4-3.3 0-5.8-1.2-7.2-3.5-1.2-2-1.5-4.8-.9-8.1"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+      />
+      <path
+        d="M14.8 11.4c-.8-.4-1.8-.6-2.8-.6-1.9 0-3 .9-3 2.2s1.1 2.1 2.7 2.1c1.9 0 3.1-1.2 3.1-2.9 0-.3 0-.5-.1-.8Z"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+      />
+    </svg>
+  );
+}
+
+function TelegramIcon({ size = 18, className }: { size?: number; className?: string }) {
+  return (
+    <svg aria-hidden="true" className={className} width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M21.7 4.4 18.5 19c-.2 1-.8 1.3-1.6.8l-4.8-3.5-2.3 2.2c-.3.3-.5.5-1 .5l.4-4.9 8.9-8c.4-.4-.1-.6-.6-.2L6.4 12.8l-4.7-1.5c-1-.3-1-1 .2-1.5L20.2 2.7c.9-.3 1.7.2 1.5 1.7Z" />
+    </svg>
+  );
+}
+
+function InstagramIcon({ size = 18, className }: { size?: number; className?: string }) {
+  return (
+    <svg aria-hidden="true" className={className} width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <rect width="16" height="16" x="4" y="4" rx="4.5" stroke="currentColor" strokeWidth="2" />
+      <circle cx="12" cy="12" r="3.5" stroke="currentColor" strokeWidth="2" />
+      <circle cx="17" cy="7" r="1.2" fill="currentColor" />
+    </svg>
+  );
+}
+
+function LinkedInIcon({ size = 18, className }: { size?: number; className?: string }) {
+  return (
+    <svg aria-hidden="true" className={className} width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M6.8 8.9H3.2V21h3.6V8.9ZM5 3C3.8 3 3 3.8 3 4.8s.8 1.8 2 1.8 2-.8 2-1.8S6.2 3 5 3Zm16 11.1c0-3.5-1.9-5.2-4.5-5.2-2.1 0-3 1.2-3.5 2V8.9H9.4V21H13v-6c0-1.6.3-3.1 2.3-3.1 1.9 0 1.9 1.8 1.9 3.2V21H21v-6.9Z" />
+    </svg>
+  );
+}
+
+function WhatsAppIcon({ size = 18, className }: { size?: number; className?: string }) {
+  return (
+    <svg aria-hidden="true" className={className} width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 2.2a9.8 9.8 0 0 0-8.4 14.8L2.4 21.8l4.9-1.3A9.8 9.8 0 1 0 12 2.2Zm0 17.9a8.1 8.1 0 0 1-4.1-1.1l-.3-.2-2.9.8.8-2.8-.2-.3A8.1 8.1 0 1 1 12 20.1Zm4.5-6.1c-.2-.1-1.4-.7-1.7-.8-.2-.1-.4-.1-.6.1-.2.2-.6.8-.8 1-.1.2-.3.2-.5.1-.2-.1-1-.4-1.9-1.2-.7-.6-1.2-1.4-1.3-1.6-.1-.2 0-.4.1-.5l.4-.5c.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5l-.8-1.9c-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.2.2-.9.9-.9 2.1s.9 2.4 1 2.5c.1.2 1.8 2.8 4.4 3.9.6.3 1.1.4 1.5.5.6.2 1.2.1 1.6.1.5-.1 1.4-.6 1.6-1.1.2-.6.2-1 .1-1.1-.1-.2-.3-.3-.5-.4Z" />
+    </svg>
+  );
+}
+
 export default function Home() {
   const [level, setLevel] = useState(2);
+  const [activeSlide, setActiveSlide] = useState(0);
   const total = useMemo(
     () => commissionLevels.filter((item) => item.level <= level).reduce((sum, item) => sum + item.earning, 0),
     [level],
   );
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setActiveSlide((current) => (current + 1) % slideImages.length);
+    }, 3800);
+
+    return () => window.clearInterval(timer);
+  }, []);
+
+  function showPreviousSlide() {
+    setActiveSlide((current) => (current - 1 + slideImages.length) % slideImages.length);
+  }
+
+  function showNextSlide() {
+    setActiveSlide((current) => (current + 1) % slideImages.length);
+  }
 
   return (
     <main className="min-h-screen overflow-hidden bg-background text-foreground">
@@ -159,6 +247,58 @@ export default function Home() {
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-4 pt-8 md:pt-10">
+        <div className="relative overflow-hidden rounded-xl border border-line bg-surface shadow-[0_18px_55px_rgba(232,82,10,0.12)]">
+          <div
+            className="flex transition-transform duration-700 ease-out"
+            style={{ transform: `translateX(-${activeSlide * 100}%)` }}
+          >
+            {slideImages.map((src, index) => (
+              <div key={src} className="relative h-[190px] w-full shrink-0 overflow-hidden sm:h-[280px] lg:h-[465px]">
+                <Image
+                  src={src}
+                  alt={`GIOTO promotional slide ${index + 1}`}
+                  fill
+                  sizes="(min-width: 1280px) 1280px, 100vw"
+                  className="object-cover"
+                  priority={index === 0}
+                />
+              </div>
+            ))}
+          </div>
+          <div className="absolute bottom-4 left-4 flex items-center gap-2 sm:bottom-6 sm:left-8">
+            {slideImages.map((src, index) => (
+              <button
+                key={src}
+                type="button"
+                aria-label={`Show slide ${index + 1}`}
+                aria-current={activeSlide === index}
+                onClick={() => setActiveSlide(index)}
+                className={`h-3 w-3 rounded-full transition ${
+                  activeSlide === index ? "bg-gold" : "bg-white/85 hover:bg-white"
+                }`}
+              />
+            ))}
+          </div>
+          <button
+            type="button"
+            aria-label="Previous slide"
+            onClick={showPreviousSlide}
+            className="absolute left-0 top-1/2 grid h-12 w-12 -translate-y-1/2 place-items-center bg-white text-gold shadow-lg transition hover:bg-gold hover:text-white sm:left-4 sm:rounded-full"
+          >
+            <ArrowLeft size={22} />
+          </button>
+          <button
+            type="button"
+            aria-label="Next slide"
+            onClick={showNextSlide}
+            className="absolute right-0 top-1/2 grid h-12 w-12 -translate-y-1/2 place-items-center bg-white text-gold shadow-lg transition hover:bg-gold hover:text-white sm:right-4 sm:rounded-full"
+          >
+            <ArrowRight size={22} />
+          </button>
         </div>
       </section>
 
@@ -346,12 +486,18 @@ export default function Home() {
             <Link href="/" className="inline-flex w-fit items-center">
               <BrandLogo className="h-28 w-72 max-w-full sm:w-[26rem] lg:h-32 lg:w-[32rem]" framed={false} variant="wide" />
             </Link>
-            <div className="mt-5 flex items-center justify-center gap-3">
+            <div className="mt-5 grid grid-cols-5 place-items-center gap-3">
               {[
-                { label: "Facebook", href: "https://facebook.com", icon: FacebookIcon },
-                { label: "YouTube", href: "https://youtube.com", icon: YouTubeIcon },
-                { label: "X", href: "https://x.com", icon: XSocialIcon },
-                { label: "TikTok", href: "https://www.tiktok.com", icon: TikTokIcon },
+                { label: "Facebook", href: "https://www.facebook.com/profile.php?id=61582547472235", icon: FacebookIcon },
+                { label: "YouTube", href: "https://youtube.com/@gioto_bangladesh?si=Pfbkqjy72UQU5dQn", icon: YouTubeIcon },
+                { label: "X", href: "https://x.com/GiotoBangladesh", icon: XSocialIcon },
+                { label: "TikTok", href: "https://www.tiktok.com/@urbanbro_bd?_r=1&_t=ZS-96fHDwNlUo8", icon: TikTokIcon },
+                { label: "Pinterest", href: "https://pin.it/5pev5NgTM", icon: PinterestIcon },
+                { label: "Threads", href: "https://www.threads.com/@gioto_bd", icon: ThreadsIcon },
+                { label: "Telegram", href: "https://t.me/gioto_bangladesh", icon: TelegramIcon },
+                { label: "Instagram", href: "https://www.instagram.com/gioto_bd?igsh=MWZ3NjV6NHZ0bGY2eA==", icon: InstagramIcon },
+                { label: "LinkedIn", href: "https://www.linkedin.com/groups/19487010", icon: LinkedInIcon },
+                { label: "WhatsApp", href: "https://wa.me/8801312684708", icon: WhatsAppIcon },
               ].map((item) => {
                 const Icon = item.icon;
                 return (
@@ -394,9 +540,9 @@ export default function Home() {
           <div className="col-span-2 lg:col-span-1">
             <h3 className="text-sm font-bold uppercase text-white/50">সাপোর্ট</h3>
             <div className="mt-4 grid gap-3 text-sm text-white/75 sm:grid-cols-2 lg:block lg:space-y-3">
-              <p className="flex items-center gap-3"><Phone size={16} className="text-gold-light" /> +880 1711-223344</p>
-              <p className="flex min-w-0 items-center gap-3"><Mail size={16} className="shrink-0 text-gold-light" /> <span className="break-all">support@giotobangladesh.com</span></p>
-              <p className="flex items-center gap-3"><MapPin size={16} className="text-gold-light" /> Dhaka, Bangladesh</p>
+              <p className="flex items-center gap-3"><Phone size={16} className="text-gold-light" /> +8809658979698</p>
+              <p className="flex min-w-0 items-center gap-3"><Mail size={16} className="shrink-0 text-gold-light" /> <span className="break-all">contact@giotobangladesh.com</span></p>
+              <p className="flex items-start gap-3"><MapPin size={16} className="mt-1 shrink-0 text-gold-light" /> <span>Nischintapur, Ashulia, Savar, Dhaka, Bangladesh</span></p>
             </div>
             <Link href="/register" className="mt-6 inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-bold text-foreground transition hover:bg-gold-light hover:text-white">
               শুরু করুন <ArrowRight size={16} />
@@ -408,12 +554,8 @@ export default function Home() {
           <div className="mx-auto flex max-w-7xl flex-col items-center gap-3 text-center text-sm text-white/50 md:flex-row md:items-center md:justify-between md:text-left">
             <p>(c) 2026 GIOTO Bangladesh. All rights reserved.</p>
             <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 md:justify-end">
-              <a href="#products" className="transition hover:text-gold-light">Products</a>
-              <a href="#about" className="transition hover:text-gold-light">About</a>
-              <a href="#calculator" className="transition hover:text-gold-light">Calculator</a>
               <Link href="/privacy-policy" className="transition hover:text-gold-light">Privacy Policy</Link>
-              <Link href="/terms-and-conditions" className="transition hover:text-gold-light">Terms</Link>
-              <Link href="/login" className="transition hover:text-gold-light">Login</Link>
+              <Link href="/terms-and-conditions" className="transition hover:text-gold-light">Terms and Conditions</Link>
             </div>
           </div>
         </div>

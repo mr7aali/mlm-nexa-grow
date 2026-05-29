@@ -47,6 +47,71 @@ function TikTokIcon({ size = 18, className }: { size?: number; className?: strin
   );
 }
 
+function PinterestIcon({ size = 18, className }: { size?: number; className?: string }) {
+  return (
+    <svg aria-hidden="true" className={className} width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12.1 2C6.6 2 3 5.6 3 10.4c0 3.2 1.8 5.1 3.5 5.1.6 0 .9-1.6.9-2.1 0-.5-1.3-1.6-1.3-3.6 0-3.1 2.4-5.4 5.6-5.4 2.7 0 4.8 1.6 4.8 4.4 0 2.1-.9 6-3.6 6-1 0-1.8-.7-1.8-1.7 0-1.5 1-2.9 1-4.4 0-2.4-3.4-2-3.4 1.1 0 .7.1 1.4.4 2l-1.6 6.8c-.3 1.2 0 3.1.1 3.2.1.1.2.1.3 0 .5-.7 1.5-2.5 1.8-3.6.1-.4.6-2.3.6-2.3.6 1.1 1.9 1.8 3.2 1.8 4.2 0 7.2-3.9 7.2-8.7C20.7 5.1 17.3 2 12.1 2Z" />
+    </svg>
+  );
+}
+
+function ThreadsIcon({ size = 18, className }: { size?: number; className?: string }) {
+  return (
+    <svg aria-hidden="true" className={className} width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <path
+        d="M16.4 11.1c-.2-3.2-1.9-5-4.8-5-2.1 0-3.8 1-4.8 2.8m9.7 5.5c-.7 2.2-2.5 3.5-5.1 3.5-3.8 0-6.2-2.8-6.2-7.1C5.2 6.5 7.7 3.8 11.8 3.8c3.8 0 6.2 2.4 6.8 6.9.3 2 .2 4.5-.4 6.1-.8 2.3-2.7 3.4-5.9 3.4-3.3 0-5.8-1.2-7.2-3.5-1.2-2-1.5-4.8-.9-8.1"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+      />
+      <path
+        d="M14.8 11.4c-.8-.4-1.8-.6-2.8-.6-1.9 0-3 .9-3 2.2s1.1 2.1 2.7 2.1c1.9 0 3.1-1.2 3.1-2.9 0-.3 0-.5-.1-.8Z"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+      />
+    </svg>
+  );
+}
+
+function InstagramIcon({ size = 18, className }: { size?: number; className?: string }) {
+  return (
+    <svg aria-hidden="true" className={className} width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <rect width="16" height="16" x="4" y="4" rx="4.5" stroke="currentColor" strokeWidth="2" />
+      <circle cx="12" cy="12" r="3.5" stroke="currentColor" strokeWidth="2" />
+      <circle cx="17" cy="7" r="1.2" fill="currentColor" />
+    </svg>
+  );
+}
+
+function LinkedInIcon({ size = 18, className }: { size?: number; className?: string }) {
+  return (
+    <svg aria-hidden="true" className={className} width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M6.8 8.9H3.2V21h3.6V8.9ZM5 3C3.8 3 3 3.8 3 4.8s.8 1.8 2 1.8 2-.8 2-1.8S6.2 3 5 3Zm16 11.1c0-3.5-1.9-5.2-4.5-5.2-2.1 0-3 1.2-3.5 2V8.9H9.4V21H13v-6c0-1.6.3-3.1 2.3-3.1 1.9 0 1.9 1.8 1.9 3.2V21H21v-6.9Z" />
+    </svg>
+  );
+}
+
+function WhatsAppIcon({ size = 18, className }: { size?: number; className?: string }) {
+  return (
+    <svg aria-hidden="true" className={className} width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 2.2a9.8 9.8 0 0 0-8.4 14.8L2.4 21.8l4.9-1.3A9.8 9.8 0 1 0 12 2.2Zm0 17.9a8.1 8.1 0 0 1-4.1-1.1l-.3-.2-2.9.8.8-2.8-.2-.3A8.1 8.1 0 1 1 12 20.1Zm4.5-6.1c-.2-.1-1.4-.7-1.7-.8-.2-.1-.4-.1-.6.1-.2.2-.6.8-.8 1-.1.2-.3.2-.5.1-.2-.1-1-.4-1.9-1.2-.7-.6-1.2-1.4-1.3-1.6-.1-.2 0-.4.1-.5l.4-.5c.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5l-.8-1.9c-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.2.2-.9.9-.9 2.1s.9 2.4 1 2.5c.1.2 1.8 2.8 4.4 3.9.6.3 1.1.4 1.5.5.6.2 1.2.1 1.6.1.5-.1 1.4-.6 1.6-1.1.2-.6.2-1 .1-1.1-.1-.2-.3-.3-.5-.4Z" />
+    </svg>
+  );
+}
+
+function ImoIcon({ size = 18, className }: { size?: number; className?: string }) {
+  return (
+    <svg aria-hidden="true" className={className} width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+      <text x="12" y="15.5" textAnchor="middle" fontFamily="Arial, sans-serif" fontSize="8.6" fontWeight="800">
+        imo
+      </text>
+    </svg>
+  );
+}
+
 export default function Home() {
   const [level, setLevel] = useState(2);
   const total = useMemo(
@@ -346,12 +411,18 @@ export default function Home() {
             <Link href="/" className="inline-flex w-fit items-center">
               <BrandLogo className="h-28 w-72 max-w-full sm:w-[26rem] lg:h-32 lg:w-[32rem]" framed={false} variant="wide" />
             </Link>
-            <div className="mt-5 flex items-center justify-center gap-3">
+            <div className="mt-5 grid grid-cols-5 place-items-center gap-3">
               {[
                 { label: "Facebook", href: "https://facebook.com", icon: FacebookIcon },
                 { label: "YouTube", href: "https://youtube.com", icon: YouTubeIcon },
                 { label: "X", href: "https://x.com", icon: XSocialIcon },
                 { label: "TikTok", href: "https://www.tiktok.com", icon: TikTokIcon },
+                { label: "Pinterest", href: "https://www.pinterest.com", icon: PinterestIcon },
+                { label: "Threads", href: "https://www.threads.net", icon: ThreadsIcon },
+                { label: "Instagram", href: "https://www.instagram.com", icon: InstagramIcon },
+                { label: "LinkedIn", href: "https://www.linkedin.com", icon: LinkedInIcon },
+                { label: "WhatsApp", href: "https://www.whatsapp.com", icon: WhatsAppIcon },
+                { label: "Imo", href: "https://imo.im", icon: ImoIcon },
               ].map((item) => {
                 const Icon = item.icon;
                 return (

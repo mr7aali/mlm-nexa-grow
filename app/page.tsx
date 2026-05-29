@@ -76,6 +76,14 @@ function ThreadsIcon({ size = 18, className }: { size?: number; className?: stri
   );
 }
 
+function TelegramIcon({ size = 18, className }: { size?: number; className?: string }) {
+  return (
+    <svg aria-hidden="true" className={className} width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M21.7 4.4 18.5 19c-.2 1-.8 1.3-1.6.8l-4.8-3.5-2.3 2.2c-.3.3-.5.5-1 .5l.4-4.9 8.9-8c.4-.4-.1-.6-.6-.2L6.4 12.8l-4.7-1.5c-1-.3-1-1 .2-1.5L20.2 2.7c.9-.3 1.7.2 1.5 1.7Z" />
+    </svg>
+  );
+}
+
 function InstagramIcon({ size = 18, className }: { size?: number; className?: string }) {
   return (
     <svg aria-hidden="true" className={className} width={size} height={size} viewBox="0 0 24 24" fill="none">
@@ -413,16 +421,17 @@ export default function Home() {
             </Link>
             <div className="mt-5 grid grid-cols-5 place-items-center gap-3">
               {[
-                { label: "Facebook", href: "https://facebook.com", icon: FacebookIcon },
-                { label: "YouTube", href: "https://youtube.com", icon: YouTubeIcon },
-                { label: "X", href: "https://x.com", icon: XSocialIcon },
-                { label: "TikTok", href: "https://www.tiktok.com", icon: TikTokIcon },
-                { label: "Pinterest", href: "https://www.pinterest.com", icon: PinterestIcon },
-                { label: "Threads", href: "https://www.threads.net", icon: ThreadsIcon },
-                { label: "Instagram", href: "https://www.instagram.com", icon: InstagramIcon },
-                { label: "LinkedIn", href: "https://www.linkedin.com", icon: LinkedInIcon },
-                { label: "WhatsApp", href: "https://www.whatsapp.com", icon: WhatsAppIcon },
-                { label: "Imo", href: "https://imo.im", icon: ImoIcon },
+                { label: "Facebook", href: "https://www.facebook.com/profile.php?id=61582547472235", icon: FacebookIcon },
+                { label: "YouTube", href: "https://youtube.com/@gioto_bangladesh?si=Pfbkqjy72UQU5dQn", icon: YouTubeIcon },
+                { label: "X", href: "https://x.com/GiotoBangladesh", icon: XSocialIcon },
+                { label: "TikTok", href: "https://www.tiktok.com/@urbanbro_bd?_r=1&_t=ZS-96fHDwNlUo8", icon: TikTokIcon },
+                { label: "Pinterest", href: "https://pin.it/5pev5NgTM", icon: PinterestIcon },
+                { label: "Threads", href: "https://www.threads.com/@gioto_bd", icon: ThreadsIcon },
+                { label: "Telegram", href: "https://t.me/gioto_bangladesh", icon: TelegramIcon },
+                { label: "Instagram", href: "https://www.instagram.com/gioto_bd?igsh=MWZ3NjV6NHZ0bGY2eA==", icon: InstagramIcon },
+                { label: "LinkedIn", href: "https://www.linkedin.com/groups/19487010", icon: LinkedInIcon },
+                { label: "WhatsApp", href: "https://wa.me/8801312684708", icon: WhatsAppIcon },
+                { label: "Imo", href: "https://s.channelcom.tech/ZgLqeu?from=copy_link", icon: ImoIcon },
               ].map((item) => {
                 const Icon = item.icon;
                 return (

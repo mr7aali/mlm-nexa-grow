@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, Copy, Gift, Layers3, Mail, MapPin, Menu, Network, Phone, ShieldCheck, ShoppingBag, Sparkles, Tag, UserPlus, WalletCards, X } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
 import { Badge, Card, SectionHeading } from "@/components/ui";
@@ -13,6 +13,14 @@ const testimonials = [
   { name: "তানিয়া", text: "প্রথম মাসেই নিজের পরিচিত নেটওয়ার্ক সাজিয়ে নিয়মিত আয়ের পথ দেখেছি।", earning: 12000 },
   { name: "মাহিন", text: "ড্যাশবোর্ডে লেভেল ট্র্যাকিং থাকায় কে কোথায় আছে পরিষ্কার বোঝা যায়।", earning: 28500 },
   { name: "সাবিহা", text: "পণ্য রেফার করা, লিংক কপি করা আর কমিশন দেখা খুব সহজ।", earning: 8200 },
+];
+
+const slideImages = [
+  "/slide_image/WhatsApp Image 2026-05-28 at 3.10.54 PM.jpeg",
+  "/slide_image/WhatsApp Image 2026-05-28 at 3.12.24 PM.jpeg",
+  "/slide_image/WhatsApp Image 2026-05-28 at 3.14.58 PM.jpeg",
+  "/slide_image/WhatsApp Image 2026-05-28 at 3.19.59 PM.jpeg",
+  "/slide_image/WhatsApp Image 2026-05-28 at 3.32.29 PM.jpeg",
 ];
 
 function FacebookIcon({ size = 18, className }: { size?: number; className?: string }) {
@@ -122,10 +130,19 @@ function ImoIcon({ size = 18, className }: { size?: number; className?: string }
 
 export default function Home() {
   const [level, setLevel] = useState(2);
+  const [activeSlide, setActiveSlide] = useState(0);
   const total = useMemo(
     () => commissionLevels.filter((item) => item.level <= level).reduce((sum, item) => sum + item.earning, 0),
     [level],
   );
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setActiveSlide((current) => (current + 1) % slideImages.length);
+    }, 3800);
+
+    return () => window.clearInterval(timer);
+  }, []);
 
   return (
     <main className="min-h-screen overflow-hidden bg-background text-foreground">
@@ -231,6 +248,42 @@ export default function Home() {
                 ))}
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-4 pt-8 md:pt-10">
+        <div className="relative overflow-hidden rounded-xl border border-line bg-surface shadow-[0_18px_55px_rgba(232,82,10,0.12)]">
+          <div
+            className="flex transition-transform duration-700 ease-out"
+            style={{ transform: `translateX(-${activeSlide * 100}%)` }}
+          >
+            {slideImages.map((src, index) => (
+              <div key={src} className="relative h-[190px] w-full shrink-0 overflow-hidden sm:h-[280px] lg:h-[465px]">
+                <Image
+                  src={src}
+                  alt={`GIOTO promotional slide ${index + 1}`}
+                  fill
+                  sizes="(min-width: 1280px) 1280px, 100vw"
+                  className="object-cover"
+                  priority={index === 0}
+                />
+              </div>
+            ))}
+          </div>
+          <div className="absolute bottom-4 left-4 flex items-center gap-2 sm:bottom-6 sm:left-8">
+            {slideImages.map((src, index) => (
+              <button
+                key={src}
+                type="button"
+                aria-label={`Show slide ${index + 1}`}
+                aria-current={activeSlide === index}
+                onClick={() => setActiveSlide(index)}
+                className={`h-3 w-3 rounded-full transition ${
+                  activeSlide === index ? "bg-gold" : "bg-white/85 hover:bg-white"
+                }`}
+              />
+            ))}
           </div>
         </div>
       </section>

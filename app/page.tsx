@@ -542,7 +542,7 @@ export default function Home() {
             <div className="mt-4 grid gap-3 text-sm text-white/75 sm:grid-cols-2 lg:block lg:space-y-3">
               <p className="flex items-center gap-3"><Phone size={16} className="text-gold-light" /> +8809658979698</p>
               <p className="flex min-w-0 items-center gap-3"><Mail size={16} className="shrink-0 text-gold-light" /> <span className="break-all">contact@giotobangladesh.com</span></p>
-              <p className="flex items-start gap-3"><MapPin size={16} className="mt-1 shrink-0 text-gold-light" /> <span>Level 4, 34, Awal Centre, Kemal Ataturk Ave, Dhaka 1215</span></p>
+              <p className="flex items-start gap-3"><MapPin size={16} className="mt-1 shrink-0 text-gold-light" /> <span>Nischintapur, Ashulia, Savar, Dhaka, Bangladesh</span></p>
             </div>
             <Link href="/register" className="mt-6 inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-bold text-foreground transition hover:bg-gold-light hover:text-white">
               শুরু করুন <ArrowRight size={16} />

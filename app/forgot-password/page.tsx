@@ -11,7 +11,7 @@ import { BrandLogo } from "@/components/brand-logo";
 import { Button, Card, Input } from "@/components/ui";
 
 const schema = z.object({
-  emailOrPhone: z.string().min(6, "ইমেইল অথবা ফোন নম্বর লিখুন"),
+  email: z.string().email("সঠিক ইমেইল লিখুন"),
 });
 
 type ForgotPasswordForm = z.infer<typeof schema>;
@@ -29,7 +29,7 @@ export default function ForgotPasswordPage() {
 
   function onSubmit(values: ForgotPasswordForm) {
     setMessage("OTP পাঠানো হয়েছে। ডেমো OTP: 246810");
-    const identifier = encodeURIComponent(values.emailOrPhone.trim());
+    const identifier = encodeURIComponent(values.email.trim());
     router.push(`/otp-verification?identifier=${identifier}`);
   }
 
@@ -43,13 +43,13 @@ export default function ForgotPasswordPage() {
           <MailCheck size={24} />
         </div>
         <h1 className="heading-gradient text-center text-4xl font-black">পাসওয়ার্ড রিকভার করুন</h1>
-        <p className="mt-3 text-center text-muted">আপনার ইমেইল অথবা ফোন নম্বর দিন, আমরা OTP পাঠাবো।</p>
+        <p className="mt-3 text-center text-muted">আপনার ইমেইল দিন, আমরা OTP পাঠাবো।</p>
 
         <form className="mt-8 space-y-5" onSubmit={handleSubmit(onSubmit)}>
           <label className="block">
-            <span className="mb-2 block text-sm text-muted">ইমেইল / ফোন</span>
-            <Input {...register("emailOrPhone")} placeholder="name@example.com অথবা 017XXXXXXXX" />
-            {errors.emailOrPhone ? <span className="mt-2 block text-sm text-gold">{errors.emailOrPhone.message}</span> : null}
+            <span className="mb-2 block text-sm text-muted">ইমেইল</span>
+            <Input type="email" {...register("email")} placeholder="name@example.com" />
+            {errors.email ? <span className="mt-2 block text-sm text-gold">{errors.email.message}</span> : null}
           </label>
           <Button className="w-full" type="submit">
             OTP পাঠান <ArrowRight size={17} />

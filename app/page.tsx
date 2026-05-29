@@ -488,12 +488,8 @@ export default function Home() {
           <div className="mx-auto flex max-w-7xl flex-col items-center gap-3 text-center text-sm text-white/50 md:flex-row md:items-center md:justify-between md:text-left">
             <p>(c) 2026 GIOTO Bangladesh. All rights reserved.</p>
             <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 md:justify-end">
-              <a href="#products" className="transition hover:text-gold-light">Products</a>
-              <a href="#about" className="transition hover:text-gold-light">About</a>
-              <a href="#calculator" className="transition hover:text-gold-light">Calculator</a>
               <Link href="/privacy-policy" className="transition hover:text-gold-light">Privacy Policy</Link>
-              <Link href="/terms-and-conditions" className="transition hover:text-gold-light">Terms</Link>
-              <Link href="/login" className="transition hover:text-gold-light">Login</Link>
+              <Link href="/terms-and-conditions" className="transition hover:text-gold-light">Terms and Conditions</Link>
             </div>
           </div>
         </div>

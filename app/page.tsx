@@ -118,16 +118,6 @@ function WhatsAppIcon({ size = 18, className }: { size?: number; className?: str
   );
 }
 
-function ImoIcon({ size = 18, className }: { size?: number; className?: string }) {
-  return (
-    <svg aria-hidden="true" className={className} width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
-      <text x="12" y="15.5" textAnchor="middle" fontFamily="Arial, sans-serif" fontSize="8.6" fontWeight="800">
-        imo
-      </text>
-    </svg>
-  );
-}
-
 export default function Home() {
   const [level, setLevel] = useState(2);
   const [activeSlide, setActiveSlide] = useState(0);
@@ -508,7 +498,6 @@ export default function Home() {
                 { label: "Instagram", href: "https://www.instagram.com/gioto_bd?igsh=MWZ3NjV6NHZ0bGY2eA==", icon: InstagramIcon },
                 { label: "LinkedIn", href: "https://www.linkedin.com/groups/19487010", icon: LinkedInIcon },
                 { label: "WhatsApp", href: "https://wa.me/8801312684708", icon: WhatsAppIcon },
-                { label: "Imo", href: "https://s.channelcom.tech/ZgLqeu?from=copy_link", icon: ImoIcon },
               ].map((item) => {
                 const Icon = item.icon;
                 return (
@@ -551,9 +540,9 @@ export default function Home() {
           <div className="col-span-2 lg:col-span-1">
             <h3 className="text-sm font-bold uppercase text-white/50">সাপোর্ট</h3>
             <div className="mt-4 grid gap-3 text-sm text-white/75 sm:grid-cols-2 lg:block lg:space-y-3">
-              <p className="flex items-center gap-3"><Phone size={16} className="text-gold-light" /> +880 1711-223344</p>
-              <p className="flex min-w-0 items-center gap-3"><Mail size={16} className="shrink-0 text-gold-light" /> <span className="break-all">support@giotobangladesh.com</span></p>
-              <p className="flex items-center gap-3"><MapPin size={16} className="text-gold-light" /> Dhaka, Bangladesh</p>
+              <p className="flex items-center gap-3"><Phone size={16} className="text-gold-light" /> +8809658979698</p>
+              <p className="flex min-w-0 items-center gap-3"><Mail size={16} className="shrink-0 text-gold-light" /> <span className="break-all">contact@giotobangladesh.com</span></p>
+              <p className="flex items-start gap-3"><MapPin size={16} className="mt-1 shrink-0 text-gold-light" /> <span>Level 4, 34, Awal Centre, Kemal Ataturk Ave, Dhaka 1215</span></p>
             </div>
             <Link href="/register" className="mt-6 inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-bold text-foreground transition hover:bg-gold-light hover:text-white">
               শুরু করুন <ArrowRight size={16} />

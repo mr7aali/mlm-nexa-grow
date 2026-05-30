@@ -28,7 +28,11 @@ import type {
   WingsResponse,
 } from "@/lib/api-types";
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000/api";
+const apiBaseUrl =
+  process.env.NEXT_PUBLIC_API_URL ??
+  (process.env.NODE_ENV === "production"
+    ? "/_/backend/api"
+    : "http://localhost:5000/api");
 
 const rawBaseQuery = fetchBaseQuery({
   baseUrl: apiBaseUrl,

@@ -37,7 +37,7 @@ export default function AdminPage() {
   const [query, setQuery] = useState("");
   const [level, setLevel] = useState("all");
   const [notice, setNotice] = useState("");
-  const { data: users = [], isLoading: usersLoading, error: usersError } = useGetAdminUsersQuery(undefined, { skip: !accessToken });
+  const { data: usersPage, isLoading: usersLoading, error: usersError } = useGetAdminUsersQuery({ page: 1, limit: 100 }, { skip: !accessToken });
   const { data: withdrawals = [], isLoading: withdrawalsLoading } = useGetAdminWithdrawalsQuery(undefined, { skip: !accessToken });
   const [updateUserStatus] = useUpdateAdminUserStatusMutation();
   const [creditCommission, { isLoading: crediting }] = useCreditAdminCommissionMutation();
@@ -51,6 +51,7 @@ export default function AdminPage() {
     resolver: zodResolver(broadcastSchema),
     defaultValues: { message: "" },
   });
+  const users = useMemo(() => usersPage?.items ?? [], [usersPage]);
 
   useEffect(() => {
     if (!accessToken) {

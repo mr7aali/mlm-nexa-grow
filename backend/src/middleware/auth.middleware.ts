@@ -44,3 +44,14 @@ export function requireRole(role: Role) {
     next();
   };
 }
+
+export function requireAnyRole(roles: Role[]) {
+  return (req: Request, _res: Response, next: NextFunction) => {
+    if (!req.auth?.role || !roles.includes(req.auth.role)) {
+      next(new HttpError(403, "You do not have permission for this action"));
+      return;
+    }
+
+    next();
+  };
+}

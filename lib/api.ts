@@ -17,7 +17,9 @@ import type {
   DashboardResponse,
   EarningsResponse,
   Order,
+  PaginatedResponse,
   Product,
+  ProductInput,
   ReferralsResponse,
   WingsResponse,
 } from "@/lib/api-types";
@@ -79,6 +81,7 @@ export const api = createApi({
     "Earnings",
     "AdminUsers",
     "AdminWithdrawals",
+    "AdminProducts",
   ],
   endpoints: (builder) => ({
     login: builder.mutation<AuthPayload, { email: string; password: string }>({
@@ -213,9 +216,12 @@ export const api = createApi({
       transformResponse: unwrap<{ id: string }>,
       invalidatesTags: ["Earnings", "Dashboard"],
     }),
-    getAdminUsers: builder.query<AdminUser[], void>({
-      query: () => "/admin/users",
-      transformResponse: unwrap<AdminUser[]>,
+    getAdminUsers: builder.query<
+      PaginatedResponse<AdminUser>,
+      { page?: number; limit?: number; search?: string; status?: string; role?: string } | void
+    >({
+      query: (params) => ({ url: "/admin/users", params: params ?? undefined }),
+      transformResponse: unwrap<PaginatedResponse<AdminUser>>,
       providesTags: ["AdminUsers"],
     }),
     updateAdminUserStatus: builder.mutation<
@@ -229,6 +235,18 @@ export const api = createApi({
       }),
       transformResponse: unwrap<AdminUser>,
       invalidatesTags: ["AdminUsers"],
+    }),
+    updateAdminUserRole: builder.mutation<
+      AdminUser,
+      { userId: string; role: AdminUser["role"] }
+    >({
+      query: ({ userId, role }) => ({
+        url: `/admin/users/${userId}/role`,
+        method: "PATCH",
+        body: { role },
+      }),
+      transformResponse: unwrap<AdminUser>,
+      invalidatesTags: ["AdminUsers", "Auth"],
     }),
     creditAdminCommission: builder.mutation<
       { user: AdminUser; note: string },
@@ -262,12 +280,26 @@ export const api = createApi({
       query: (body) => ({ url: "/admin/broadcasts", method: "POST", body }),
       transformResponse: unwrap<{ delivered: boolean }>,
     }),
+    getAdminProducts: builder.query<
+      PaginatedResponse<Product>,
+      { page?: number; limit?: number; search?: string; category?: string } | void
+    >({
+      query: (params) => ({ url: "/admin/products", params: params ?? undefined }),
+      transformResponse: unwrap<PaginatedResponse<Product>>,
+      providesTags: ["AdminProducts"],
+    }),
+    createAdminProduct: builder.mutation<Product, ProductInput>({
+      query: (body) => ({ url: "/admin/products", method: "POST", body }),
+      transformResponse: unwrap<Product>,
+      invalidatesTags: ["AdminProducts", "Products"],
+    }),
   }),
 });
 
 export const {
   useChangePasswordMutation,
   useCreateOrderMutation,
+  useCreateAdminProductMutation,
   useCreditAdminCommissionMutation,
   useBroadcastNotificationMutation,
   useCreateWithdrawalMutation,
@@ -277,6 +309,7 @@ export const {
   useGetEarningsQuery,
   useGetMeQuery,
   useGetAdminUsersQuery,
+  useGetAdminProductsQuery,
   useGetAdminWithdrawalsQuery,
   useGetProductQuery,
   useGetProductsQuery,
@@ -287,6 +320,7 @@ export const {
   useRegisterMutation,
   useResetPasswordMutation,
   useUpdateAdminUserStatusMutation,
+  useUpdateAdminUserRoleMutation,
   useUpdateAdminWithdrawalStatusMutation,
   useUpdateProfileMutation,
   useVerifyOtpMutation,

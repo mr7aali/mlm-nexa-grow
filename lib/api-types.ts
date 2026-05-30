@@ -32,7 +32,7 @@ export type TreeNode = {
   children?: TreeNode[];
 };
 
-export type Role = "member" | "admin";
+export type Role = "member" | "admin" | "super-admin";
 export type UserStatus = "Active" | "Inactive" | "Banned";
 
 export type AuthUser = {
@@ -58,6 +58,14 @@ export type ApiResponse<T> = {
   success: boolean;
   message: string;
   data: T;
+};
+
+export type PaginatedResponse<T> = {
+  items: T[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
 };
 
 export type CommissionLevel = {
@@ -114,6 +122,28 @@ export type AdminUser = AuthUser;
 
 export type AdminWithdrawal = Withdrawal & {
   userId: string;
+};
+
+export type ProductInput = {
+  id?: string;
+  icon?: string;
+  image: string;
+  name: string;
+  category: string;
+  price: number;
+  originalPrice: number;
+  discountPercent?: number;
+  offer?: string;
+  offerEnds?: string;
+  commission?: number;
+  stock?: string;
+  sku: string;
+  delivery?: string;
+  description?: string;
+  full?: string;
+  highlights?: string[];
+  includes?: string[];
+  details?: Array<{ label: string; value: string }>;
 };
 
 export type Order = {

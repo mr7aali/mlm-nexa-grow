@@ -14,6 +14,8 @@ import {
   LogOut,
   Menu,
   Network,
+  PackagePlus,
+  ShieldCheck,
   User,
   Users,
   X,
@@ -35,6 +37,11 @@ const navItems = [
   { href: "/dashboard/profile", label: "প্রোফাইল", icon: User },
 ];
 
+const adminNavItems = [
+  { href: "/dashboard/super-admin/users", label: "ইউজার ম্যানেজ", icon: ShieldCheck },
+  { href: "/dashboard/super-admin/products", label: "পণ্য যোগ", icon: PackagePlus },
+];
+
 export function DashboardShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -46,6 +53,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const activeUser = currentUser ?? storedUser;
+  const visibleNavItems = activeUser?.role === "admin" || activeUser?.role === "super-admin" ? [...navItems, ...adminNavItems] : navItems;
 
   useEffect(() => {
     if (!accessToken) {
@@ -82,7 +90,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       </div>
 
       <nav className="flex-1 space-y-1 px-3">
-        {navItems.map((item) => {
+        {visibleNavItems.map((item) => {
           const active = pathname === item.href;
           const Icon = item.icon;
           return (

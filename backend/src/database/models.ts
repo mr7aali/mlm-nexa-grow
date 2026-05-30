@@ -50,7 +50,7 @@ const userSchema = new Schema<AppUser>(
     joined: { type: String, required: true },
     earned: { type: Number, required: true, default: 0 },
     referrals: { type: Number, required: true, default: 0 },
-    role: { type: String, enum: ["member", "admin"], required: true },
+    role: { type: String, enum: ["member", "admin", "super-admin"], required: true },
     referredByUserId: { type: String, default: null, index: true },
     referredByCode: { type: String, default: null },
     passwordHash: { type: String, required: true },

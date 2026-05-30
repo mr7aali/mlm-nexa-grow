@@ -12,8 +12,6 @@ import { Button, Card, Input } from "@/components/ui";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { useVerifyOtpMutation } from "@/lib/api";
 
-const demoOtp = "246810";
-
 const schema = z.object({
   otp: z.string().length(6, "৬ সংখ্যার OTP লিখুন"),
 });
@@ -40,7 +38,7 @@ function OtpVerificationForm() {
     formState: { errors },
   } = useForm<OtpForm>({
     resolver: zodResolver(schema),
-    defaultValues: { otp: demoOtp },
+    defaultValues: { otp: "" },
   });
 
   async function handleOtpSubmit(values: OtpForm) {
@@ -68,10 +66,6 @@ function OtpVerificationForm() {
         <p className="mt-3 text-center text-muted">
           {identifier ? `${identifier} ঠিকানায় পাঠানো OTP দিন।` : "আপনার OTP দিন।"}
         </p>
-
-        <div className="mt-6 rounded-2xl border border-gold/20 bg-gold/10 px-4 py-3 text-sm text-gold-light">
-          ডেমো OTP: {demoOtp}
-        </div>
 
         <form className="mt-8 space-y-5" onSubmit={handleSubmit(handleOtpSubmit)}>
           <label className="block">

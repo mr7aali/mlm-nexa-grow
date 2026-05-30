@@ -102,6 +102,12 @@ REFRESH_TOKEN_SECRET=replace-with-a-long-refresh-token-secret
 CLOUDINARY_CLOUD_NAME=
 CLOUDINARY_API_KEY=
 CLOUDINARY_API_SECRET=
+SMTP_HOST=
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=
+SMTP_PASSWORD=
+MAIL_FROM="GIOTO Bangladesh <no-reply@giotobangladesh.com>"
 ```
 
 Frontend API base:
@@ -135,6 +141,8 @@ Flow:
 - On `401`, `baseQueryWithReauth` calls `/api/auth/refresh`, updates Redux credentials, then retries the original request.
 - `requireAuth` validates access token and loads user from MongoDB.
 - Banned users are blocked by auth middleware.
+- Forgot-password OTPs are generated randomly, hashed in MongoDB, expire after 10 minutes, and are sent by SMTP email.
+- OTPs are never returned from the API response.
 
 Role middleware:
 

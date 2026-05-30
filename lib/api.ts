@@ -125,11 +125,11 @@ export const api = createApi({
       },
     }),
     forgotPassword: builder.mutation<
-      { identifier: string; otp: string },
+      { identifier: string; sent: boolean },
       { email: string }
     >({
       query: (body) => ({ url: "/auth/forgot-password", method: "POST", body }),
-      transformResponse: unwrap<{ identifier: string; otp: string }>,
+      transformResponse: unwrap<{ identifier: string; sent: boolean }>,
     }),
     verifyOtp: builder.mutation<
       { identifier: string; resetToken: string },

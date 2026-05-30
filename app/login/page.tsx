@@ -6,7 +6,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Eye, EyeOff } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
 import { Button, Card, Input } from "@/components/ui";
 import { getApiErrorMessage } from "@/lib/api-error";
@@ -30,6 +30,7 @@ export default function LoginPage() {
   const dispatch = useAppDispatch();
   const [login, { isLoading }] = useLoginMutation();
   const [message, setMessage] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const {
     register,
     handleSubmit,
@@ -81,11 +82,22 @@ export default function LoginPage() {
           </label>
           <label className="block">
             <span className="mb-2 block text-sm text-muted">পাসওয়ার্ড</span>
-            <Input
-              type="password"
-              {...register("password")}
-              placeholder="••••••••"
-            />
+            <span className="relative block">
+              <Input
+                type={showPassword ? "text" : "password"}
+                {...register("password")}
+                placeholder="••••••••"
+                className="pr-12"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((value) => !value)}
+                className="absolute right-3 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-full text-muted transition hover:bg-gold/10 hover:text-gold"
+                aria-label={showPassword ? "পাসওয়ার্ড লুকান" : "পাসওয়ার্ড দেখুন"}
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </span>
             {errors.password ? (
               <span className="mt-2 block text-sm text-gold">
                 {errors.password.message}

@@ -15,13 +15,13 @@ import {
 import type { UserDocumentLike } from "../../database/models";
 import type { PublicUser, Role } from "../../types/domain";
 import { HttpError } from "../../utils/http-error";
+import { sendPasswordResetOtp } from "../email/email.service";
 
 const refreshCookieName = "gioto_refresh_token";
 const accessTokenTtl = "15m";
 const refreshTokenTtl = "7d";
 const refreshTokenMs = 7 * 24 * 60 * 60 * 1000;
 const resetTokenMs = 10 * 60 * 1000;
-const demoOtp = "246810";
 
 type TokenPayload = {
   sub: string;
@@ -65,6 +65,10 @@ function setRefreshCookie(res: Response, refreshToken: string) {
     maxAge: refreshTokenMs,
     path: "/",
   });
+}
+
+function generateOtp() {
+  return String(Math.floor(100000 + Math.random() * 900000));
 }
 
 export function clearRefreshCookie(res: Response) {
@@ -229,28 +233,40 @@ export function verifyAccessToken(accessToken: string) {
 
 export async function requestPasswordReset(email: string) {
   const user = await findUserByEmail(email);
+  const identifier = email.trim().toLowerCase();
 
   if (user) {
-    user.resetOtp = demoOtp;
+    const otp = generateOtp();
+    user.resetOtp = await bcrypt.hash(otp, 10);
     user.resetOtpExpiresAt = Date.now() + resetTokenMs;
+    user.resetToken = undefined;
+    user.resetTokenExpiresAt = undefined;
     await user.save();
+    await sendPasswordResetOtp(user.email, otp);
   }
 
   return {
-    identifier: email.trim().toLowerCase(),
-    otp: demoOtp,
+    identifier,
+    sent: true,
   };
 }
 
 export async function verifyOtp(identifier: string, otp: string) {
   const user = await findUserByEmail(identifier);
 
-  if (!user || user.resetOtp !== otp || (user.resetOtpExpiresAt ?? 0) < Date.now()) {
+  if (
+    !user ||
+    !user.resetOtp ||
+    (user.resetOtpExpiresAt ?? 0) < Date.now() ||
+    !(await bcrypt.compare(otp, user.resetOtp))
+  ) {
     throw new HttpError(400, "OTP is invalid or expired");
   }
 
   user.resetToken = randomBytes(24).toString("hex");
   user.resetTokenExpiresAt = Date.now() + resetTokenMs;
+  user.resetOtp = undefined;
+  user.resetOtpExpiresAt = undefined;
   await user.save();
 
   return {
@@ -271,12 +287,8 @@ export async function resetPassword(values: {
     user?.resetToken &&
     user.resetToken === values.resetToken &&
     (user.resetTokenExpiresAt ?? 0) > Date.now();
-  const otpValid =
-    user?.resetOtp &&
-    user.resetOtp === values.otp &&
-    (user.resetOtpExpiresAt ?? 0) > Date.now();
 
-  if (!user || (!resetTokenValid && !otpValid)) {
+  if (!user || !resetTokenValid) {
     throw new HttpError(400, "Password reset token is invalid or expired");
   }
 

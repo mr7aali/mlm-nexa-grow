@@ -90,7 +90,8 @@ export function CheckoutForm({ product }: { product: Product }) {
         </label>
         <label className="space-y-2">
           <span className="text-sm font-semibold text-muted">মোবাইল নম্বর</span>
-          <input name="phone" required inputMode="tel" className="h-12 w-full rounded-2xl border border-line bg-white px-4 outline-none focus:border-gold focus:ring-4 focus:ring-gold/10" />
+          <input name="phone" required minLength={8} inputMode="tel" placeholder="01XXXXXXXXX" className="h-12 w-full rounded-2xl border border-line bg-white px-4 outline-none focus:border-gold focus:ring-4 focus:ring-gold/10" />
+          <span className="block text-xs text-muted">কমপক্ষে ৮ সংখ্যার মোবাইল নম্বর লিখুন।</span>
         </label>
         <label className="space-y-2">
           <span className="text-sm font-semibold text-muted">ইমেইল</span>
@@ -111,8 +112,10 @@ export function CheckoutForm({ product }: { product: Product }) {
         <textarea
           name="address"
           required
+          minLength={8}
           className="min-h-28 w-full rounded-2xl border border-line bg-white px-4 py-3 outline-none focus:border-gold focus:ring-4 focus:ring-gold/10"
         />
+        <span className="block text-xs text-muted">পূর্ণ ঠিকানা লিখুন, কমপক্ষে ৮ অক্ষর।</span>
       </label>
 
       <div className="mt-5 rounded-2xl border border-line bg-elevated p-4">

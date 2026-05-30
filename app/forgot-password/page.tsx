@@ -35,7 +35,7 @@ export default function ForgotPasswordPage() {
       const response = await forgotPassword({
         email: values.email.trim().toLowerCase(),
       }).unwrap();
-      setMessage(`OTP sent. Demo OTP: ${response.otp}`);
+      setMessage("OTP আপনার ইমেইলে পাঠানো হয়েছে।");
       router.push(`/otp-verification?identifier=${encodeURIComponent(response.identifier)}`);
     } catch (error) {
       setMessage(getApiErrorMessage(error, "Could not send OTP"));
@@ -52,7 +52,7 @@ export default function ForgotPasswordPage() {
           <MailCheck size={24} />
         </div>
         <h1 className="heading-gradient text-center text-4xl font-black">পাসওয়ার্ড রিকভার করুন</h1>
-        <p className="mt-3 text-center text-muted">আপনার ইমেইল দিন, আমরা OTP পাঠাবো।</p>
+        <p className="mt-3 text-center text-muted">আপনার ইমেইল দিন, আমরা নিরাপদ OTP পাঠাবো।</p>
 
         <form className="mt-8 space-y-5" onSubmit={handleSubmit(handleForgotSubmit)}>
           <label className="block">

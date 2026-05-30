@@ -1,6 +1,8 @@
 import { ProductModel, OrderModel } from "../../database/store";
 import type { Order } from "../../types/domain";
 import { HttpError } from "../../utils/http-error";
+import { register } from "../auth/auth.service";
+import type { Response } from "express";
 
 export async function getProducts() {
   return ProductModel.find().sort({ createdAt: 1 }).lean();
@@ -19,12 +21,25 @@ export async function getProduct(productId: string) {
 export async function createOrder(values: {
   productId: string;
   quantity: number;
+  fullName: string;
+  email: string;
+  password: string;
+  referralCode?: string;
   customerName: string;
   phone: string;
   address: string;
   paymentMethod: string;
-}) {
+}, res?: Response) {
   const product = await getProduct(values.productId);
+  const auth = res
+    ? await register({
+        fullName: values.fullName,
+        email: values.email,
+        phone: values.phone,
+        password: values.password,
+        referralCode: values.referralCode,
+      }, res)
+    : null;
   const subtotal = product.price * values.quantity;
   const shipping = subtotal >= 1500 ? 0 : 80;
   const order: Order = {
@@ -42,5 +57,10 @@ export async function createOrder(values: {
     createdAt: new Date().toISOString(),
   };
 
-  return OrderModel.create(order);
+  const createdOrder = await OrderModel.create(order);
+
+  return {
+    order: createdOrder,
+    auth,
+  };
 }

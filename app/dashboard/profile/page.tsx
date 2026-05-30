@@ -9,7 +9,7 @@ import { Camera, Copy, PackagePlus, ReceiptText, ShieldCheck, Trash2, Users, Wal
 import { Badge, Button, Card, CopyButton, Input } from "@/components/ui";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { useChangePasswordMutation, useGetEarningsQuery, useGetMeQuery, useUpdateProfileMutation } from "@/lib/api";
-import { initials, referralLink, taka, toBn } from "@/lib/utils";
+import { initials, taka, toBn } from "@/lib/utils";
 
 const profileSchema = z.object({
   fullName: z.string().min(3, "নাম লিখুন"),
@@ -27,7 +27,7 @@ export default function ProfilePage() {
   const { data: earnings } = useGetEarningsQuery(undefined, { skip: me?.role !== "member" });
   const isMember = me?.role === "member";
   const isAdminRole = me?.role === "admin" || me?.role === "super-admin";
-  const referralUrl = me ? referralLink(me.referralCode) : "";
+  const referralCode = me?.referralCode ?? "";
   const [updateProfile, { isLoading: profileSaving }] = useUpdateProfileMutation();
   const [changePassword, { isLoading: passwordSaving }] = useChangePasswordMutation();
   const profileForm = useForm<z.infer<typeof profileSchema>>({
@@ -136,16 +136,16 @@ export default function ProfilePage() {
         </Card>
 
         {isMember ? <Card className="p-6">
-          <h3 className="mb-4 text-2xl font-bold">আমার রেফার লিংক</h3>
-          <div className="break-all rounded-2xl border border-line bg-elevated p-4 text-sm text-gold-light">
-            {referralUrl || "রেফার লিংক লোড হচ্ছে..."}
+          <h3 className="mb-4 text-2xl font-bold">আমার রেফার কোড</h3>
+          <div className="break-all rounded-2xl border border-line bg-elevated p-4 text-4xl font-black tracking-[0.28em] text-gold-light">
+            {referralCode || "কোড লোড হচ্ছে..."}
           </div>
           <div className="mt-4 flex flex-wrap gap-3">
-            <CopyButton value={referralUrl} />
+            <CopyButton value={referralCode} label="কোড কপি" />
             <Button
               type="button"
               variant="outline"
-              onClick={() => referralUrl && navigator.clipboard?.writeText(referralUrl)}
+              onClick={() => referralCode && navigator.clipboard?.writeText(referralCode)}
             >
               <Copy size={16} /> QR দেখুন
             </Button>

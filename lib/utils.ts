@@ -12,7 +12,7 @@ export function taka(value: number) {
 }
 
 export function referralLink(code: string) {
-  return `https://giotobangladesh.com/register?ref=${code}`;
+  return code;
 }
 
 export function initials(name: string) {

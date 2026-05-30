@@ -14,8 +14,8 @@ import { useLoginMutation } from "@/lib/api";
 import { setCredentials } from "@/lib/auth-slice";
 import { useAppDispatch } from "@/lib/hooks";
 
-const memberEmail = "rafi@giotobangladesh.com";
-const memberPassword = "123456";
+// const memberEmail = "rafi@giotobangladesh.com";
+// const memberPassword = "123456";
 
 const schema = z.object({
   email: z.string().email("সঠিক ইমেইল লিখুন"),
@@ -36,7 +36,7 @@ export default function LoginPage() {
     formState: { errors },
   } = useForm<LoginForm>({
     resolver: zodResolver(schema),
-    defaultValues: { email: memberEmail, password: memberPassword, remember: true },
+    defaultValues: { email: "", password: "", remember: true },
   });
 
   async function handleLoginSubmit(values: LoginForm) {
@@ -59,38 +59,66 @@ export default function LoginPage() {
         <Link href="/" className="mx-auto mb-6 flex w-max items-center gap-3">
           <BrandLogo className="h-16 w-16" priority />
         </Link>
-        <h1 className="heading-gradient text-center text-4xl font-black">লগইন করুন</h1>
-        <p className="mt-3 text-center text-muted">আপনার সদস্য ড্যাশবোর্ডে প্রবেশ করুন</p>
+        <h1 className="heading-gradient text-center text-4xl font-black">
+          লগইন করুন
+        </h1>
+        <p className="mt-3 text-center text-muted">
+          আপনার সদস্য ড্যাশবোর্ডে প্রবেশ করুন
+        </p>
 
-        <div className="mt-6 rounded-2xl border border-gold/20 bg-gold/10 px-4 py-3 text-sm text-gold-light">
-          ইমেইল: {memberEmail} · পাসওয়ার্ড: {memberPassword}
-        </div>
-
-        <form className="mt-8 space-y-5" onSubmit={handleSubmit(handleLoginSubmit)}>
+        <form
+          className="mt-8 space-y-5"
+          onSubmit={handleSubmit(handleLoginSubmit)}
+        >
           <label className="block">
             <span className="mb-2 block text-sm text-muted">ইমেইল</span>
             <Input {...register("email")} placeholder="name@example.com" />
-            {errors.email ? <span className="mt-2 block text-sm text-gold">{errors.email.message}</span> : null}
+            {errors.email ? (
+              <span className="mt-2 block text-sm text-gold">
+                {errors.email.message}
+              </span>
+            ) : null}
           </label>
           <label className="block">
             <span className="mb-2 block text-sm text-muted">পাসওয়ার্ড</span>
-            <Input type="password" {...register("password")} placeholder="••••••••" />
-            {errors.password ? <span className="mt-2 block text-sm text-gold">{errors.password.message}</span> : null}
+            <Input
+              type="password"
+              {...register("password")}
+              placeholder="••••••••"
+            />
+            {errors.password ? (
+              <span className="mt-2 block text-sm text-gold">
+                {errors.password.message}
+              </span>
+            ) : null}
           </label>
           <div className="flex items-center justify-between gap-4 text-sm">
             <label className="flex items-center gap-2 text-muted">
-              <input type="checkbox" {...register("remember")} className="h-4 w-4 accent-gold" />
+              <input
+                type="checkbox"
+                {...register("remember")}
+                className="h-4 w-4 accent-gold"
+              />
               মনে রাখুন
             </label>
-            <Link href="/forgot-password" className="text-gold-light">পাসওয়ার্ড ভুলে গেছেন?</Link>
+            <Link href="/forgot-password" className="text-gold-light">
+              পাসওয়ার্ড ভুলে গেছেন?
+            </Link>
           </div>
           <Button className="w-full" type="submit" disabled={isLoading}>
             ড্যাশবোর্ডে যান <ArrowRight size={17} />
           </Button>
-          {message ? <p className="rounded-2xl border border-gold/20 bg-gold/10 px-4 py-3 text-sm text-gold-light">{message}</p> : null}
+          {message ? (
+            <p className="rounded-2xl border border-gold/20 bg-gold/10 px-4 py-3 text-sm text-gold-light">
+              {message}
+            </p>
+          ) : null}
         </form>
         <p className="mt-6 text-center text-sm text-muted">
-          নতুন সদস্য? <Link href="/register" className="text-gold-light">রেজিস্টার করুন</Link>
+          নতুন সদস্য?{" "}
+          <Link href="/products" className="text-gold-light">
+            পণ্য কিনে সদস্য হন
+          </Link>
         </p>
       </Card>
     </main>

@@ -1,15 +1,20 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { CheckCircle2, CreditCard, Minus, Plus, Smartphone, Truck } from "lucide-react";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { useCreateOrderMutation } from "@/lib/api";
 import type { Order, Product } from "@/lib/api-types";
 import { taka } from "@/lib/utils";
+import { setCredentials } from "@/lib/auth-slice";
+import { useAppDispatch } from "@/lib/hooks";
 
 export function CheckoutForm({ product }: { product: Product }) {
+  const dispatch = useAppDispatch();
   const [quantity, setQuantity] = useState(1);
   const [payment, setPayment] = useState("cash");
+  const [initialReferralCode, setInitialReferralCode] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [order, setOrder] = useState<Order | null>(null);
   const [message, setMessage] = useState("");
@@ -20,21 +25,33 @@ export function CheckoutForm({ product }: { product: Product }) {
   const total = subtotal + shipping;
   const orderId = useMemo(() => `GIOTO-${product.sku.split("-").pop()}-${Date.now().toString().slice(-5)}`, [product.sku]);
 
+  useEffect(() => {
+    setInitialReferralCode(new URLSearchParams(window.location.search).get("ref") ?? "");
+  }, []);
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setMessage("");
     const formData = new FormData(event.currentTarget);
+    const fullName = String(formData.get("fullName") ?? "");
 
     try {
       const createdOrder = await createOrder({
         productId: product.id,
         quantity,
-        customerName: String(formData.get("customerName") ?? ""),
+        fullName,
+        email: String(formData.get("email") ?? "").trim().toLowerCase(),
+        password: String(formData.get("password") ?? ""),
+        referralCode: String(formData.get("referralCode") ?? "").trim() || undefined,
+        customerName: fullName,
         phone: String(formData.get("phone") ?? ""),
         address: String(formData.get("address") ?? ""),
         paymentMethod: payment,
       }).unwrap();
-      setOrder(createdOrder);
+      if (createdOrder.auth) {
+        dispatch(setCredentials(createdOrder.auth));
+      }
+      setOrder(createdOrder.order);
       setSubmitted(true);
     } catch (error) {
       setMessage(getApiErrorMessage(error, "Order failed"));
@@ -49,28 +66,43 @@ export function CheckoutForm({ product }: { product: Product }) {
         </div>
         <h2 className="mt-5 text-3xl font-black">অর্ডার কনফার্ম হয়েছে</h2>
         <p className="mt-3 leading-8 text-muted">
-          আপনার অর্ডার নম্বর <span className="font-bold text-foreground">{order?.id ?? orderId}</span>। আমাদের টিম ফোনে তথ্য নিশ্চিত করবে।
+          আপনার অর্ডার নম্বর <span className="font-bold text-foreground">{order?.id ?? orderId}</span>। আপনার সদস্য অ্যাকাউন্ট তৈরি হয়েছে।
         </p>
         <div className="mt-5 rounded-2xl border border-line bg-elevated p-4">
           <p className="text-sm text-muted">মোট পেমেন্ট</p>
           <p className="mt-1 text-3xl font-black text-gold-light">{taka(order?.total ?? total)}</p>
         </div>
+        <Link href="/dashboard" className="gold-button mt-5 inline-flex min-h-12 w-full items-center justify-center px-5 py-3 text-sm font-bold">
+          ড্যাশবোর্ডে যান
+        </Link>
       </div>
     );
   }
 
   return (
     <form onSubmit={handleSubmit} className="rounded-[18px] border border-line bg-surface p-5">
-      <h2 className="text-2xl font-bold">চেকআউট তথ্য</h2>
+      <h2 className="text-2xl font-bold">চেকআউট ও সদস্য নিবন্ধন</h2>
 
       <div className="mt-5 grid gap-4 md:grid-cols-2">
         <label className="space-y-2">
           <span className="text-sm font-semibold text-muted">পুরো নাম</span>
-          <input name="customerName" required className="h-12 w-full rounded-2xl border border-line bg-white px-4 outline-none focus:border-gold focus:ring-4 focus:ring-gold/10" />
+          <input name="fullName" required minLength={3} className="h-12 w-full rounded-2xl border border-line bg-white px-4 outline-none focus:border-gold focus:ring-4 focus:ring-gold/10" />
         </label>
         <label className="space-y-2">
           <span className="text-sm font-semibold text-muted">মোবাইল নম্বর</span>
           <input name="phone" required inputMode="tel" className="h-12 w-full rounded-2xl border border-line bg-white px-4 outline-none focus:border-gold focus:ring-4 focus:ring-gold/10" />
+        </label>
+        <label className="space-y-2">
+          <span className="text-sm font-semibold text-muted">ইমেইল</span>
+          <input name="email" type="email" required className="h-12 w-full rounded-2xl border border-line bg-white px-4 outline-none focus:border-gold focus:ring-4 focus:ring-gold/10" />
+        </label>
+        <label className="space-y-2">
+          <span className="text-sm font-semibold text-muted">পাসওয়ার্ড</span>
+          <input name="password" type="password" required minLength={6} className="h-12 w-full rounded-2xl border border-line bg-white px-4 outline-none focus:border-gold focus:ring-4 focus:ring-gold/10" />
+        </label>
+        <label className="space-y-2 md:col-span-2">
+          <span className="text-sm font-semibold text-muted">রেফার কোড</span>
+          <input key={initialReferralCode} name="referralCode" defaultValue={initialReferralCode} inputMode="numeric" placeholder="00000" className="h-12 w-full rounded-2xl border border-line bg-white px-4 outline-none focus:border-gold focus:ring-4 focus:ring-gold/10" />
         </label>
       </div>
 

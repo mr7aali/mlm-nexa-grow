@@ -166,7 +166,7 @@ export default function Home() {
             <Link href="/login" className="hover:text-white">লগইন</Link>
           </div>
           <div className="flex items-center gap-2">
-            <Link href="/register" className="shrink-0 rounded-full bg-elevated px-4 py-2 text-sm font-bold text-gold transition hover:bg-elevated/90 sm:px-5 sm:py-2.5">যোগ দিন</Link>
+            <Link href="/products" className="shrink-0 rounded-full bg-elevated px-4 py-2 text-sm font-bold text-gold transition hover:bg-elevated/90 sm:px-5 sm:py-2.5">পণ্য কিনুন</Link>
             <details className="group relative md:hidden">
               <summary className="grid h-10 w-10 cursor-pointer list-none place-items-center rounded-full border border-white/25 text-white transition hover:bg-white/10 [&::-webkit-details-marker]:hidden">
                 <Menu className="group-open:hidden" size={20} />
@@ -203,8 +203,8 @@ export default function Home() {
               GIOTO Bangladesh পণ্য বিক্রয়, রেফারেল নেটওয়ার্ক, কমিশন ট্র্যাকিং এবং সদস্য ব্যবস্থাপনাকে এক জায়গায় সহজ করে।
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Link href="/register" className="gold-button inline-flex items-center justify-center gap-2 px-7 py-3 font-bold">
-                রেজিস্টার করুন <ArrowRight size={18} />
+              <Link href="/products" className="gold-button inline-flex items-center justify-center gap-2 px-7 py-3 font-bold">
+                পণ্য কিনে সদস্য হন <ArrowRight size={18} />
               </Link>
               <Link href="/dashboard" className="inline-flex items-center justify-center gap-2 rounded-full border border-elevated bg-transparent px-7 py-3 font-bold text-white transition hover:bg-gold-light/20">
                 সদস্য ড্যাশবোর্ড
@@ -492,8 +492,8 @@ export default function Home() {
           <Gift className="mx-auto text-gold-light" size={42} />
           <h2 className="heading-gradient mt-4 text-4xl font-black !text-white md:text-6xl">আজই নেটওয়ার্ক শুরু করুন</h2>
           <p className="mx-auto mt-4 max-w-2xl text-white/80">পণ্য শেয়ার করুন, নতুন সদস্য যুক্ত করুন এবং এক জায়গা থেকে আয়ের অগ্রগতি দেখুন।</p>
-          <Link href="/register" className="gold-button mt-8 inline-flex items-center gap-2 px-8 py-3 font-bold">
-            রেজিস্টার করুন <Copy size={17} />
+          <Link href="/products" className="gold-button mt-8 inline-flex items-center gap-2 px-8 py-3 font-bold">
+            পণ্য কিনুন <Copy size={17} />
           </Link>
         </div>
       </section>
@@ -549,7 +549,7 @@ export default function Home() {
             <h3 className="text-sm font-bold uppercase text-white/50">অ্যাকাউন্ট</h3>
             <div className="mt-4 grid gap-3 text-sm">
               <Link href="/login" className="text-white/75 transition hover:text-gold-light">লগইন</Link>
-              <Link href="/register" className="text-white/75 transition hover:text-gold-light">রেজিস্টার</Link>
+              <Link href="/products" className="text-white/75 transition hover:text-gold-light">পণ্য কিনুন</Link>
               <Link href="/dashboard/profile" className="text-white/75 transition hover:text-gold-light">প্রোফাইল</Link>
               <Link href="/dashboard/earnings" className="text-white/75 transition hover:text-gold-light">আয়</Link>
             </div>
@@ -562,7 +562,7 @@ export default function Home() {
               <p className="flex min-w-0 items-center gap-3"><Mail size={16} className="shrink-0 text-gold-light" /> <span className="break-all">contact@giotobangladesh.com</span></p>
               <p className="flex items-start gap-3"><MapPin size={16} className="mt-1 shrink-0 text-gold-light" /> <span>Nischintapur, Ashulia, Savar, Dhaka, Bangladesh</span></p>
             </div>
-            <Link href="/register" className="mt-6 inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-bold text-foreground transition hover:bg-gold-light hover:text-white">
+            <Link href="/products" className="mt-6 inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-bold text-foreground transition hover:bg-gold-light hover:text-white">
               শুরু করুন <ArrowRight size={16} />
             </Link>
           </div>

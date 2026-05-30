@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { Badge, CopyButton } from "@/components/ui";
 import { useGetMeQuery, useGetProductQuery } from "@/lib/api";
-import { referralLink, taka } from "@/lib/utils";
+import { taka } from "@/lib/utils";
 
 export default function ProductDetailsPage() {
   const params = useParams<{ productId: string }>();
@@ -44,7 +44,7 @@ export default function ProductDetailsPage() {
     );
   }
 
-  const referralUrl = me ? `${referralLink(me.referralCode)}&product=${product.id}` : "";
+  const referralUrl = me ? `/products/${product.id}/checkout?ref=${encodeURIComponent(me.referralCode)}` : "";
   const encodedReferralUrl = encodeURIComponent(referralUrl);
   const encodedShareText = encodeURIComponent(`${product.name} - ${referralUrl}`);
   const highlights = product.highlights ?? [];
@@ -106,12 +106,12 @@ export default function ProductDetailsPage() {
           </div>
 
           <div className="rounded-[18px] border border-line bg-surface p-5">
-            <p className="mb-2 text-sm text-muted">প্রোডাক্ট রেফারেল লিংক</p>
+            <p className="mb-2 text-sm text-muted">প্রোডাক্ট রেফারেল চেকআউট</p>
             <div className="break-all rounded-2xl border border-line bg-elevated p-4 text-sm text-gold-light">
-              {referralUrl || "রেফার লিংক লোড হচ্ছে..."}
+              {referralUrl || "চেকআউট লিংক লোড হচ্ছে..."}
             </div>
             <div className="mt-4 grid gap-3 sm:grid-cols-3">
-              <CopyButton value={referralUrl} label="লিংক কপি" />
+              <CopyButton value={referralUrl} label="চেকআউট লিংক কপি" />
               <a
                 href={referralUrl ? `https://wa.me/?text=${encodedShareText}` : undefined}
                 target="_blank"

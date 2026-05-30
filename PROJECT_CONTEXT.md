@@ -128,7 +128,7 @@ Files:
 
 Flow:
 
-- Login/register returns an access token and public user object.
+- Login returns an access token and public user object. New member registration is created through product checkout only.
 - Refresh token is stored as HTTP-only cookie named `gioto_refresh_token`.
 - Frontend stores access token/user in Redux auth slice.
 - RTK Query attaches access token as `Authorization: Bearer <token>`.
@@ -161,7 +161,7 @@ Public pages:
 Auth pages:
 
 - `/login` - Login page.
-- `/register` - Register page with optional referral flow.
+- `/register` - Redirects to `/products`; standalone signup is disabled. Members are created only during product checkout.
 - `/forgot-password` - Request OTP.
 - `/otp-verification` - OTP verify page.
 - `/reset-password` - Reset password page.
@@ -311,7 +311,7 @@ GET /api/health
 Auth:
 
 ```txt
-POST  /api/auth/register
+POST  /api/auth/register       # Disabled; returns 410. Use product checkout.
 POST  /api/auth/login
 POST  /api/auth/refresh
 POST  /api/auth/logout
@@ -328,7 +328,7 @@ Public products/orders:
 ```txt
 GET  /api/products
 GET  /api/products/:productId
-POST /api/orders
+POST /api/orders        # Product purchase + member registration
 ```
 
 Member dashboard:
@@ -504,7 +504,14 @@ Important bug fix:
 
 ## Referral / MLM Flow
 
-Registration supports optional `referralCode`.
+Registration is only performed during product checkout and supports optional `referralCode`.
+
+Standalone registration behavior:
+
+- `/register` redirects to `/products`.
+- `POST /api/auth/register` returns `410` and is disabled for direct signup.
+- `POST /api/orders` validates checkout + registration fields, creates a member account, sets auth tokens, and creates the order.
+- Checkout accepts referral codes like `00000` in the `referralCode` field.
 
 If a valid sponsor code is provided:
 

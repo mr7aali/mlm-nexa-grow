@@ -120,7 +120,7 @@ export default function DashboardPage() {
   const levels = data?.commissionLevels ?? [];
   const currentLevel = levels.find((item) => item.status === "In Progress") ?? levels[0];
   const progress = currentLevel ? (currentLevel.current / currentLevel.required) * 100 : 0;
-  const link = data?.referralLink ?? "";
+  const referralCode = data?.user.referralCode ?? "";
 
   return (
     <div className="space-y-6">
@@ -129,7 +129,7 @@ export default function DashboardPage() {
           <p className="text-sm text-gold-light">সদস্য প্যানেল</p>
           <h2 className="heading-gradient text-4xl font-black">ড্যাশবোর্ড</h2>
         </div>
-        <CopyButton value={link} label="রেফার লিংক কপি" />
+        <CopyButton value={referralCode} label="রেফার কোড কপি" />
       </div>
 
       {isLoading ? <p className="text-sm text-muted">ডেটা লোড হচ্ছে...</p> : null}
@@ -179,10 +179,10 @@ export default function DashboardPage() {
         </Card>
 
         <Card className="p-6">
-          <h3 className="text-2xl font-bold">দ্রুত রেফার</h3>
-          <p className="mt-2 text-sm leading-7 text-muted">এই রেফারেল লিংক কপি করে নতুন সদস্যকে রেজিস্ট্রেশন পেজে আমন্ত্রণ জানাতে পারবেন।</p>
-          <div className="mt-4 break-all rounded-2xl border border-line bg-elevated p-4 text-sm text-gold-light">{link || "রেফার লিংক লোড হচ্ছে..."}</div>
-          <Button className="mt-4 w-full" onClick={() => link && navigator.clipboard?.writeText(link)}>
+          <h3 className="text-2xl font-bold">দ্রুত রেফার কোড</h3>
+          <p className="mt-2 text-sm leading-7 text-muted">এই কোড কপি করে নতুন সদস্যকে পণ্য চেকআউটে রেফার কোড হিসেবে দিতে বলুন।</p>
+          <div className="mt-4 break-all rounded-2xl border border-line bg-elevated p-4 text-3xl font-black tracking-[0.28em] text-gold-light">{referralCode || "কোড লোড হচ্ছে..."}</div>
+          <Button className="mt-4 w-full" onClick={() => referralCode && navigator.clipboard?.writeText(referralCode)}>
             <Copy size={16} /> এক ক্লিকে কপি
           </Button>
         </Card>

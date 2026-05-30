@@ -180,6 +180,11 @@ export type Order = {
   createdAt: string;
 };
 
+export type PurchaseResponse = {
+  order: Order;
+  auth: AuthPayload | null;
+};
+
 export type DashboardResponse = {
   user: AuthUser;
   stats: {

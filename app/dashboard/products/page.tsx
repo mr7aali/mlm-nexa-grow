@@ -7,14 +7,14 @@ import { Eye, MessageCircle, Share2, Tag } from "lucide-react";
 import { Badge, Button, CopyButton, Modal } from "@/components/ui";
 import { useGetMeQuery, useGetProductsQuery } from "@/lib/api";
 import type { Product } from "@/lib/api-types";
-import { referralLink, taka } from "@/lib/utils";
+import { taka } from "@/lib/utils";
 
 export default function ProductsPage() {
   const [selected, setSelected] = useState<Product | null>(null);
   const { data, isLoading } = useGetProductsQuery();
   const { data: me } = useGetMeQuery();
   const productRows = data ?? [];
-  const link = selected && me ? `${referralLink(me.referralCode)}&product=${selected.id}` : "";
+  const link = selected && me ? `/products/${selected.id}/checkout?ref=${encodeURIComponent(me.referralCode)}` : "";
 
   return (
     <div className="space-y-6">
@@ -104,11 +104,11 @@ export default function ProductsPage() {
               </div>
             </div>
             <div>
-              <p className="mb-2 text-sm text-muted">প্রোডাক্ট রেফারেল লিংক</p>
+              <p className="mb-2 text-sm text-muted">প্রোডাক্ট রেফারেল চেকআউট</p>
               <div className="break-all rounded-2xl border border-line bg-elevated p-4 text-sm text-gold-light">{link}</div>
             </div>
             <div className="grid gap-3 sm:grid-cols-3">
-              <CopyButton value={link} label="লিংক কপি" />
+              <CopyButton value={link} label="চেকআউট লিংক কপি" />
               <Button variant="outline"><MessageCircle size={16} /> WhatsApp</Button>
               <Button variant="outline"><Share2 size={16} /> Facebook</Button>
             </div>

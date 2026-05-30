@@ -19,8 +19,8 @@ export default function PublicProductsLayout({ children }: { children: React.Rea
             </Link>
           </div>
 
-          <Link href="/register" className="shrink-0 rounded-full bg-elevated px-4 py-2 text-sm font-bold text-gold transition hover:bg-elevated/90 sm:px-5 sm:py-2.5">
-            যোগ দিন
+          <Link href="/products" className="shrink-0 rounded-full bg-elevated px-4 py-2 text-sm font-bold text-gold transition hover:bg-elevated/90 sm:px-5 sm:py-2.5">
+            পণ্য কিনুন
           </Link>
         </div>
       </nav>

@@ -28,6 +28,19 @@ type TokenPayload = {
   role: Role;
 };
 
+async function generateReferralCode() {
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    const code = String(Math.floor(Math.random() * 100000)).padStart(5, "0");
+    const exists = await UserModel.exists({ referralCode: code });
+
+    if (!exists) {
+      return code;
+    }
+  }
+
+  return randomBytes(3).toString("hex").toUpperCase();
+}
+
 function signAccessToken(user: UserDocumentLike) {
   return jwt.sign(
     { sub: user.id, role: user.role } satisfies TokenPayload,
@@ -107,7 +120,7 @@ export async function register(values: {
     phone: values.phone,
     level: 1,
     status: "Active",
-    referralCode: `GIOTO-${randomBytes(3).toString("hex").toUpperCase()}`,
+    referralCode: await generateReferralCode(),
     joined: new Date().toISOString(),
     earned: 0,
     referrals: 0,

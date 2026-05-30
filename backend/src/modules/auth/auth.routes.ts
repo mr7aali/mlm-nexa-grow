@@ -6,7 +6,6 @@ import {
   changePasswordSchema,
   forgotPasswordSchema,
   loginSchema,
-  registerSchema,
   resetPasswordSchema,
   updateProfileSchema,
   verifyOtpSchema,
@@ -17,7 +16,6 @@ import {
   login,
   logout,
   refresh,
-  register,
   requestPasswordReset,
   resetPassword,
   updateProfile,
@@ -26,12 +24,11 @@ import {
 
 export const authRouter = Router();
 
-authRouter.post("/register", validateBody(registerSchema), async (req, res, next) => {
-  try {
-    res.status(201).json(ok(await register(req.body, res), "Registered"));
-  } catch (error) {
-    next(error);
-  }
+authRouter.post("/register", (_req, res) => {
+  res.status(410).json({
+    success: false,
+    message: "Registration is only available through product checkout",
+  });
 });
 
 authRouter.post("/login", validateBody(loginSchema), async (req, res, next) => {

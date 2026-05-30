@@ -17,12 +17,12 @@ import type {
   CommissionsResponse,
   DashboardResponse,
   EarningsResponse,
-  Order,
   PaginatedResponse,
   Product,
   ProductImageUpload,
   ProductInput,
   ProductUpdateInput,
+  PurchaseResponse,
   ReferralsResponse,
   WingsResponse,
 } from "@/lib/api-types";
@@ -173,10 +173,14 @@ export const api = createApi({
       ],
     }),
     createOrder: builder.mutation<
-      Order,
+      PurchaseResponse,
       {
         productId: string;
         quantity: number;
+        fullName: string;
+        email: string;
+        password: string;
+        referralCode?: string;
         customerName: string;
         phone: string;
         address: string;
@@ -184,7 +188,8 @@ export const api = createApi({
       }
     >({
       query: (body) => ({ url: "/orders", method: "POST", body }),
-      transformResponse: unwrap<Order>,
+      transformResponse: unwrap<PurchaseResponse>,
+      invalidatesTags: ["Auth", "Dashboard"],
     }),
     getDashboard: builder.query<DashboardResponse, void>({
       query: () => "/dashboard",

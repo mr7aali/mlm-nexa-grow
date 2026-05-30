@@ -40,7 +40,7 @@ export function createApp() {
   app.post("/api/orders", async (req, res, next) => {
     try {
       const body = createOrderSchema.parse(req.body);
-      res.status(201).json(ok(await createOrder(body), "Order confirmed"));
+      res.status(201).json(ok(await createOrder(body, res), "Order confirmed"));
     } catch (error) {
       next(error);
     }

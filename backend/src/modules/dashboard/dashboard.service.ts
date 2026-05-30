@@ -42,7 +42,7 @@ async function requireUser(userId: string) {
 }
 
 export function getReferralLink(referralCode: string) {
-  return `https://giotobangladesh.com/register?ref=${referralCode}`;
+  return referralCode;
 }
 
 function buildCommissionLevels(currentDirectReferrals: number, paidLevels: number[] = []) {

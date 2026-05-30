@@ -4,6 +4,7 @@ import { validateBody } from "../../middleware/validate";
 import {
   findUserById,
   NotificationModel,
+  OrderModel,
   ProductModel,
   UserModel,
   toPublicUser,
@@ -16,6 +17,7 @@ import {
   createProductSchema,
   creditCommissionSchema,
   updateProductSchema,
+  updateOrderStatusSchema,
   updateUserRoleSchema,
   updateWithdrawalStatusSchema,
   updateUserStatusSchema,
@@ -296,6 +298,96 @@ adminRouter.delete("/products/:productId", async (req, res, next) => {
 });
 
 adminRouter.post("/uploads/images", productImageUpload, uploadProductImage);
+
+adminRouter.get("/orders", async (req, res, next) => {
+  try {
+    const { page, limit, skip } = pagination(req.query);
+    const search = String(req.query.search ?? "").trim();
+    const status = String(req.query.status ?? "");
+    const method = String(req.query.method ?? "").trim();
+    const filter: Record<string, unknown> = {};
+
+    if (["Pending", "Confirmed", "Cancelled"].includes(status)) {
+      filter.status = status;
+    }
+    if (method) {
+      filter.paymentMethod = { $regex: method, $options: "i" };
+    }
+
+    const [matchedUsers, matchedProducts] = search
+      ? await Promise.all([
+          UserModel.find({
+            $or: [
+              { name: { $regex: search, $options: "i" } },
+              { email: { $regex: search, $options: "i" } },
+              { phone: { $regex: search, $options: "i" } },
+              { referralCode: { $regex: search, $options: "i" } },
+            ],
+          }).select("id").lean(),
+          ProductModel.find({
+            $or: [
+              { name: { $regex: search, $options: "i" } },
+              { sku: { $regex: search, $options: "i" } },
+              { category: { $regex: search, $options: "i" } },
+            ],
+          }).select("id").lean(),
+        ])
+      : [[], []];
+
+    if (search) {
+      filter.$or = [
+        { id: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+        { customerName: { $regex: search, $options: "i" } },
+        { phone: { $regex: search, $options: "i" } },
+        { address: { $regex: search, $options: "i" } },
+        { paymentMethod: { $regex: search, $options: "i" } },
+        { userId: { $in: matchedUsers.map((user) => user.id) } },
+        { productId: { $in: matchedProducts.map((product) => product.id) } },
+      ];
+    }
+
+    const [orders, total] = await Promise.all([
+      OrderModel.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+      OrderModel.countDocuments(filter),
+    ]);
+    const [users, products] = await Promise.all([
+      UserModel.find({ id: { $in: orders.map((order) => order.userId) } })
+        .select("id name email phone referralCode role")
+        .lean(),
+      ProductModel.find({ id: { $in: orders.map((order) => order.productId) } })
+        .select("id name sku image category price")
+        .lean(),
+    ]);
+    const userMap = new Map(users.map((user) => [user.id, user]));
+    const productMap = new Map(products.map((product) => [product.id, product]));
+    const rows = orders.map((order) => ({
+      ...order,
+      user: userMap.get(order.userId) ?? null,
+      product: productMap.get(order.productId) ?? null,
+    }));
+
+    res.json(ok(paged(rows, total, page, limit)));
+  } catch (error) {
+    next(error);
+  }
+});
+
+adminRouter.patch(
+  "/orders/:orderId/status",
+  validateBody(updateOrderStatusSchema),
+  async (req, res, next) => {
+    try {
+      const order = await OrderModel.findOne({ id: String(req.params.orderId) });
+      if (!order) throw new HttpError(404, "Order not found");
+      order.status = req.body.status;
+      await order.save();
+      res.json(ok(order, "Order status updated"));
+    } catch (error) {
+      next(error);
+    }
+  },
+);
 
 adminRouter.get("/withdrawals", async (_req, res, next) => {
   try {

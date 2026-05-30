@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { Copy, Network, PackagePlus, ReceiptText, ShieldCheck, Sparkles, TrendingUp, Users, WalletCards } from "lucide-react";
+import { Copy, Network, PackagePlus, ReceiptText, ShieldCheck, ShoppingBag, Sparkles, TrendingUp, Users, WalletCards } from "lucide-react";
 import { Button, Card, CopyButton, Progress } from "@/components/ui";
-import { useGetAdminPaymentsQuery, useGetAdminProductsQuery, useGetAdminUsersQuery, useGetDashboardQuery, useGetMeQuery } from "@/lib/api";
+import { useGetAdminOrdersQuery, useGetAdminPaymentsQuery, useGetAdminProductsQuery, useGetAdminUsersQuery, useGetDashboardQuery, useGetMeQuery } from "@/lib/api";
 import { taka, toBn } from "@/lib/utils";
 
 export default function DashboardPage() {
@@ -13,6 +13,7 @@ export default function DashboardPage() {
   const { data: usersPage } = useGetAdminUsersQuery({ page: 1, limit: 1 }, { skip: !isAdminRole });
   const { data: productsPage } = useGetAdminProductsQuery({ page: 1, limit: 1 }, { skip: !isAdminRole });
   const { data: paymentsPage } = useGetAdminPaymentsQuery({ page: 1, limit: 5 }, { skip: !isAdminRole });
+  const { data: ordersPage } = useGetAdminOrdersQuery({ page: 1, limit: 5 }, { skip: !isAdminRole });
 
   if (meLoading || !me) {
     return <p className="text-sm text-muted">ড্যাশবোর্ড লোড হচ্ছে...</p>;
@@ -20,6 +21,7 @@ export default function DashboardPage() {
 
   if (isAdminRole) {
     const payments = paymentsPage?.items ?? [];
+    const orders = ordersPage?.items ?? [];
     const pendingPayments = payments.filter((item) => item.status === "Pending").length;
 
     return (
@@ -35,10 +37,11 @@ export default function DashboardPage() {
           </Link>
         </div>
 
-        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-5">
           {[
             [Users, "মোট ইউজার", toBn(usersPage?.total ?? 0), "/dashboard/super-admin/users"],
             [PackagePlus, "মোট পণ্য", toBn(productsPage?.total ?? 0), "/dashboard/super-admin/products"],
+            [ShoppingBag, "চেকআউট অর্ডার", toBn(ordersPage?.total ?? 0), "/dashboard/super-admin/orders"],
             [ReceiptText, "ট্রানজ্যাকশন", toBn(paymentsPage?.total ?? 0), "/dashboard/super-admin/payments"],
             [ShieldCheck, "পেন্ডিং পেমেন্ট", toBn(pendingPayments), "/dashboard/super-admin/payments"],
           ].map(([Icon, label, value, href]) => {
@@ -75,11 +78,39 @@ export default function DashboardPage() {
                 <ReceiptText size={16} />
                 পেমেন্ট দেখুন
               </Link>
+              <Link href="/dashboard/super-admin/orders" className="outline-gold inline-flex min-h-11 items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold hover:bg-gold/10">
+                <ShoppingBag size={16} />
+                অর্ডার দেখুন
+              </Link>
               <Link href="/dashboard/profile" className="outline-gold inline-flex min-h-11 items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold hover:bg-gold/10">
                 <ShieldCheck size={16} />
                 প্রোফাইল
               </Link>
             </div>
+          </Card>
+
+          <Card className="overflow-x-auto p-0 scrollbar-soft">
+            <div className="p-5">
+              <h3 className="text-2xl font-bold">সাম্প্রতিক অর্ডার</h3>
+            </div>
+            <table className="w-full min-w-[760px] text-left text-sm">
+              <thead className="bg-elevated text-muted">
+                <tr>{["অর্ডার", "ইউজার", "পণ্য", "মোট", "স্ট্যাটাস"].map((head) => <th key={head} className="px-5 py-4">{head}</th>)}</tr>
+              </thead>
+              <tbody>
+                {orders.length ? orders.map((item) => (
+                  <tr key={item.id} className="border-t border-line">
+                    <td className="px-5 py-4 font-semibold">{item.id}</td>
+                    <td className="px-5 py-4">{item.user?.name ?? item.customerName}</td>
+                    <td className="px-5 py-4 text-muted">{item.product?.name ?? item.productId}</td>
+                    <td className="px-5 py-4 text-gold-light">{taka(item.total)}</td>
+                    <td className="px-5 py-4">{item.status}</td>
+                  </tr>
+                )) : (
+                  <tr><td className="px-5 py-8 text-center text-muted" colSpan={5}>কোনো অর্ডার রেকর্ড নেই।</td></tr>
+                )}
+              </tbody>
+            </table>
           </Card>
 
           <Card className="overflow-x-auto p-0 scrollbar-soft">

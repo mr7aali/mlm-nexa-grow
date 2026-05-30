@@ -22,6 +22,10 @@ export const updateWithdrawalStatusSchema = z.object({
   status: z.enum(["Pending", "Review", "Paid", "Rejected"]),
 });
 
+export const updateOrderStatusSchema = z.object({
+  status: z.enum(["Pending", "Confirmed", "Cancelled"]),
+});
+
 const optionalNumber = z.preprocess(
   (value) => (value === "" || value === undefined || value === null ? undefined : Number(value)),
   z.number().nonnegative().optional(),

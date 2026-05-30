@@ -136,6 +136,8 @@ export type AdminPayment = AdminWithdrawal & {
   } | null;
 };
 
+export type OrderStatus = "Pending" | "Confirmed" | "Cancelled";
+
 export type ProductInput = {
   id?: string;
   icon?: string;
@@ -167,8 +169,10 @@ export type ProductImageUpload = {
 
 export type Order = {
   id: string;
+  userId: string;
   productId: string;
   quantity: number;
+  email: string;
   customerName: string;
   phone: string;
   address: string;
@@ -176,8 +180,20 @@ export type Order = {
   subtotal: number;
   shipping: number;
   total: number;
-  status: string;
+  status: OrderStatus;
   createdAt: string;
+};
+
+export type AdminOrder = Order & {
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    phone: string;
+    referralCode: string;
+    role: Role;
+  } | null;
+  product: Pick<Product, "id" | "name" | "sku" | "image" | "category" | "price"> | null;
 };
 
 export type PurchaseResponse = {

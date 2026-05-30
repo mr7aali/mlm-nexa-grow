@@ -74,8 +74,10 @@ const refreshTokenSchema = new Schema<RefreshTokenRecord>(
 const orderSchema = new Schema<Order>(
   {
     id: { type: String, required: true, unique: true, index: true },
+    userId: { type: String, required: true, index: true },
     productId: { type: String, required: true, index: true },
     quantity: { type: Number, required: true },
+    email: { type: String, required: true, lowercase: true, trim: true, index: true },
     customerName: { type: String, required: true },
     phone: { type: String, required: true },
     address: { type: String, required: true },

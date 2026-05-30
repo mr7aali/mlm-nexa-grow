@@ -66,7 +66,7 @@ export function CheckoutForm({ product }: { product: Product }) {
         </div>
         <h2 className="mt-5 text-3xl font-black">অর্ডার কনফার্ম হয়েছে</h2>
         <p className="mt-3 leading-8 text-muted">
-          আপনার অর্ডার নম্বর <span className="font-bold text-foreground">{order?.id ?? orderId}</span>। আপনার সদস্য অ্যাকাউন্ট তৈরি হয়েছে।
+          আপনার অর্ডার নম্বর <span className="font-bold text-foreground">{order?.id ?? orderId}</span>। আপনার সদস্য অ্যাকাউন্ট প্রস্তুত এবং সাইন ইন করা হয়েছে।
         </p>
         <div className="mt-5 rounded-2xl border border-line bg-elevated p-4">
           <p className="text-sm text-muted">মোট পেমেন্ট</p>
@@ -81,7 +81,10 @@ export function CheckoutForm({ product }: { product: Product }) {
 
   return (
     <form onSubmit={handleSubmit} className="rounded-[18px] border border-line bg-surface p-5">
-      <h2 className="text-2xl font-bold">চেকআউট ও সদস্য নিবন্ধন</h2>
+      <h2 className="text-2xl font-bold">চেকআউট ও সদস্য অ্যাকাউন্ট</h2>
+      <p className="mt-2 text-sm leading-6 text-muted">
+        নতুন হলে এই তথ্য দিয়ে সদস্য অ্যাকাউন্ট তৈরি হবে। আগে থেকে অ্যাকাউন্ট থাকলে একই ইমেইল ও পাসওয়ার্ড দিয়ে পণ্য কিনতে পারবেন।
+      </p>
 
       <div className="mt-5 grid gap-4 md:grid-cols-2">
         <label className="space-y-2">
@@ -100,6 +103,7 @@ export function CheckoutForm({ product }: { product: Product }) {
         <label className="space-y-2">
           <span className="text-sm font-semibold text-muted">পাসওয়ার্ড</span>
           <input name="password" type="password" required minLength={6} className="h-12 w-full rounded-2xl border border-line bg-white px-4 outline-none focus:border-gold focus:ring-4 focus:ring-gold/10" />
+          <span className="block text-xs text-muted">নতুন অ্যাকাউন্টের পাসওয়ার্ড দিন, অথবা আগের অ্যাকাউন্টের পাসওয়ার্ড দিন।</span>
         </label>
         <label className="space-y-2 md:col-span-2">
           <span className="text-sm font-semibold text-muted">রেফার কোড</span>

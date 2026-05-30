@@ -176,7 +176,7 @@ Auth pages:
 
 Shared dashboard pages:
 
-- `/dashboard` - Dynamic dashboard. Members see referral/commission stats; admin/super-admin see users/products/payments operational overview.
+- `/dashboard` - Dynamic dashboard. Members see referral/commission stats; admin/super-admin see users/products/orders/payments operational overview.
 - `/dashboard/profile` - Dynamic profile. Members see referral/balance details; admin/super-admin see management profile details and admin shortcuts.
 
 Member-only dashboard pages:
@@ -193,6 +193,7 @@ Admin/super-admin pages:
 
 - `/dashboard/super-admin/users` - User management, role/status updates, user current balance.
 - `/dashboard/super-admin/products` - Product CRUD, Cloudinary image upload/replace, pagination/filtering.
+- `/dashboard/super-admin/orders` - Checkout/order history with pagination, filtering, user/product context, and order status updates.
 - `/dashboard/super-admin/payments` - Payment/withdrawal transaction history and status management.
 
 Legacy/admin page:
@@ -336,7 +337,7 @@ Public products/orders:
 ```txt
 GET  /api/products
 GET  /api/products/:productId
-POST /api/orders        # Product purchase + member registration
+POST /api/orders        # Product purchase + member registration/login
 ```
 
 Member dashboard:
@@ -376,6 +377,8 @@ DELETE /api/admin/products/:productId
 POST   /api/admin/uploads/images
 
 GET    /api/admin/withdrawals
+GET    /api/admin/orders
+PATCH  /api/admin/orders/:orderId/status
 GET    /api/admin/payments
 PATCH  /api/admin/withdrawals/:withdrawalId/status
 POST   /api/admin/broadcasts
@@ -518,7 +521,8 @@ Standalone registration behavior:
 
 - `/register` redirects to `/products`.
 - `POST /api/auth/register` returns `410` and is disabled for direct signup.
-- `POST /api/orders` validates checkout + registration fields, creates a member account, sets auth tokens, and creates the order.
+- `POST /api/orders` validates checkout fields, creates a member account when the email is new, logs in the existing member when the email already exists, sets auth tokens, and creates the order.
+- Orders store `userId` and `email` so admin/super-admin can see checkout history at `/dashboard/super-admin/orders`.
 - Checkout accepts referral codes like `00000` in the `referralCode` field.
 
 If a valid sponsor code is provided:

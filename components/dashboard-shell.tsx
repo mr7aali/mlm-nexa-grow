@@ -18,6 +18,7 @@ import {
   PackagePlus,
   ReceiptText,
   ShieldCheck,
+  ShoppingBag,
   User,
   Users,
   X,
@@ -43,6 +44,7 @@ const navItems = [
 const adminNavItems = [
   { href: "/dashboard/super-admin/users", label: "ইউজার ম্যানেজ", icon: ShieldCheck },
   { href: "/dashboard/super-admin/products", label: "পণ্য যোগ", icon: PackagePlus },
+  { href: "/dashboard/super-admin/orders", label: "Checkout Orders", icon: ShoppingBag },
   { href: "/dashboard/super-admin/payments", label: "পেমেন্ট", icon: ReceiptText },
 ];
 

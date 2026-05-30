@@ -1,7 +1,7 @@
-import { ProductModel, OrderModel } from "../../database/store";
+import { findUserByEmail, ProductModel, OrderModel } from "../../database/store";
 import type { Order } from "../../types/domain";
 import { HttpError } from "../../utils/http-error";
-import { register } from "../auth/auth.service";
+import { login, register } from "../auth/auth.service";
 import type { Response } from "express";
 
 export async function getProducts() {
@@ -31,8 +31,17 @@ export async function createOrder(values: {
   paymentMethod: string;
 }, res?: Response) {
   const product = await getProduct(values.productId);
+  const existingUser = await findUserByEmail(values.email);
   const auth = res
-    ? await register({
+    ? existingUser
+      ? await login(
+          {
+            email: values.email,
+            password: values.password,
+          },
+          res,
+        )
+      : await register({
         fullName: values.fullName,
         email: values.email,
         phone: values.phone,
@@ -40,12 +49,19 @@ export async function createOrder(values: {
         referralCode: values.referralCode,
       }, res)
     : null;
+
+  if (!auth) {
+    throw new HttpError(500, "Unable to attach order to a member account");
+  }
+
   const subtotal = product.price * values.quantity;
   const shipping = subtotal >= 1500 ? 0 : 80;
   const order: Order = {
     id: `GIOTO-${product.sku.split("-").pop()}-${Date.now().toString().slice(-5)}`,
+    userId: auth.user.id,
     productId: values.productId,
     quantity: values.quantity,
+    email: auth.user.email,
     customerName: values.customerName,
     phone: values.phone,
     address: values.address,

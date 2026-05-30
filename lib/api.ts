@@ -11,6 +11,7 @@ import type {
   ApiResponse,
   AuthPayload,
   AuthUser,
+  AdminOrder,
   AdminUser,
   AdminPayment,
   AdminWithdrawal,
@@ -85,6 +86,7 @@ export const api = createApi({
     "AdminUsers",
     "AdminWithdrawals",
     "AdminProducts",
+    "AdminOrders",
   ],
   endpoints: (builder) => ({
     login: builder.mutation<AuthPayload, { email: string; password: string }>({
@@ -189,7 +191,7 @@ export const api = createApi({
     >({
       query: (body) => ({ url: "/orders", method: "POST", body }),
       transformResponse: unwrap<PurchaseResponse>,
-      invalidatesTags: ["Auth", "Dashboard"],
+      invalidatesTags: ["Auth", "Dashboard", "AdminOrders"],
     }),
     getDashboard: builder.query<DashboardResponse, void>({
       query: () => "/dashboard",
@@ -294,6 +296,26 @@ export const api = createApi({
       transformResponse: unwrap<AdminWithdrawal>,
       invalidatesTags: ["AdminWithdrawals", "AdminUsers", "Earnings", "Dashboard"],
     }),
+    getAdminOrders: builder.query<
+      PaginatedResponse<AdminOrder>,
+      { page?: number; limit?: number; search?: string; status?: string; method?: string } | void
+    >({
+      query: (params) => ({ url: "/admin/orders", params: params ?? undefined }),
+      transformResponse: unwrap<PaginatedResponse<AdminOrder>>,
+      providesTags: ["AdminOrders"],
+    }),
+    updateAdminOrderStatus: builder.mutation<
+      AdminOrder,
+      { orderId: string; status: AdminOrder["status"] }
+    >({
+      query: ({ orderId, status }) => ({
+        url: `/admin/orders/${orderId}/status`,
+        method: "PATCH",
+        body: { status },
+      }),
+      transformResponse: unwrap<AdminOrder>,
+      invalidatesTags: ["AdminOrders"],
+    }),
     broadcastNotification: builder.mutation<
       { delivered: boolean },
       { message: string }
@@ -383,6 +405,7 @@ export const {
   useGetPaymentsQuery,
   useGetAdminUsersQuery,
   useGetAdminProductQuery,
+  useGetAdminOrdersQuery,
   useGetAdminProductsQuery,
   useGetAdminPaymentsQuery,
   useGetAdminWithdrawalsQuery,
@@ -396,6 +419,7 @@ export const {
   useResetPasswordMutation,
   useUpdateAdminProductMutation,
   useUploadAdminProductImageMutation,
+  useUpdateAdminOrderStatusMutation,
   useUpdateAdminUserStatusMutation,
   useUpdateAdminUserRoleMutation,
   useUpdateAdminWithdrawalStatusMutation,

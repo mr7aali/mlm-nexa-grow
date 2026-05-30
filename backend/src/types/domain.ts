@@ -32,8 +32,10 @@ export type RefreshSession = {
 
 export type Order = {
   id: string;
+  userId: string;
   productId: string;
   quantity: number;
+  email: string;
   customerName: string;
   phone: string;
   address: string;

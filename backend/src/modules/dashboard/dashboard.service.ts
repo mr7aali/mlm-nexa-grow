@@ -216,11 +216,26 @@ export async function getEarnings(userId: string) {
   };
 }
 
+export async function getCurrentBalance(userId: string) {
+  const user = await requireUser(userId);
+  const paidWithdrawals = await WithdrawalModel.find({
+    userId: user.id,
+    status: "Paid",
+  }).lean();
+
+  return Math.max(0, user.earned - paidWithdrawals.reduce((sum, item) => sum + item.amount, 0));
+}
+
 export async function createWithdrawal(
   userId: string,
   values: { amount: number; method: string; account: string },
 ) {
   const user = await requireUser(userId);
+  const balance = await getCurrentBalance(user.id);
+
+  if (values.amount > balance) {
+    throw new HttpError(400, "Withdrawal amount exceeds current balance");
+  }
 
   const withdrawal: WithdrawalRequest = {
     id: randomUUID(),

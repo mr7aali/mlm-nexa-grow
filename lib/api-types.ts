@@ -118,10 +118,22 @@ export type Withdrawal = {
   account?: string;
 };
 
-export type AdminUser = AuthUser;
+export type AdminUser = AuthUser & {
+  currentBalance?: number;
+};
 
 export type AdminWithdrawal = Withdrawal & {
   userId: string;
+};
+
+export type AdminPayment = AdminWithdrawal & {
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    phone: string;
+    currentBalance: number;
+  } | null;
 };
 
 export type ProductInput = {

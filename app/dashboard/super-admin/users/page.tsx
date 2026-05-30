@@ -70,7 +70,7 @@ export default function SuperAdminUsersPage() {
       <div className="grid gap-5 md:grid-cols-3">
         <Card><p className="text-sm text-muted">মোট ইউজার</p><p className="mt-2 text-3xl font-black text-gold-light">{toBn(data?.total ?? 0)}</p></Card>
         <Card><p className="text-sm text-muted">এই পেজে</p><p className="mt-2 text-3xl font-black text-gold-light">{toBn(users.length)}</p></Card>
-        <Card><p className="text-sm text-muted">মোট আয়</p><p className="mt-2 text-3xl font-black text-gold-light">{taka(users.reduce((sum, user) => sum + user.earned, 0))}</p></Card>
+        <Card><p className="text-sm text-muted">মোট ব্যালেন্স</p><p className="mt-2 text-3xl font-black text-gold-light">{taka(users.reduce((sum, user) => sum + (user.currentBalance ?? user.earned), 0))}</p></Card>
       </div>
 
       <Card className="p-5">
@@ -100,9 +100,9 @@ export default function SuperAdminUsersPage() {
       </Card>
 
       <Card className="overflow-x-auto p-0 scrollbar-soft">
-        <table className="w-full min-w-[1120px] text-left text-sm">
+        <table className="w-full min-w-[1240px] text-left text-sm">
           <thead className="bg-elevated text-muted">
-            <tr>{["নাম", "ইমেইল", "ফোন", "রেফার কোড", "লেভেল", "আয়", "স্ট্যাটাস", "রোল"].map((head) => <th key={head} className="px-5 py-4">{head}</th>)}</tr>
+            <tr>{["নাম", "ইমেইল", "ফোন", "রেফার কোড", "লেভেল", "মোট আয়", "বর্তমান ব্যালেন্স", "স্ট্যাটাস", "রোল"].map((head) => <th key={head} className="px-5 py-4">{head}</th>)}</tr>
           </thead>
           <tbody>
             {users.length ? users.map((user) => (
@@ -113,6 +113,7 @@ export default function SuperAdminUsersPage() {
                 <td className="px-5 py-4 text-gold-light">{user.referralCode}</td>
                 <td className="px-5 py-4">লেভেল {toBn(user.level)}</td>
                 <td className="px-5 py-4 text-gold-light">{taka(user.earned)}</td>
+                <td className="px-5 py-4 font-bold text-gold-light">{taka(user.currentBalance ?? user.earned)}</td>
                 <td className="px-5 py-4">
                   <Select
                     value={user.status}
@@ -140,7 +141,7 @@ export default function SuperAdminUsersPage() {
               </tr>
             )) : (
               <tr>
-                <td className="px-5 py-10 text-center text-muted" colSpan={8}>
+                <td className="px-5 py-10 text-center text-muted" colSpan={9}>
                   {isLoading ? "ইউজার লোড হচ্ছে..." : "কোনো ইউজার পাওয়া যায়নি।"}
                 </td>
               </tr>

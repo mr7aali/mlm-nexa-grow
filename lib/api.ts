@@ -12,6 +12,7 @@ import type {
   AuthPayload,
   AuthUser,
   AdminUser,
+  AdminPayment,
   AdminWithdrawal,
   CommissionsResponse,
   DashboardResponse,
@@ -210,6 +211,11 @@ export const api = createApi({
       transformResponse: unwrap<EarningsResponse>,
       providesTags: ["Earnings"],
     }),
+    getPayments: builder.query<EarningsResponse, void>({
+      query: () => "/dashboard/payments",
+      transformResponse: unwrap<EarningsResponse>,
+      providesTags: ["Earnings"],
+    }),
     createWithdrawal: builder.mutation<
       { id: string },
       { amount: number; method: string; account: string }
@@ -263,6 +269,14 @@ export const api = createApi({
       transformResponse: unwrap<AdminWithdrawal[]>,
       providesTags: ["AdminWithdrawals"],
     }),
+    getAdminPayments: builder.query<
+      PaginatedResponse<AdminPayment>,
+      { page?: number; limit?: number; search?: string; status?: string; method?: string } | void
+    >({
+      query: (params) => ({ url: "/admin/payments", params: params ?? undefined }),
+      transformResponse: unwrap<PaginatedResponse<AdminPayment>>,
+      providesTags: ["AdminWithdrawals", "AdminUsers"],
+    }),
     updateAdminWithdrawalStatus: builder.mutation<
       AdminWithdrawal,
       { withdrawalId: string; status: AdminWithdrawal["status"] }
@@ -273,7 +287,7 @@ export const api = createApi({
         body: { status },
       }),
       transformResponse: unwrap<AdminWithdrawal>,
-      invalidatesTags: ["AdminWithdrawals"],
+      invalidatesTags: ["AdminWithdrawals", "AdminUsers", "Earnings", "Dashboard"],
     }),
     broadcastNotification: builder.mutation<
       { delivered: boolean },
@@ -361,9 +375,11 @@ export const {
   useGetDashboardQuery,
   useGetEarningsQuery,
   useGetMeQuery,
+  useGetPaymentsQuery,
   useGetAdminUsersQuery,
   useGetAdminProductQuery,
   useGetAdminProductsQuery,
+  useGetAdminPaymentsQuery,
   useGetAdminWithdrawalsQuery,
   useGetProductQuery,
   useGetProductsQuery,

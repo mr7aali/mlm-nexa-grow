@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { requireAuth } from "../../middleware/auth.middleware";
+import { requireAuth, requireRole } from "../../middleware/auth.middleware";
 import { validateBody } from "../../middleware/validate";
 import { ok } from "../../utils/api-response";
 import { createWithdrawalSchema } from "./dashboard.schemas";
@@ -15,6 +15,7 @@ import {
 export const dashboardRouter = Router();
 
 dashboardRouter.use(requireAuth);
+const requireMember = requireRole("member");
 
 dashboardRouter.get("/", async (req, res, next) => {
   try {
@@ -24,7 +25,7 @@ dashboardRouter.get("/", async (req, res, next) => {
   }
 });
 
-dashboardRouter.get("/commissions", async (req, res, next) => {
+dashboardRouter.get("/commissions", requireMember, async (req, res, next) => {
   try {
     res.json(ok(await getCommissions(req.auth!.userId)));
   } catch (error) {
@@ -32,7 +33,7 @@ dashboardRouter.get("/commissions", async (req, res, next) => {
   }
 });
 
-dashboardRouter.get("/referrals", async (req, res, next) => {
+dashboardRouter.get("/referrals", requireMember, async (req, res, next) => {
   try {
     res.json(ok(await getReferrals(req.auth!.userId)));
   } catch (error) {
@@ -40,7 +41,7 @@ dashboardRouter.get("/referrals", async (req, res, next) => {
   }
 });
 
-dashboardRouter.get("/wings", async (req, res, next) => {
+dashboardRouter.get("/wings", requireMember, async (req, res, next) => {
   try {
     res.json(ok(await getWings(req.auth!.userId)));
   } catch (error) {
@@ -48,7 +49,15 @@ dashboardRouter.get("/wings", async (req, res, next) => {
   }
 });
 
-dashboardRouter.get("/earnings", async (req, res, next) => {
+dashboardRouter.get("/earnings", requireMember, async (req, res, next) => {
+  try {
+    res.json(ok(await getEarnings(req.auth!.userId)));
+  } catch (error) {
+    next(error);
+  }
+});
+
+dashboardRouter.get("/payments", requireMember, async (req, res, next) => {
   try {
     res.json(ok(await getEarnings(req.auth!.userId)));
   } catch (error) {
@@ -58,6 +67,7 @@ dashboardRouter.get("/earnings", async (req, res, next) => {
 
 dashboardRouter.post(
   "/withdrawals",
+  requireMember,
   validateBody(createWithdrawalSchema),
   async (req, res, next) => {
     try {

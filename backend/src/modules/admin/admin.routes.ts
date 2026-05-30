@@ -75,6 +75,17 @@ function removeUndefinedValues<T extends Record<string, unknown>>(values: T) {
   );
 }
 
+async function getPaidWithdrawalTotals(userIds: string[]) {
+  if (!userIds.length) return new Map<string, number>();
+
+  const rows = await WithdrawalModel.aggregate<{ _id: string; total: number }>([
+    { $match: { userId: { $in: userIds }, status: "Paid" } },
+    { $group: { _id: "$userId", total: { $sum: "$amount" } } },
+  ]);
+
+  return new Map(rows.map((item) => [item._id, item.total]));
+}
+
 adminRouter.get("/users", async (_req, res, next) => {
   try {
     const { page, limit, skip } = pagination(_req.query);
@@ -102,7 +113,15 @@ adminRouter.get("/users", async (_req, res, next) => {
       UserModel.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit),
       UserModel.countDocuments(filter),
     ]);
-    res.json(ok(paged(users.map(toPublicUser), total, page, limit)));
+    const paidTotals = await getPaidWithdrawalTotals(users.map((user) => user.id));
+    const rows = users.map((user) => {
+      const publicUser = toPublicUser(user);
+      return {
+        ...publicUser,
+        currentBalance: Math.max(0, publicUser.earned - (paidTotals.get(publicUser.id) ?? 0)),
+      };
+    });
+    res.json(ok(paged(rows, total, page, limit)));
   } catch (error) {
     next(error);
   }
@@ -282,6 +301,71 @@ adminRouter.get("/withdrawals", async (_req, res, next) => {
   try {
     const withdrawals = await WithdrawalModel.find().sort({ createdAt: -1 }).lean();
     res.json(ok(withdrawals));
+  } catch (error) {
+    next(error);
+  }
+});
+
+adminRouter.get("/payments", async (req, res, next) => {
+  try {
+    const { page, limit, skip } = pagination(req.query);
+    const search = String(req.query.search ?? "").trim();
+    const status = String(req.query.status ?? "");
+    const method = String(req.query.method ?? "").trim();
+    const filter: Record<string, unknown> = {};
+
+    if (["Pending", "Review", "Paid", "Rejected"].includes(status)) {
+      filter.status = status;
+    }
+    if (method) {
+      filter.method = { $regex: method, $options: "i" };
+    }
+
+    const users = search
+      ? await UserModel.find({
+          $or: [
+            { name: { $regex: search, $options: "i" } },
+            { email: { $regex: search, $options: "i" } },
+            { phone: { $regex: search, $options: "i" } },
+          ],
+        }).select("id").lean()
+      : [];
+
+    if (search) {
+      filter.$or = [
+        { id: { $regex: search, $options: "i" } },
+        { userId: { $in: users.map((user) => user.id) } },
+        { account: { $regex: search, $options: "i" } },
+        { method: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    const [payments, total] = await Promise.all([
+      WithdrawalModel.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+      WithdrawalModel.countDocuments(filter),
+    ]);
+    const paymentUsers = await UserModel.find({
+      id: { $in: payments.map((payment) => payment.userId) },
+    }).select("id name email phone earned").lean();
+    const userMap = new Map(paymentUsers.map((user) => [user.id, user]));
+    const paidTotals = await getPaidWithdrawalTotals(paymentUsers.map((user) => user.id));
+    const rows = payments.map((payment) => {
+      const user = userMap.get(payment.userId);
+      return {
+        ...payment,
+        user: user
+          ? {
+              id: user.id,
+              name: user.name,
+              email: user.email,
+              phone: user.phone,
+              currentBalance: Math.max(0, user.earned - (paidTotals.get(user.id) ?? 0)),
+            }
+          : null,
+      };
+    });
+
+    res.json(ok(paged(rows, total, page, limit)));
   } catch (error) {
     next(error);
   }

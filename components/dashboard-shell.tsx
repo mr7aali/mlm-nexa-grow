@@ -10,11 +10,13 @@ import {
   ChevronLeft,
   ChevronRight,
   Coins,
+  CreditCard,
   LayoutDashboard,
   LogOut,
   Menu,
   Network,
   PackagePlus,
+  ReceiptText,
   ShieldCheck,
   User,
   Users,
@@ -33,6 +35,7 @@ const navItems = [
   { href: "/dashboard/referrals", label: "রেফারেল", icon: Users },
   { href: "/dashboard/commissions", label: "কমিশন", icon: ChartNoAxesCombined },
   { href: "/dashboard/products", label: "পণ্য", icon: Boxes },
+  { href: "/dashboard/payments", label: "পেমেন্ট", icon: CreditCard },
   { href: "/dashboard/earnings", label: "আয়", icon: Coins },
   { href: "/dashboard/profile", label: "প্রোফাইল", icon: User },
 ];
@@ -40,6 +43,16 @@ const navItems = [
 const adminNavItems = [
   { href: "/dashboard/super-admin/users", label: "ইউজার ম্যানেজ", icon: ShieldCheck },
   { href: "/dashboard/super-admin/products", label: "পণ্য যোগ", icon: PackagePlus },
+  { href: "/dashboard/super-admin/payments", label: "পেমেন্ট", icon: ReceiptText },
+];
+
+const memberOnlyPaths = [
+  "/dashboard/wings",
+  "/dashboard/referrals",
+  "/dashboard/commissions",
+  "/dashboard/products",
+  "/dashboard/earnings",
+  "/dashboard/payments",
 ];
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
@@ -53,13 +66,26 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const activeUser = currentUser ?? storedUser;
-  const visibleNavItems = activeUser?.role === "admin" || activeUser?.role === "super-admin" ? [...navItems, ...adminNavItems] : navItems;
+  const isAdminRole = activeUser?.role === "admin" || activeUser?.role === "super-admin";
+  const visibleNavItems = isAdminRole ? [
+    { href: "/dashboard", label: "ড্যাশবোর্ড", icon: LayoutDashboard },
+    { href: "/dashboard/profile", label: "প্রোফাইল", icon: User },
+    ...adminNavItems,
+  ] : navItems;
 
   useEffect(() => {
     if (!accessToken) {
       router.replace("/login");
     }
   }, [accessToken, router]);
+
+  useEffect(() => {
+    const isMemberOnlyPath = memberOnlyPaths.some((path) => pathname === path || pathname.startsWith(`${path}/`));
+
+    if (accessToken && activeUser && isAdminRole && isMemberOnlyPath) {
+      router.replace("/dashboard/super-admin/payments");
+    }
+  }, [accessToken, activeUser, isAdminRole, pathname, router]);
 
   async function handleLogout() {
     await logout().unwrap().catch(() => undefined);
@@ -71,6 +97,14 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     return (
       <main className="grid min-h-screen place-items-center bg-background text-muted">
         লোড হচ্ছে...
+      </main>
+    );
+  }
+
+  if (activeUser && isAdminRole && memberOnlyPaths.some((path) => pathname === path || pathname.startsWith(`${path}/`))) {
+    return (
+      <main className="grid min-h-screen place-items-center bg-background text-muted">
+        রিডাইরেক্ট হচ্ছে...
       </main>
     );
   }

@@ -1,12 +1,114 @@
 "use client";
 
-import { Copy, Network, Sparkles, TrendingUp, WalletCards } from "lucide-react";
+import Link from "next/link";
+import { Copy, Network, PackagePlus, ReceiptText, ShieldCheck, Sparkles, TrendingUp, Users, WalletCards } from "lucide-react";
 import { Button, Card, CopyButton, Progress } from "@/components/ui";
-import { useGetDashboardQuery } from "@/lib/api";
+import { useGetAdminPaymentsQuery, useGetAdminProductsQuery, useGetAdminUsersQuery, useGetDashboardQuery, useGetMeQuery } from "@/lib/api";
 import { taka, toBn } from "@/lib/utils";
 
 export default function DashboardPage() {
-  const { data, isLoading } = useGetDashboardQuery();
+  const { data: me, isLoading: meLoading } = useGetMeQuery();
+  const isAdminRole = me?.role === "admin" || me?.role === "super-admin";
+  const { data, isLoading } = useGetDashboardQuery(undefined, { skip: !me || isAdminRole });
+  const { data: usersPage } = useGetAdminUsersQuery({ page: 1, limit: 1 }, { skip: !isAdminRole });
+  const { data: productsPage } = useGetAdminProductsQuery({ page: 1, limit: 1 }, { skip: !isAdminRole });
+  const { data: paymentsPage } = useGetAdminPaymentsQuery({ page: 1, limit: 5 }, { skip: !isAdminRole });
+
+  if (meLoading || !me) {
+    return <p className="text-sm text-muted">ড্যাশবোর্ড লোড হচ্ছে...</p>;
+  }
+
+  if (isAdminRole) {
+    const payments = paymentsPage?.items ?? [];
+    const pendingPayments = payments.filter((item) => item.status === "Pending").length;
+
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
+          <div>
+            <p className="text-sm text-gold-light">{me.role === "super-admin" ? "সুপার অ্যাডমিন প্যানেল" : "অ্যাডমিন প্যানেল"}</p>
+            <h2 className="heading-gradient text-4xl font-black">ড্যাশবোর্ড</h2>
+          </div>
+          <Link href="/dashboard/super-admin/payments" className="gold-button inline-flex min-h-11 items-center justify-center gap-2 px-5 py-2.5 text-sm font-semibold">
+            <ReceiptText size={16} />
+            পেমেন্ট ম্যানেজ করুন
+          </Link>
+        </div>
+
+        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+          {[
+            [Users, "মোট ইউজার", toBn(usersPage?.total ?? 0), "/dashboard/super-admin/users"],
+            [PackagePlus, "মোট পণ্য", toBn(productsPage?.total ?? 0), "/dashboard/super-admin/products"],
+            [ReceiptText, "ট্রানজ্যাকশন", toBn(paymentsPage?.total ?? 0), "/dashboard/super-admin/payments"],
+            [ShieldCheck, "পেন্ডিং পেমেন্ট", toBn(pendingPayments), "/dashboard/super-admin/payments"],
+          ].map(([Icon, label, value, href]) => {
+            const TypedIcon = Icon as typeof Users;
+            return (
+              <Link key={String(label)} href={String(href)}>
+                <Card className="min-h-full p-5 transition hover:border-gold">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted">{String(label)}</p>
+                      <p className="mt-2 text-3xl font-black text-gold-light">{String(value)}</p>
+                    </div>
+                    <TypedIcon className="text-gold" size={32} />
+                  </div>
+                </Card>
+              </Link>
+            );
+          })}
+        </div>
+
+        <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
+          <Card className="p-6">
+            <h3 className="mb-4 text-2xl font-bold">দ্রুত অ্যাকশন</h3>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Link href="/dashboard/super-admin/users" className="outline-gold inline-flex min-h-11 items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold hover:bg-gold/10">
+                <Users size={16} />
+                ইউজার ম্যানেজ
+              </Link>
+              <Link href="/dashboard/super-admin/products" className="outline-gold inline-flex min-h-11 items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold hover:bg-gold/10">
+                <PackagePlus size={16} />
+                পণ্য ম্যানেজ
+              </Link>
+              <Link href="/dashboard/super-admin/payments" className="outline-gold inline-flex min-h-11 items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold hover:bg-gold/10">
+                <ReceiptText size={16} />
+                পেমেন্ট দেখুন
+              </Link>
+              <Link href="/dashboard/profile" className="outline-gold inline-flex min-h-11 items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold hover:bg-gold/10">
+                <ShieldCheck size={16} />
+                প্রোফাইল
+              </Link>
+            </div>
+          </Card>
+
+          <Card className="overflow-x-auto p-0 scrollbar-soft">
+            <div className="p-5">
+              <h3 className="text-2xl font-bold">সাম্প্রতিক পেমেন্ট</h3>
+            </div>
+            <table className="w-full min-w-[680px] text-left text-sm">
+              <thead className="bg-elevated text-muted">
+                <tr>{["ইউজার", "পরিমাণ", "মেথড", "স্ট্যাটাস"].map((head) => <th key={head} className="px-5 py-4">{head}</th>)}</tr>
+              </thead>
+              <tbody>
+                {payments.length ? payments.map((item) => (
+                  <tr key={item.id} className="border-t border-line">
+                    <td className="px-5 py-4 font-semibold">{item.user?.name ?? item.userId}</td>
+                    <td className="px-5 py-4 text-gold-light">{taka(item.amount)}</td>
+                    <td className="px-5 py-4 text-muted">{item.method}</td>
+                    <td className="px-5 py-4">{item.status}</td>
+                  </tr>
+                )) : (
+                  <tr><td className="px-5 py-8 text-center text-muted" colSpan={4}>কোনো পেমেন্ট রেকর্ড নেই।</td></tr>
+                )}
+              </tbody>
+            </table>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
   const stats = data?.stats ?? {
     totalReferrals: 0,
     currentLevel: 1,

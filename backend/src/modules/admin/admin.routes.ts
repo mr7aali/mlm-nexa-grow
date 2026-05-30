@@ -19,6 +19,7 @@ import {
   updateWithdrawalStatusSchema,
   updateUserStatusSchema,
 } from "./admin.schemas";
+import { productImageUpload, uploadProductImage } from "./admin.upload";
 import type { Role, UserStatus } from "../../types/domain";
 
 export const adminRouter = Router();
@@ -200,6 +201,8 @@ adminRouter.post("/products", validateBody(createProductSchema), async (req, res
     next(error);
   }
 });
+
+adminRouter.post("/uploads/images", productImageUpload, uploadProductImage);
 
 adminRouter.get("/withdrawals", async (_req, res, next) => {
   try {

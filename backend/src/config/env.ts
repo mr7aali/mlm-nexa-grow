@@ -11,6 +11,9 @@ export const env = {
     process.env.ACCESS_TOKEN_SECRET ?? "dev-access-token-secret-change-me",
   refreshTokenSecret:
     process.env.REFRESH_TOKEN_SECRET ?? "dev-refresh-token-secret-change-me",
+  cloudinaryCloudName: process.env.CLOUDINARY_CLOUD_NAME ?? "",
+  cloudinaryApiKey: process.env.CLOUDINARY_API_KEY ?? "",
+  cloudinaryApiSecret: process.env.CLOUDINARY_API_SECRET ?? "",
 };
 
 export const isProduction = env.nodeEnv === "production";

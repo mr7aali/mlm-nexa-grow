@@ -19,6 +19,7 @@ import type {
   Order,
   PaginatedResponse,
   Product,
+  ProductImageUpload,
   ProductInput,
   ReferralsResponse,
   WingsResponse,
@@ -293,6 +294,19 @@ export const api = createApi({
       transformResponse: unwrap<Product>,
       invalidatesTags: ["AdminProducts", "Products"],
     }),
+    uploadAdminProductImage: builder.mutation<ProductImageUpload, File>({
+      query: (file) => {
+        const body = new FormData();
+        body.append("image", file);
+
+        return {
+          url: "/admin/uploads/images",
+          method: "POST",
+          body,
+        };
+      },
+      transformResponse: unwrap<ProductImageUpload>,
+    }),
   }),
 });
 
@@ -319,6 +333,7 @@ export const {
   useLogoutMutation,
   useRegisterMutation,
   useResetPasswordMutation,
+  useUploadAdminProductImageMutation,
   useUpdateAdminUserStatusMutation,
   useUpdateAdminUserRoleMutation,
   useUpdateAdminWithdrawalStatusMutation,

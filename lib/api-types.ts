@@ -146,6 +146,11 @@ export type ProductInput = {
   details?: Array<{ label: string; value: string }>;
 };
 
+export type ProductImageUpload = {
+  url: string;
+  publicId: string;
+};
+
 export type Order = {
   id: string;
   productId: string;

@@ -1,11 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import { FormEvent, useMemo, useState } from "react";
-import { Boxes, PackagePlus, Search, Tag } from "lucide-react";
+import { ChangeEvent, FormEvent, useMemo, useState } from "react";
+import { Boxes, ImagePlus, PackagePlus, Plus, Search, Tag, X } from "lucide-react";
 import { Badge, Button, Card, Input, Textarea } from "@/components/ui";
 import { getApiErrorMessage } from "@/lib/api-error";
-import { useCreateAdminProductMutation, useGetAdminProductsQuery } from "@/lib/api";
+import { useCreateAdminProductMutation, useGetAdminProductsQuery, useUploadAdminProductImageMutation } from "@/lib/api";
 import type { ProductInput } from "@/lib/api-types";
 import { taka, toBn } from "@/lib/utils";
 
@@ -55,6 +55,7 @@ export default function SuperAdminProductsPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
+  const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(initialForm);
   const [message, setMessage] = useState("");
   const query = useMemo(() => ({
@@ -65,11 +66,32 @@ export default function SuperAdminProductsPage() {
   }), [category, page, search]);
   const { data, isLoading, error } = useGetAdminProductsQuery(query);
   const [createProduct, { isLoading: creating }] = useCreateAdminProductMutation();
+  const [uploadImage, { isLoading: uploadingImage }] = useUploadAdminProductImageMutation();
   const products = data?.items ?? [];
   const totalPages = data?.totalPages ?? 1;
 
   function updateField(name: keyof typeof form, value: string) {
     setForm((old) => ({ ...old, [name]: value }));
+  }
+
+  async function handleImageUpload(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    setMessage("");
+
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setMessage("শুধু image file আপলোড করা যাবে।");
+      return;
+    }
+
+    try {
+      const uploaded = await uploadImage(file).unwrap();
+      updateField("image", uploaded.url);
+      setMessage("ছবি আপলোড হয়েছে।");
+    } catch (err) {
+      setMessage(getApiErrorMessage(err, "ছবি আপলোড ব্যর্থ হয়েছে"));
+    }
   }
 
   async function handleCreate(event: FormEvent<HTMLFormElement>) {
@@ -80,6 +102,10 @@ export default function SuperAdminProductsPage() {
     const originalPrice = Number(form.originalPrice);
     const commission = form.commission ? Number(form.commission) : undefined;
 
+    if (!form.image) {
+      setMessage("পণ্যের ছবি আপলোড করুন।");
+      return;
+    }
     if (!Number.isFinite(price) || price <= 0 || !Number.isFinite(originalPrice) || originalPrice <= 0) {
       setMessage("সঠিক মূল্য লিখুন।");
       return;
@@ -89,7 +115,7 @@ export default function SuperAdminProductsPage() {
       id: form.id.trim() || undefined,
       name: form.name.trim(),
       category: form.category.trim(),
-      image: form.image.trim(),
+      image: form.image,
       sku: form.sku.trim(),
       price,
       originalPrice,
@@ -109,6 +135,7 @@ export default function SuperAdminProductsPage() {
       await createProduct(payload).unwrap();
       setMessage("পণ্য যোগ হয়েছে।");
       setForm(initialForm);
+      setShowForm(false);
       setPage(1);
     } catch (err) {
       setMessage(getApiErrorMessage(err, "পণ্য যোগ করা ব্যর্থ হয়েছে"));
@@ -122,16 +149,22 @@ export default function SuperAdminProductsPage() {
           <p className="text-sm text-gold-light">সুপার অ্যাডমিন</p>
           <h2 className="heading-gradient text-4xl font-black">পণ্য ম্যানেজমেন্ট</h2>
         </div>
-        <div className="inline-flex w-fit items-center gap-2 rounded-full border border-gold/20 bg-gold/10 px-4 py-2 text-sm font-semibold text-gold-light">
-          <Boxes size={17} />
-          মোট {toBn(data?.total ?? 0)} পণ্য
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="inline-flex w-fit items-center gap-2 rounded-full border border-gold/20 bg-gold/10 px-4 py-2 text-sm font-semibold text-gold-light">
+            <Boxes size={17} />
+            মোট {toBn(data?.total ?? 0)} পণ্য
+          </div>
+          <Button type="button" onClick={() => setShowForm((value) => !value)} className="shrink-0">
+            {showForm ? <X size={17} /> : <Plus size={17} />}
+            {showForm ? "ফর্ম বন্ধ করুন" : "নতুন পণ্য যোগ করুন"}
+          </Button>
         </div>
       </div>
 
       {message ? <p className="rounded-2xl border border-gold/20 bg-gold/10 px-4 py-3 text-sm text-gold">{message}</p> : null}
       {error ? <p className="rounded-2xl border border-foreground/20 bg-foreground/5 px-4 py-3 text-sm text-foreground">{getApiErrorMessage(error, "পণ্য লোড ব্যর্থ হয়েছে")}</p> : null}
 
-      <div className="grid gap-6 xl:grid-cols-[0.92fr_1.08fr]">
+      {showForm ? (
         <Card className="p-5">
           <div className="mb-5 flex items-center gap-3">
             <span className="grid h-11 w-11 place-items-center rounded-full bg-gold/10 text-gold-light"><PackagePlus size={22} /></span>
@@ -141,83 +174,113 @@ export default function SuperAdminProductsPage() {
             </div>
           </div>
 
-          <form className="grid gap-4" onSubmit={handleCreate}>
-            <div className="grid gap-3 md:grid-cols-2">
-              <Input value={form.name} onChange={(e) => updateField("name", e.target.value)} placeholder="পণ্যের নাম" required />
-              <Input value={form.category} onChange={(e) => updateField("category", e.target.value)} placeholder="ক্যাটাগরি" required />
-              <Input value={form.sku} onChange={(e) => updateField("sku", e.target.value)} placeholder="SKU" required />
-              <Input value={form.id} onChange={(e) => updateField("id", e.target.value)} placeholder="পণ্য ID (optional)" />
-              <Input type="number" value={form.price} onChange={(e) => updateField("price", e.target.value)} placeholder="অফার মূল্য" required />
-              <Input type="number" value={form.originalPrice} onChange={(e) => updateField("originalPrice", e.target.value)} placeholder="নিয়মিত মূল্য" required />
-              <Input type="number" value={form.commission} onChange={(e) => updateField("commission", e.target.value)} placeholder="কমিশন" />
-              <Input value={form.stock} onChange={(e) => updateField("stock", e.target.value)} placeholder="স্টক" />
+          <form className="grid gap-5" onSubmit={handleCreate}>
+            <div className="grid gap-5 lg:grid-cols-[320px_1fr]">
+              <div className="space-y-3">
+                <div className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-line bg-elevated">
+                  {form.image ? (
+                    <Image src={form.image} alt="Product preview" fill sizes="320px" className="object-cover" />
+                  ) : (
+                    <div className="grid h-full place-items-center p-6 text-center text-muted">
+                      <div>
+                        <ImagePlus className="mx-auto text-gold-light" size={34} />
+                        <p className="mt-3 text-sm font-semibold">ছবি আপলোড করুন</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <label className="outline-gold inline-flex min-h-11 w-full cursor-pointer items-center justify-center gap-2 px-5 py-2.5 text-sm font-semibold transition hover:bg-gold/10">
+                  <ImagePlus size={16} />
+                  {uploadingImage ? "আপলোড হচ্ছে..." : form.image ? "ছবি পরিবর্তন করুন" : "ছবি নির্বাচন করুন"}
+                  <input type="file" accept="image/*" className="sr-only" onChange={handleImageUpload} disabled={uploadingImage} />
+                </label>
+                {form.image ? (
+                  <Button type="button" variant="ghost" className="w-full" onClick={() => updateField("image", "")}>
+                    <X size={16} />
+                    ছবি মুছুন
+                  </Button>
+                ) : null}
+              </div>
+
+              <div className="grid gap-4">
+                <div className="grid gap-3 md:grid-cols-2">
+                  <Input value={form.name} onChange={(e) => updateField("name", e.target.value)} placeholder="পণ্যের নাম" required />
+                  <Input value={form.category} onChange={(e) => updateField("category", e.target.value)} placeholder="ক্যাটাগরি" required />
+                  <Input value={form.sku} onChange={(e) => updateField("sku", e.target.value)} placeholder="SKU" required />
+                  <Input value={form.id} onChange={(e) => updateField("id", e.target.value)} placeholder="পণ্য ID (optional)" />
+                  <Input type="number" value={form.price} onChange={(e) => updateField("price", e.target.value)} placeholder="অফার মূল্য" required />
+                  <Input type="number" value={form.originalPrice} onChange={(e) => updateField("originalPrice", e.target.value)} placeholder="নিয়মিত মূল্য" required />
+                  <Input type="number" value={form.commission} onChange={(e) => updateField("commission", e.target.value)} placeholder="কমিশন" />
+                  <Input value={form.stock} onChange={(e) => updateField("stock", e.target.value)} placeholder="স্টক" />
+                </div>
+                <div className="grid gap-3 md:grid-cols-2">
+                  <Input value={form.offer} onChange={(e) => updateField("offer", e.target.value)} placeholder="অফার টেক্সট" />
+                  <Input value={form.offerEnds} onChange={(e) => updateField("offerEnds", e.target.value)} placeholder="অফার শেষ" />
+                </div>
+                <Input value={form.delivery} onChange={(e) => updateField("delivery", e.target.value)} placeholder="ডেলিভারি তথ্য" />
+                <Textarea value={form.description} onChange={(e) => updateField("description", e.target.value)} placeholder="ছোট বিবরণ" />
+                <Textarea value={form.full} onChange={(e) => updateField("full", e.target.value)} placeholder="পূর্ণ বিবরণ" />
+                <Textarea value={form.highlights} onChange={(e) => updateField("highlights", e.target.value)} placeholder="হাইলাইটস: লাইন বা কমা দিয়ে আলাদা করুন" />
+                <Textarea value={form.includes} onChange={(e) => updateField("includes", e.target.value)} placeholder="প্যাকেজ আইটেম: লাইন বা কমা দিয়ে আলাদা করুন" />
+                <Textarea value={form.details} onChange={(e) => updateField("details", e.target.value)} placeholder="ডিটেইলস: Label: Value, প্রতি লাইনে একটি" />
+              </div>
             </div>
-            <Input value={form.image} onChange={(e) => updateField("image", e.target.value)} placeholder="/products/example.png বা image URL" required />
-            <div className="grid gap-3 md:grid-cols-2">
-              <Input value={form.offer} onChange={(e) => updateField("offer", e.target.value)} placeholder="অফার টেক্সট" />
-              <Input value={form.offerEnds} onChange={(e) => updateField("offerEnds", e.target.value)} placeholder="অফার শেষ" />
+            <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
+              <Button type="button" variant="outline" onClick={() => setShowForm(false)}>বাতিল</Button>
+              <Button type="submit" disabled={creating || uploadingImage}>পণ্য যোগ করুন</Button>
             </div>
-            <Input value={form.delivery} onChange={(e) => updateField("delivery", e.target.value)} placeholder="ডেলিভারি তথ্য" />
-            <Textarea value={form.description} onChange={(e) => updateField("description", e.target.value)} placeholder="ছোট বিবরণ" />
-            <Textarea value={form.full} onChange={(e) => updateField("full", e.target.value)} placeholder="পূর্ণ বিবরণ" />
-            <Textarea value={form.highlights} onChange={(e) => updateField("highlights", e.target.value)} placeholder="হাইলাইটস: লাইন বা কমা দিয়ে আলাদা করুন" />
-            <Textarea value={form.includes} onChange={(e) => updateField("includes", e.target.value)} placeholder="প্যাকেজ আইটেম: লাইন বা কমা দিয়ে আলাদা করুন" />
-            <Textarea value={form.details} onChange={(e) => updateField("details", e.target.value)} placeholder="ডিটেইলস: Label: Value, প্রতি লাইনে একটি" />
-            <Button type="submit" disabled={creating}>পণ্য যোগ করুন</Button>
           </form>
         </Card>
+      ) : null}
 
-        <div className="space-y-5">
-          <Card className="p-5">
-            <div className="grid gap-3 md:grid-cols-[1fr_220px]">
-              <div className="relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" size={16} />
-                <Input value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} placeholder="নাম, SKU বা ক্যাটাগরি" className="pl-10" />
+      <Card className="p-5">
+        <div className="grid gap-3 md:grid-cols-[1fr_220px]">
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" size={16} />
+            <Input value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} placeholder="নাম, SKU বা ক্যাটাগরি" className="pl-10" />
+          </div>
+          <Input value={category} onChange={(e) => { setCategory(e.target.value); setPage(1); }} placeholder="ক্যাটাগরি ফিল্টার" />
+        </div>
+      </Card>
+
+      <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+        {products.length ? products.map((product) => (
+          <article key={product.id} className="nexa-card overflow-hidden bg-surface">
+            <div className="relative aspect-[4/3] overflow-hidden bg-elevated">
+              <Image src={product.image} alt={product.name} fill sizes="(min-width: 1280px) 25vw, (min-width: 768px) 50vw, 100vw" className="object-cover" />
+              {product.offer ? <span className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-foreground px-3 py-1 text-xs font-bold text-white"><Tag size={14} />{product.offer}</span> : null}
+            </div>
+            <div className="p-5">
+              <div className="flex items-center justify-between gap-3">
+                <Badge tone="purple">{product.category}</Badge>
+                <span className="text-xs font-semibold text-gold-light">{product.sku}</span>
               </div>
-              <Input value={category} onChange={(e) => { setCategory(e.target.value); setPage(1); }} placeholder="ক্যাটাগরি ফিল্টার" />
+              <h3 className="mt-4 text-xl font-bold">{product.name}</h3>
+              <p className="mt-2 line-clamp-2 text-sm leading-7 text-muted">{product.description}</p>
+              <div className="mt-4 flex items-end justify-between gap-3 rounded-2xl border border-line bg-elevated p-3">
+                <div>
+                  <p className="text-xs text-muted">অফার মূল্য</p>
+                  <p className="text-lg font-black text-gold-light">{taka(product.price)}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-muted line-through">{taka(product.originalPrice)}</p>
+                  <p className="text-xs font-semibold text-foreground">{product.stock ?? "স্টক তথ্য নেই"}</p>
+                </div>
+              </div>
             </div>
+          </article>
+        )) : (
+          <Card className="p-5">
+            <p className="text-sm text-muted">{isLoading ? "পণ্য লোড হচ্ছে..." : "কোনো পণ্য পাওয়া যায়নি।"}</p>
           </Card>
+        )}
+      </div>
 
-          <div className="grid gap-5 md:grid-cols-2">
-            {products.length ? products.map((product) => (
-              <article key={product.id} className="nexa-card overflow-hidden bg-surface">
-                <div className="relative aspect-[4/3] overflow-hidden bg-elevated">
-                  <Image src={product.image} alt={product.name} fill sizes="(min-width: 768px) 45vw, 100vw" className="object-cover" />
-                  {product.offer ? <span className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-foreground px-3 py-1 text-xs font-bold text-white"><Tag size={14} />{product.offer}</span> : null}
-                </div>
-                <div className="p-5">
-                  <div className="flex items-center justify-between gap-3">
-                    <Badge tone="purple">{product.category}</Badge>
-                    <span className="text-xs font-semibold text-gold-light">{product.sku}</span>
-                  </div>
-                  <h3 className="mt-4 text-xl font-bold">{product.name}</h3>
-                  <p className="mt-2 line-clamp-2 text-sm leading-7 text-muted">{product.description}</p>
-                  <div className="mt-4 flex items-end justify-between gap-3 rounded-2xl border border-line bg-elevated p-3">
-                    <div>
-                      <p className="text-xs text-muted">অফার মূল্য</p>
-                      <p className="text-lg font-black text-gold-light">{taka(product.price)}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-xs text-muted line-through">{taka(product.originalPrice)}</p>
-                      <p className="text-xs font-semibold text-foreground">{product.stock ?? "স্টক তথ্য নেই"}</p>
-                    </div>
-                  </div>
-                </div>
-              </article>
-            )) : (
-              <Card className="p-5">
-                <p className="text-sm text-muted">{isLoading ? "পণ্য লোড হচ্ছে..." : "কোনো পণ্য পাওয়া যায়নি।"}</p>
-              </Card>
-            )}
-          </div>
-
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-muted">পৃষ্ঠা {toBn(data?.page ?? page)} / {toBn(totalPages)}</p>
-            <div className="flex gap-2">
-              <Button variant="outline" disabled={page <= 1} onClick={() => setPage((old) => Math.max(1, old - 1))}>আগের</Button>
-              <Button disabled={page >= totalPages} onClick={() => setPage((old) => Math.min(totalPages, old + 1))}>পরের</Button>
-            </div>
-          </div>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-sm text-muted">পৃষ্ঠা {toBn(data?.page ?? page)} / {toBn(totalPages)}</p>
+        <div className="flex gap-2">
+          <Button variant="outline" disabled={page <= 1} onClick={() => setPage((old) => Math.max(1, old - 1))}>আগের</Button>
+          <Button disabled={page >= totalPages} onClick={() => setPage((old) => Math.min(totalPages, old + 1))}>পরের</Button>
         </div>
       </div>
     </div>

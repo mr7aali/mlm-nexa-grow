@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { BrandLogo } from "@/components/brand-logo";
+import { LanguageToggle } from "@/components/language-toggle";
 
 export default function PublicProductsLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -19,9 +20,12 @@ export default function PublicProductsLayout({ children }: { children: React.Rea
             </Link>
           </div>
 
+          <div className="flex items-center gap-2">
+          <LanguageToggle />
           <Link href="/products" className="shrink-0 rounded-full bg-elevated px-4 py-2 text-sm font-bold text-gold transition hover:bg-elevated/90 sm:px-5 sm:py-2.5">
             পণ্য কিনুন
           </Link>
+          </div>
         </div>
       </nav>
 

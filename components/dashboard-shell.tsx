@@ -24,6 +24,7 @@ import {
   X,
 } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
+import { LanguageToggle } from "@/components/language-toggle";
 import { Button } from "@/components/ui";
 import { useGetMeQuery, useLogoutMutation } from "@/lib/api";
 import { clearCredentials } from "@/lib/auth-slice";
@@ -169,6 +170,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             </div>
           </div>
           <div className="flex items-center gap-3">
+            <LanguageToggle tone="light" className="hidden md:inline-flex" />
             <button className="relative rounded-full border border-line bg-surface p-3 text-gold-light" aria-label="নোটিফিকেশন">
               <Bell size={18} />
               <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-gold-light" />

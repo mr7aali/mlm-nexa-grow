@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, ArrowRight, Copy, Gift, Layers3, Mail, MapPin, Menu, Network, Phone, ShieldCheck, ShoppingBag, Sparkles, Tag, UserPlus, WalletCards, X } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
+import { LanguageToggle } from "@/components/language-toggle";
 import { Badge, Card, SectionHeading } from "@/components/ui";
 import { useGetProductsQuery } from "@/lib/api";
 import { taka, toBn } from "@/lib/utils";
@@ -166,6 +167,7 @@ export default function Home() {
             <Link href="/login" className="hover:text-white">লগইন</Link>
           </div>
           <div className="flex items-center gap-2">
+            <LanguageToggle className="hidden sm:inline-flex" />
             <Link href="/products" className="shrink-0 rounded-full bg-elevated px-4 py-2 text-sm font-bold text-gold transition hover:bg-elevated/90 sm:px-5 sm:py-2.5">পণ্য কিনুন</Link>
             <details className="group relative md:hidden">
               <summary className="grid h-10 w-10 cursor-pointer list-none place-items-center rounded-full border border-white/25 text-white transition hover:bg-white/10 [&::-webkit-details-marker]:hidden">
@@ -174,6 +176,9 @@ export default function Home() {
                 <span className="sr-only">মেনু</span>
               </summary>
               <div className="absolute right-0 top-12 z-50 w-56 overflow-hidden rounded-2xl border border-white/15 bg-gold p-2 text-sm font-semibold text-white shadow-2xl">
+                <div className="px-2 py-2 sm:hidden">
+                  <LanguageToggle className="w-full justify-center" />
+                </div>
                 <Link href="/products" className="block rounded-xl px-4 py-3 transition hover:bg-white/10">পণ্য</Link>
                 <a href="#about" className="block rounded-xl px-4 py-3 transition hover:bg-white/10">আমাদের সম্পর্কে</a>
                 <a href="#calculator" className="block rounded-xl px-4 py-3 transition hover:bg-white/10">ক্যালকুলেটর</a>

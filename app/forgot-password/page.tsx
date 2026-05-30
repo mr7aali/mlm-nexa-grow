@@ -8,6 +8,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, ArrowRight, MailCheck } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
+import { LanguageToggle } from "@/components/language-toggle";
 import { Button, Card, Input } from "@/components/ui";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { useForgotPasswordMutation } from "@/lib/api";
@@ -44,6 +45,9 @@ export default function ForgotPasswordPage() {
 
   return (
     <main className="grid min-h-screen place-items-center bg-[radial-gradient(circle_at_top,rgba(232,82,10,0.14),transparent_36%),#FFF8F4] px-4 py-10">
+      <div className="fixed right-4 top-4 z-50">
+        <LanguageToggle tone="light" />
+      </div>
       <Card className="w-full max-w-lg p-6 md:p-8">
         <Link href="/" className="mx-auto mb-6 flex w-max items-center gap-3">
           <BrandLogo className="h-16 w-16" priority />

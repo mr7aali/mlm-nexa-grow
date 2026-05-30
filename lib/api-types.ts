@@ -146,6 +146,8 @@ export type ProductInput = {
   details?: Array<{ label: string; value: string }>;
 };
 
+export type ProductUpdateInput = Partial<Omit<ProductInput, "id">>;
+
 export type ProductImageUpload = {
   url: string;
   publicId: string;

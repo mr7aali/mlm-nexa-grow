@@ -27,6 +27,11 @@ const optionalNumber = z.preprocess(
   z.number().nonnegative().optional(),
 );
 
+const productDetailsSchema = z.array(z.object({
+  label: z.string().trim().min(1),
+  value: z.string().trim().min(1),
+}));
+
 export const createProductSchema = z.object({
   id: z.string().trim().min(2).optional(),
   icon: z.string().trim().optional(),
@@ -46,8 +51,12 @@ export const createProductSchema = z.object({
   full: z.string().trim().optional(),
   highlights: z.array(z.string().trim().min(1)).optional(),
   includes: z.array(z.string().trim().min(1)).optional(),
-  details: z.array(z.object({
-    label: z.string().trim().min(1),
-    value: z.string().trim().min(1),
-  })).optional(),
+  details: productDetailsSchema.optional(),
 });
+
+export const updateProductSchema = createProductSchema
+  .omit({ id: true })
+  .partial()
+  .refine((value) => Object.keys(value).length > 0, {
+    message: "At least one product field is required",
+  });

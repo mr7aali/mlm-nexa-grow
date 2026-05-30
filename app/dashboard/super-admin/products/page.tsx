@@ -1,12 +1,19 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { ChangeEvent, FormEvent, useMemo, useState } from "react";
-import { Boxes, ImagePlus, PackagePlus, Plus, Search, Tag, X } from "lucide-react";
+import { Boxes, Eye, ImagePlus, PackagePlus, Pencil, Plus, Search, Tag, Trash2, X } from "lucide-react";
 import { Badge, Button, Card, Input, Textarea } from "@/components/ui";
 import { getApiErrorMessage } from "@/lib/api-error";
-import { useCreateAdminProductMutation, useGetAdminProductsQuery, useUploadAdminProductImageMutation } from "@/lib/api";
-import type { ProductInput } from "@/lib/api-types";
+import {
+  useCreateAdminProductMutation,
+  useDeleteAdminProductMutation,
+  useGetAdminProductsQuery,
+  useUpdateAdminProductMutation,
+  useUploadAdminProductImageMutation,
+} from "@/lib/api";
+import type { Product, ProductInput, ProductUpdateInput } from "@/lib/api-types";
 import { taka, toBn } from "@/lib/utils";
 
 const pageSize = 8;
@@ -31,11 +38,17 @@ const initialForm = {
   details: "",
 };
 
+type ProductForm = typeof initialForm;
+
 function listFromText(value: string) {
   return value
     .split(/\r?\n|,/)
     .map((item) => item.trim())
     .filter(Boolean);
+}
+
+function textFromList(value?: string[]) {
+  return value?.join("\n") ?? "";
 }
 
 function detailsFromText(value: string) {
@@ -51,12 +64,39 @@ function detailsFromText(value: string) {
     .filter((item): item is { label: string; value: string } => Boolean(item.label && item.value));
 }
 
+function textFromDetails(value?: Array<{ label: string; value: string }>) {
+  return value?.map((item) => `${item.label}: ${item.value}`).join("\n") ?? "";
+}
+
+function formFromProduct(product: Product): ProductForm {
+  return {
+    id: product.id,
+    name: product.name,
+    category: product.category,
+    image: product.image,
+    sku: product.sku,
+    price: String(product.price),
+    originalPrice: String(product.originalPrice),
+    commission: product.commission === undefined ? "" : String(product.commission),
+    stock: product.stock ?? "",
+    offer: product.offer ?? "",
+    offerEnds: product.offerEnds ?? "",
+    delivery: product.delivery ?? "",
+    description: product.description ?? "",
+    full: product.full ?? "",
+    highlights: textFromList(product.highlights),
+    includes: textFromList(product.includes),
+    details: textFromDetails(product.details),
+  };
+}
+
 export default function SuperAdminProductsPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState(initialForm);
+  const [editingProductId, setEditingProductId] = useState<string | null>(null);
+  const [form, setForm] = useState<ProductForm>(initialForm);
   const [message, setMessage] = useState("");
   const query = useMemo(() => ({
     page,
@@ -66,12 +106,37 @@ export default function SuperAdminProductsPage() {
   }), [category, page, search]);
   const { data, isLoading, error } = useGetAdminProductsQuery(query);
   const [createProduct, { isLoading: creating }] = useCreateAdminProductMutation();
+  const [updateProduct, { isLoading: updating }] = useUpdateAdminProductMutation();
+  const [deleteProduct, { isLoading: deleting }] = useDeleteAdminProductMutation();
   const [uploadImage, { isLoading: uploadingImage }] = useUploadAdminProductImageMutation();
   const products = data?.items ?? [];
   const totalPages = data?.totalPages ?? 1;
+  const saving = creating || updating;
+  const formMode = editingProductId ? "edit" : "create";
 
-  function updateField(name: keyof typeof form, value: string) {
+  function updateField(name: keyof ProductForm, value: string) {
     setForm((old) => ({ ...old, [name]: value }));
+  }
+
+  function resetForm() {
+    setForm(initialForm);
+    setEditingProductId(null);
+    setShowForm(false);
+  }
+
+  function startCreate() {
+    setMessage("");
+    setForm(initialForm);
+    setEditingProductId(null);
+    setShowForm(true);
+  }
+
+  function startEdit(product: Product) {
+    setMessage("");
+    setForm(formFromProduct(product));
+    setEditingProductId(product.id);
+    setShowForm(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   async function handleImageUpload(event: ChangeEvent<HTMLInputElement>) {
@@ -94,24 +159,22 @@ export default function SuperAdminProductsPage() {
     }
   }
 
-  async function handleCreate(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setMessage("");
-
+  function buildPayload(): ProductInput {
     const price = Number(form.price);
     const originalPrice = Number(form.originalPrice);
     const commission = form.commission ? Number(form.commission) : undefined;
 
     if (!form.image) {
-      setMessage("পণ্যের ছবি আপলোড করুন।");
-      return;
+      throw new Error("পণ্যের ছবি আপলোড করুন।");
     }
     if (!Number.isFinite(price) || price <= 0 || !Number.isFinite(originalPrice) || originalPrice <= 0) {
-      setMessage("সঠিক মূল্য লিখুন।");
-      return;
+      throw new Error("সঠিক মূল্য লিখুন।");
+    }
+    if (commission !== undefined && (!Number.isFinite(commission) || commission < 0)) {
+      throw new Error("সঠিক কমিশন লিখুন।");
     }
 
-    const payload: ProductInput = {
+    return {
       id: form.id.trim() || undefined,
       name: form.name.trim(),
       category: form.category.trim(),
@@ -130,15 +193,69 @@ export default function SuperAdminProductsPage() {
       includes: listFromText(form.includes),
       details: detailsFromText(form.details),
     };
+  }
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setMessage("");
+
+    let payload: ProductInput;
+    try {
+      payload = buildPayload();
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : "পণ্যের তথ্য সঠিক নয়।");
+      return;
+    }
 
     try {
-      await createProduct(payload).unwrap();
-      setMessage("পণ্য যোগ হয়েছে।");
-      setForm(initialForm);
-      setShowForm(false);
-      setPage(1);
+      if (editingProductId) {
+        const body: ProductUpdateInput = {
+          name: payload.name,
+          category: payload.category,
+          image: payload.image,
+          sku: payload.sku,
+          price: payload.price,
+          originalPrice: payload.originalPrice,
+          commission: payload.commission,
+          stock: payload.stock,
+          offer: payload.offer,
+          offerEnds: payload.offerEnds,
+          delivery: payload.delivery,
+          description: payload.description,
+          full: payload.full,
+          highlights: payload.highlights,
+          includes: payload.includes,
+          details: payload.details,
+        };
+        await updateProduct({ productId: editingProductId, body }).unwrap();
+        setMessage("পণ্য আপডেট হয়েছে।");
+      } else {
+        await createProduct(payload).unwrap();
+        setMessage("পণ্য যোগ হয়েছে।");
+        setPage(1);
+      }
+      resetForm();
     } catch (err) {
-      setMessage(getApiErrorMessage(err, "পণ্য যোগ করা ব্যর্থ হয়েছে"));
+      setMessage(getApiErrorMessage(err, editingProductId ? "পণ্য আপডেট ব্যর্থ হয়েছে" : "পণ্য যোগ করা ব্যর্থ হয়েছে"));
+    }
+  }
+
+  async function handleDelete(product: Product) {
+    setMessage("");
+    const confirmed = window.confirm(`${product.name} ডিলিট করবেন?`);
+    if (!confirmed) return;
+
+    try {
+      await deleteProduct(product.id).unwrap();
+      setMessage("পণ্য ডিলিট হয়েছে।");
+      if (products.length === 1 && page > 1) {
+        setPage((old) => old - 1);
+      }
+      if (editingProductId === product.id) {
+        resetForm();
+      }
+    } catch (err) {
+      setMessage(getApiErrorMessage(err, "পণ্য ডিলিট ব্যর্থ হয়েছে"));
     }
   }
 
@@ -154,7 +271,7 @@ export default function SuperAdminProductsPage() {
             <Boxes size={17} />
             মোট {toBn(data?.total ?? 0)} পণ্য
           </div>
-          <Button type="button" onClick={() => setShowForm((value) => !value)} className="shrink-0">
+          <Button type="button" onClick={showForm ? resetForm : startCreate} className="shrink-0">
             {showForm ? <X size={17} /> : <Plus size={17} />}
             {showForm ? "ফর্ম বন্ধ করুন" : "নতুন পণ্য যোগ করুন"}
           </Button>
@@ -169,12 +286,12 @@ export default function SuperAdminProductsPage() {
           <div className="mb-5 flex items-center gap-3">
             <span className="grid h-11 w-11 place-items-center rounded-full bg-gold/10 text-gold-light"><PackagePlus size={22} /></span>
             <div>
-              <h3 className="text-2xl font-bold">নতুন পণ্য যোগ করুন</h3>
-              <p className="text-sm text-muted">এই পণ্যটি পাবলিক catalog-এ দেখা যাবে।</p>
+              <h3 className="text-2xl font-bold">{formMode === "edit" ? "পণ্য আপডেট করুন" : "নতুন পণ্য যোগ করুন"}</h3>
+              <p className="text-sm text-muted">{formMode === "edit" ? "এই পরিবর্তন পাবলিক catalog-এ আপডেট হবে।" : "এই পণ্যটি পাবলিক catalog-এ দেখা যাবে।"}</p>
             </div>
           </div>
 
-          <form className="grid gap-5" onSubmit={handleCreate}>
+          <form className="grid gap-5" onSubmit={handleSubmit}>
             <div className="grid gap-5 lg:grid-cols-[320px_1fr]">
               <div className="space-y-3">
                 <div className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-line bg-elevated">
@@ -207,7 +324,7 @@ export default function SuperAdminProductsPage() {
                   <Input value={form.name} onChange={(e) => updateField("name", e.target.value)} placeholder="পণ্যের নাম" required />
                   <Input value={form.category} onChange={(e) => updateField("category", e.target.value)} placeholder="ক্যাটাগরি" required />
                   <Input value={form.sku} onChange={(e) => updateField("sku", e.target.value)} placeholder="SKU" required />
-                  <Input value={form.id} onChange={(e) => updateField("id", e.target.value)} placeholder="পণ্য ID (optional)" />
+                  <Input value={form.id} onChange={(e) => updateField("id", e.target.value)} placeholder="পণ্য ID (optional)" disabled={formMode === "edit"} />
                   <Input type="number" value={form.price} onChange={(e) => updateField("price", e.target.value)} placeholder="অফার মূল্য" required />
                   <Input type="number" value={form.originalPrice} onChange={(e) => updateField("originalPrice", e.target.value)} placeholder="নিয়মিত মূল্য" required />
                   <Input type="number" value={form.commission} onChange={(e) => updateField("commission", e.target.value)} placeholder="কমিশন" />
@@ -226,8 +343,8 @@ export default function SuperAdminProductsPage() {
               </div>
             </div>
             <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
-              <Button type="button" variant="outline" onClick={() => setShowForm(false)}>বাতিল</Button>
-              <Button type="submit" disabled={creating || uploadingImage}>পণ্য যোগ করুন</Button>
+              <Button type="button" variant="outline" onClick={resetForm}>বাতিল</Button>
+              <Button type="submit" disabled={saving || uploadingImage}>{formMode === "edit" ? "আপডেট করুন" : "পণ্য যোগ করুন"}</Button>
             </div>
           </form>
         </Card>
@@ -266,6 +383,20 @@ export default function SuperAdminProductsPage() {
                   <p className="text-xs text-muted line-through">{taka(product.originalPrice)}</p>
                   <p className="text-xs font-semibold text-foreground">{product.stock ?? "স্টক তথ্য নেই"}</p>
                 </div>
+              </div>
+              <div className="mt-4 grid grid-cols-3 gap-2">
+                <Link href={`/products/${product.id}`} className="outline-gold inline-flex min-h-10 items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold transition hover:bg-gold/10">
+                  <Eye size={15} />
+                  দেখুন
+                </Link>
+                <Button type="button" variant="outline" className="min-h-10 px-3 py-2 text-xs" onClick={() => startEdit(product)}>
+                  <Pencil size={15} />
+                  এডিট
+                </Button>
+                <Button type="button" variant="danger" className="min-h-10 px-3 py-2 text-xs" disabled={deleting} onClick={() => handleDelete(product)}>
+                  <Trash2 size={15} />
+                  ডিলিট
+                </Button>
               </div>
             </div>
           </article>

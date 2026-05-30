@@ -21,6 +21,7 @@ import type {
   Product,
   ProductImageUpload,
   ProductInput,
+  ProductUpdateInput,
   ReferralsResponse,
   WingsResponse,
 } from "@/lib/api-types";
@@ -289,10 +290,47 @@ export const api = createApi({
       transformResponse: unwrap<PaginatedResponse<Product>>,
       providesTags: ["AdminProducts"],
     }),
+    getAdminProduct: builder.query<Product, string>({
+      query: (productId) => `/admin/products/${productId}`,
+      transformResponse: unwrap<Product>,
+      providesTags: (_result, _error, productId) => [
+        { type: "AdminProducts", id: productId },
+      ],
+    }),
     createAdminProduct: builder.mutation<Product, ProductInput>({
       query: (body) => ({ url: "/admin/products", method: "POST", body }),
       transformResponse: unwrap<Product>,
       invalidatesTags: ["AdminProducts", "Products"],
+    }),
+    updateAdminProduct: builder.mutation<
+      Product,
+      { productId: string; body: ProductUpdateInput }
+    >({
+      query: ({ productId, body }) => ({
+        url: `/admin/products/${productId}`,
+        method: "PATCH",
+        body,
+      }),
+      transformResponse: unwrap<Product>,
+      invalidatesTags: (_result, _error, { productId }) => [
+        "AdminProducts",
+        "Products",
+        { type: "AdminProducts", id: productId },
+        { type: "Products", id: productId },
+      ],
+    }),
+    deleteAdminProduct: builder.mutation<{ deleted: boolean; productId: string }, string>({
+      query: (productId) => ({
+        url: `/admin/products/${productId}`,
+        method: "DELETE",
+      }),
+      transformResponse: unwrap<{ deleted: boolean; productId: string }>,
+      invalidatesTags: (_result, _error, productId) => [
+        "AdminProducts",
+        "Products",
+        { type: "AdminProducts", id: productId },
+        { type: "Products", id: productId },
+      ],
     }),
     uploadAdminProductImage: builder.mutation<ProductImageUpload, File>({
       query: (file) => {
@@ -318,11 +356,13 @@ export const {
   useBroadcastNotificationMutation,
   useCreateWithdrawalMutation,
   useForgotPasswordMutation,
+  useDeleteAdminProductMutation,
   useGetCommissionsQuery,
   useGetDashboardQuery,
   useGetEarningsQuery,
   useGetMeQuery,
   useGetAdminUsersQuery,
+  useGetAdminProductQuery,
   useGetAdminProductsQuery,
   useGetAdminWithdrawalsQuery,
   useGetProductQuery,
@@ -333,6 +373,7 @@ export const {
   useLogoutMutation,
   useRegisterMutation,
   useResetPasswordMutation,
+  useUpdateAdminProductMutation,
   useUploadAdminProductImageMutation,
   useUpdateAdminUserStatusMutation,
   useUpdateAdminUserRoleMutation,

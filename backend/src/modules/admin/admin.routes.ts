@@ -15,6 +15,7 @@ import {
   broadcastSchema,
   createProductSchema,
   creditCommissionSchema,
+  updateProductSchema,
   updateUserRoleSchema,
   updateWithdrawalStatusSchema,
   updateUserStatusSchema,
@@ -54,6 +55,24 @@ function slugify(value: string) {
     .replace(/^-+|-+$/g, "");
 
   return slug || `product-${Date.now()}`;
+}
+
+function productDiscountPercent(values: { price?: number; originalPrice?: number; discountPercent?: number }) {
+  if (values.discountPercent !== undefined) {
+    return values.discountPercent;
+  }
+
+  if (values.price !== undefined && values.originalPrice !== undefined && values.originalPrice > 0) {
+    return Math.max(0, Math.round(((values.originalPrice - values.price) / values.originalPrice) * 100));
+  }
+
+  return undefined;
+}
+
+function removeUndefinedValues<T extends Record<string, unknown>>(values: T) {
+  return Object.fromEntries(
+    Object.entries(values).filter(([, value]) => value !== undefined),
+  );
 }
 
 adminRouter.get("/users", async (_req, res, next) => {
@@ -174,6 +193,16 @@ adminRouter.get("/products", async (req, res, next) => {
   }
 });
 
+adminRouter.get("/products/:productId", async (req, res, next) => {
+  try {
+    const product = await ProductModel.findOne({ id: String(req.params.productId) }).lean();
+    if (!product) throw new HttpError(404, "Product not found");
+    res.json(ok(product));
+  } catch (error) {
+    next(error);
+  }
+});
+
 adminRouter.post("/products", validateBody(createProductSchema), async (req, res, next) => {
   try {
     const id = req.body.id?.trim() || slugify(req.body.name);
@@ -188,15 +217,60 @@ adminRouter.post("/products", validateBody(createProductSchema), async (req, res
     const product = await ProductModel.create({
       ...req.body,
       id,
-      discountPercent:
-        req.body.discountPercent ??
-        Math.max(0, Math.round(((req.body.originalPrice - req.body.price) / req.body.originalPrice) * 100)),
+      discountPercent: productDiscountPercent(req.body),
       highlights: req.body.highlights ?? [],
       includes: req.body.includes ?? [],
       details: req.body.details ?? [],
     });
 
     res.status(201).json(ok(product, "Product added"));
+  } catch (error) {
+    next(error);
+  }
+});
+
+adminRouter.patch("/products/:productId", validateBody(updateProductSchema), async (req, res, next) => {
+  try {
+    const product = await ProductModel.findOne({ id: String(req.params.productId) });
+    if (!product) throw new HttpError(404, "Product not found");
+
+    if (req.body.sku && req.body.sku !== product.sku) {
+      const skuExists = await ProductModel.findOne({
+        id: { $ne: product.id },
+        sku: req.body.sku,
+      });
+
+      if (skuExists) {
+        throw new HttpError(409, "Product SKU already exists");
+      }
+    }
+
+    const updates = removeUndefinedValues({
+      ...req.body,
+      discountPercent: productDiscountPercent({
+        price: req.body.price ?? product.price,
+        originalPrice: req.body.originalPrice ?? product.originalPrice,
+        discountPercent: req.body.discountPercent,
+      }),
+    });
+
+    const updatedProduct = await ProductModel.findOneAndUpdate(
+      { id: product.id },
+      { $set: updates },
+      { new: true },
+    ).lean();
+
+    res.json(ok(updatedProduct, "Product updated"));
+  } catch (error) {
+    next(error);
+  }
+});
+
+adminRouter.delete("/products/:productId", async (req, res, next) => {
+  try {
+    const product = await ProductModel.findOneAndDelete({ id: String(req.params.productId) }).lean();
+    if (!product) throw new HttpError(404, "Product not found");
+    res.json(ok({ deleted: true, productId: product.id }, "Product deleted"));
   } catch (error) {
     next(error);
   }

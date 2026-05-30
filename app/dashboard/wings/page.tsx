@@ -30,20 +30,20 @@ export default function WingsPage() {
     <div className="space-y-6">
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
-          <p className="text-sm text-gold-light">Referral network</p>
-          <h2 className="heading-gradient text-4xl font-black">My Wings</h2>
+          <p className="text-sm text-gold-light">রেফারেল নেটওয়ার্ক</p>
+          <h2 className="heading-gradient text-4xl font-black">মাই উইংস</h2>
         </div>
-        <Button variant="outline"><Download size={16} /> Export image</Button>
+        <Button variant="outline"><Download size={16} /> ইমেজ এক্সপোর্ট</Button>
       </div>
 
-      {isLoading ? <p className="text-sm text-muted">Loading network...</p> : null}
+      {isLoading ? <p className="text-sm text-muted">নেটওয়ার্ক লোড হচ্ছে...</p> : null}
 
       <div className="grid gap-5 md:grid-cols-4">
         {[
-          ["Left wing", toBn(data?.summary.leftWing ?? 0)],
-          ["Right wing", toBn(data?.summary.rightWing ?? 0)],
-          ["Active members", toBn(data?.summary.activeMembers ?? 0)],
-          ["Inactive members", toBn(data?.summary.inactiveMembers ?? 0)],
+          ["লেফট উইং", toBn(data?.summary.leftWing ?? 0)],
+          ["রাইট উইং", toBn(data?.summary.rightWing ?? 0)],
+          ["সক্রিয় সদস্য", toBn(data?.summary.activeMembers ?? 0)],
+          ["নিষ্ক্রিয় সদস্য", toBn(data?.summary.inactiveMembers ?? 0)],
         ].map(([label, value]) => (
           <Card key={label} className="p-5">
             <p className="text-sm text-muted">{label}</p>
@@ -56,17 +56,17 @@ export default function WingsPage() {
         <div className="grid gap-3 md:grid-cols-[1fr_180px_180px_auto]">
           <div className="relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" size={16} />
-            <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search by name" className="pl-10" />
+            <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="নাম দিয়ে খুঁজুন" className="pl-10" />
           </div>
           <Select value={level} onChange={(e) => setLevel(e.target.value)}>
-            <option value="all">All levels</option>
-            {[1, 2, 3, 4, 5, 6].map((item) => <option key={item} value={item}>Level {toBn(item)}</option>)}
+            <option value="all">সব লেভেল</option>
+            {[1, 2, 3, 4, 5, 6].map((item) => <option key={item} value={item}>লেভেল {toBn(item)}</option>)}
           </Select>
           <label className="flex h-12 items-center gap-2 rounded-2xl border border-line bg-elevated/70 px-4 text-sm text-muted">
             <input type="checkbox" checked={activeOnly} onChange={(event) => setActiveOnly(event.target.checked)} className="accent-gold" />
-            Active only
+            শুধু সক্রিয়
           </label>
-          <div className="rounded-2xl border border-gold/20 bg-gold/10 px-4 py-3 text-sm text-gold-light">Total network: {toBn(total)}</div>
+          <div className="rounded-2xl border border-gold/20 bg-gold/10 px-4 py-3 text-sm text-gold-light">মোট নেটওয়ার্ক: {toBn(total)}</div>
         </div>
       </Card>
 
@@ -80,7 +80,7 @@ export default function WingsPage() {
               filter={{ level, activeOnly, query }}
             />
           ) : (
-            <p className="text-sm text-muted">No network data yet.</p>
+            <p className="text-sm text-muted">নেটওয়ার্ক ডেটা নেই।</p>
           )}
         </div>
       </Card>
@@ -116,11 +116,11 @@ function TreeView({
           <div className="flex-1">
             <div className="flex items-center gap-2">
               <h3 className="font-bold">{node.name}</h3>
-              <Badge tone={node.active ? "green" : "muted"}>{node.active ? "Active" : "Inactive"}</Badge>
+              <Badge tone={node.active ? "green" : "muted"}>{node.active ? "সক্রিয়" : "নিষ্ক্রিয়"}</Badge>
             </div>
-            <p className="text-sm text-muted">Joined: {node.joined} · Own referrals: {toBn(node.referrals)}</p>
+            <p className="text-sm text-muted">যোগদান: {node.joined} · নিজস্ব রেফারেল: {toBn(node.referrals)}</p>
           </div>
-          <Badge tone={node.level === 0 ? "gold" : "purple"}>{node.level === 0 ? "Root" : `Level ${toBn(node.level)}`}</Badge>
+          <Badge tone={node.level === 0 ? "gold" : "purple"}>{node.level === 0 ? "মূল" : `লেভেল ${toBn(node.level)}`}</Badge>
         </div>
       </div>
       {childrenVisible ? (

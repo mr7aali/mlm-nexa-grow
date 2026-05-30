@@ -14,9 +14,17 @@ import { createOrderSchema } from "./modules/products/products.schemas";
 export function createApp() {
   const app = express();
 
+  // app.use(
+  //   cors({
+  //     origin: env.clientOrigin,
+  //     credentials: true,
+  //   }),
+  // );
   app.use(
     cors({
-      origin: env.clientOrigin,
+      origin: (origin, callback) => {
+        callback(null, true);
+      },
       credentials: true,
     }),
   );

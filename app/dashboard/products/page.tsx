@@ -19,11 +19,11 @@ export default function ProductsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <p className="text-sm text-gold-light">Product catalog</p>
-        <h2 className="heading-gradient text-4xl font-black">Products</h2>
+        <p className="text-sm text-gold-light">পণ্য ক্যাটালগ</p>
+        <h2 className="heading-gradient text-4xl font-black">পণ্য</h2>
       </div>
 
-      {isLoading ? <p className="text-sm text-muted">Loading products...</p> : null}
+      {isLoading ? <p className="text-sm text-muted">পণ্য লোড হচ্ছে...</p> : null}
 
       <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
         {productRows.length ? productRows.map((product) => {
@@ -59,12 +59,12 @@ export default function ProductsPage() {
                 <div className="mt-4 rounded-2xl border border-line bg-elevated p-3">
                   <div className="flex flex-wrap items-end justify-between gap-2">
                     <div>
-                      <p className="text-xs text-muted">Offer price</p>
+                      <p className="text-xs text-muted">অফার মূল্য</p>
                       <p className="text-lg font-black text-gold-light">{taka(product.price)}</p>
                     </div>
                     <div className="text-right">
                       <p className="text-xs text-muted line-through">{taka(product.originalPrice)}</p>
-                      <p className="text-xs font-semibold text-foreground">Save {taka(product.originalPrice - product.price)}</p>
+                      <p className="text-xs font-semibold text-foreground">সাশ্রয় {taka(product.originalPrice - product.price)}</p>
                     </div>
                   </div>
                 </div>
@@ -75,19 +75,19 @@ export default function ProductsPage() {
                     className="gold-button inline-flex min-h-11 items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold"
                   >
                     <Eye size={16} />
-                    Details
+                    বিস্তারিত
                   </Link>
                   <Button variant="outline" className="w-full px-4" onClick={() => setSelected(product)}>
-                    Refer
+                    রেফার করুন
                   </Button>
                 </div>
               </div>
             </article>
           );
-        }) : <p className="text-sm text-muted">No products are available yet.</p>}
+        }) : <p className="text-sm text-muted">পণ্য নেই।</p>}
       </div>
 
-      <Modal open={Boolean(selected)} title={selected?.name ?? "Product"} onClose={() => setSelected(null)}>
+      <Modal open={Boolean(selected)} title={selected?.name ?? "পণ্য"} onClose={() => setSelected(null)}>
         {selected ? (
           <div className="space-y-5">
             <div className="relative aspect-[16/9] overflow-hidden rounded-[18px] border border-line bg-elevated">
@@ -95,20 +95,20 @@ export default function ProductsPage() {
               {selected.offer ? <div className="absolute left-3 top-3 rounded-full bg-foreground px-3 py-1 text-xs font-bold text-white">{selected.offer}</div> : null}
             </div>
             <div className="rounded-[18px] border border-line bg-elevated p-4">
-              <p className="text-sm text-muted">Full description</p>
+              <p className="text-sm text-muted">পূর্ণ বিবরণ</p>
               <p className="mt-2 leading-8">{selected.full}</p>
               <div className="mt-3 flex flex-wrap items-center gap-3">
                 <p className="font-bold text-gold-light">{taka(selected.price)}</p>
                 <p className="text-sm text-muted line-through">{taka(selected.originalPrice)}</p>
-                <Badge tone="gold">Commission {taka(selected.commission ?? 0)}</Badge>
+                <Badge tone="gold">কমিশন {taka(selected.commission ?? 0)}</Badge>
               </div>
             </div>
             <div>
-              <p className="mb-2 text-sm text-muted">Product referral link</p>
+              <p className="mb-2 text-sm text-muted">প্রোডাক্ট রেফারেল লিংক</p>
               <div className="break-all rounded-2xl border border-line bg-elevated p-4 text-sm text-gold-light">{link}</div>
             </div>
             <div className="grid gap-3 sm:grid-cols-3">
-              <CopyButton value={link} label="Copy link" />
+              <CopyButton value={link} label="লিংক কপি" />
               <Button variant="outline"><MessageCircle size={16} /> WhatsApp</Button>
               <Button variant="outline"><Share2 size={16} /> Facebook</Button>
             </div>

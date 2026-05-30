@@ -1,11 +1,11 @@
 "use client";
 
 import { Languages } from "lucide-react";
-import { useLanguage } from "@/lib/language";
+import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 export function LanguageToggle({ className, tone = "gold" }: { className?: string; tone?: "gold" | "light" }) {
-  const { language, setLanguage } = useLanguage();
+  const { language, setLanguage } = useI18n();
   const isLight = tone === "light";
 
   return (

@@ -185,6 +185,7 @@ const sortedPhrases = Object.entries({ ...phraseBnToEn, ...exactBnToEn })
   .sort(([left], [right]) => right.length - left.length);
 
 const banglaDigits = ["০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"];
+const hasBanglaPattern = /[\u0980-\u09FF]/;
 
 function escapeRegExp(value: string) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -198,6 +199,7 @@ export function translateText(value: string, language: Language) {
   const core = value.trim();
 
   if (!core) return value;
+  if (!hasBanglaPattern.test(core) && !core.includes("৳")) return value;
 
   let translated = exactBnToEn[core] ?? core;
 

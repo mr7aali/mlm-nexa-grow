@@ -1,44 +1,46 @@
-import type { Metadata } from "next";
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import type { ReactNode } from "react";
+import { useParams } from "next/navigation";
 import { ArrowLeft, ArrowRight, CheckCircle2, Clock3, PackageCheck, ShieldCheck, Tag, Truck } from "lucide-react";
-import { getProductById, products } from "@/lib/mock-data";
+import { useGetProductQuery } from "@/lib/api";
 import { taka } from "@/lib/utils";
 
-type PublicProductDetailsPageProps = {
-  params: {
-    productId: string;
-  };
-};
+export default function PublicProductDetailsPage() {
+  const params = useParams<{ productId: string }>();
+  const productId = params.productId;
+  const { data: product, isLoading, isError } = useGetProductQuery(productId, { skip: !productId });
 
-export function generateStaticParams() {
-  return products.map((product) => ({
-    productId: product.id,
-  }));
-}
-
-export function generateMetadata({ params }: PublicProductDetailsPageProps): Metadata {
-  const product = getProductById(params.productId);
-
-  return {
-    title: product ? `${product.name} কিনুন | GIOTO` : "পণ্য পাওয়া যায়নি",
-    description: product?.description,
-  };
-}
-
-export default function PublicProductDetailsPage({ params }: PublicProductDetailsPageProps) {
-  const product = getProductById(params.productId);
-
-  if (!product) {
-    notFound();
+  if (isLoading) {
+    return <div className="mx-auto max-w-7xl px-4 py-8 text-sm text-muted">Loading product...</div>;
   }
+
+  if (isError || !product) {
+    return (
+      <div className="mx-auto max-w-7xl px-4 py-8">
+        <Link href="/products" className="inline-flex items-center gap-2 text-sm font-semibold text-muted hover:text-gold">
+          <ArrowLeft size={17} />
+          All products
+        </Link>
+        <div className="mt-6 rounded-[18px] border border-line bg-surface p-6">
+          <h1 className="text-2xl font-bold">Product not found</h1>
+          <p className="mt-2 text-muted">This product does not exist in the live catalog.</p>
+        </div>
+      </div>
+    );
+  }
+
+  const highlights = product.highlights ?? [];
+  const includes = product.includes ?? [];
+  const details = product.details ?? [];
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
       <Link href="/products" className="inline-flex items-center gap-2 text-sm font-semibold text-muted hover:text-gold">
         <ArrowLeft size={17} />
-        সব পণ্য
+        All products
       </Link>
 
       <section className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1.08fr)_minmax(360px,0.92fr)]">
@@ -53,69 +55,47 @@ export default function PublicProductDetailsPage({ params }: PublicProductDetail
               className="object-cover"
             />
           </div>
-          <div className="absolute left-4 top-4 inline-flex items-center gap-2 rounded-full bg-foreground px-4 py-2 text-sm font-bold text-white">
-            <Tag size={16} />
-            {product.offer}
-          </div>
+          {product.offer ? (
+            <div className="absolute left-4 top-4 inline-flex items-center gap-2 rounded-full bg-foreground px-4 py-2 text-sm font-bold text-white">
+              <Tag size={16} />
+              {product.offer}
+            </div>
+          ) : null}
         </div>
 
         <div className="space-y-5">
           <div>
             <p className="text-sm font-semibold text-gold-light">{product.category}</p>
             <h1 className="mt-2 text-3xl font-black leading-tight md:text-5xl">{product.name}</h1>
-            <p className="mt-4 leading-8 text-muted">{product.full}</p>
+            <p className="mt-4 leading-8 text-muted">{product.full ?? product.description}</p>
           </div>
 
           <div className="rounded-[18px] border border-line bg-surface p-5">
             <div className="flex flex-wrap items-end justify-between gap-4">
               <div>
-                <p className="text-sm text-muted">অফার মূল্য</p>
+                <p className="text-sm text-muted">Offer price</p>
                 <p className="mt-1 text-4xl font-black text-gold-light">{taka(product.price)}</p>
                 <p className="mt-1 text-sm text-muted">
-                  নিয়মিত মূল্য <span className="line-through">{taka(product.originalPrice)}</span>
+                  Regular price <span className="line-through">{taka(product.originalPrice)}</span>
                 </p>
               </div>
               <span className="inline-flex rounded-full border border-gold bg-gold/10 px-3 py-1 text-xs font-semibold text-gold">
-                সাশ্রয় {taka(product.originalPrice - product.price)}
+                Save {taka(product.originalPrice - product.price)}
               </span>
             </div>
 
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              <div className="rounded-2xl border border-line bg-elevated p-4">
-                <p className="flex items-center gap-2 text-sm font-semibold">
-                  <PackageCheck size={17} />
-                  স্টক
-                </p>
-                <p className="mt-2 text-sm text-muted">{product.stock}</p>
-              </div>
-              <div className="rounded-2xl border border-line bg-elevated p-4">
-                <p className="flex items-center gap-2 text-sm font-semibold">
-                  <Clock3 size={17} />
-                  অফার শেষ
-                </p>
-                <p className="mt-2 text-sm text-muted">{product.offerEnds}</p>
-              </div>
-              <div className="rounded-2xl border border-line bg-elevated p-4">
-                <p className="flex items-center gap-2 text-sm font-semibold">
-                  <ShieldCheck size={17} />
-                  নিশ্চয়তা
-                </p>
-                <p className="mt-2 text-sm text-muted">ক্যাশ অন ডেলিভারি সুবিধা</p>
-              </div>
-              <div className="rounded-2xl border border-line bg-elevated p-4">
-                <p className="flex items-center gap-2 text-sm font-semibold">
-                  <Truck size={17} />
-                  ডেলিভারি
-                </p>
-                <p className="mt-2 text-sm text-muted">{product.delivery}</p>
-              </div>
+              <InfoBox icon={<PackageCheck size={17} />} label="Stock" value={product.stock ?? "Available"} />
+              <InfoBox icon={<Clock3 size={17} />} label="Offer ends" value={product.offerEnds ?? "Not scheduled"} />
+              <InfoBox icon={<ShieldCheck size={17} />} label="Payment" value="Cash on delivery available" />
+              <InfoBox icon={<Truck size={17} />} label="Delivery" value={product.delivery ?? "Standard delivery"} />
             </div>
 
             <Link
               href={`/products/${product.id}/checkout`}
               className="gold-button mt-5 inline-flex w-full min-h-12 items-center justify-center gap-2 px-5 py-3 text-sm font-bold"
             >
-              চেকআউট করুন
+              Checkout
               <ArrowRight size={17} />
             </Link>
           </div>
@@ -124,25 +104,25 @@ export default function PublicProductDetailsPage({ params }: PublicProductDetail
 
       <section className="mt-6 grid gap-5 lg:grid-cols-[1fr_0.8fr]">
         <div className="nexa-card p-5">
-          <h2 className="text-2xl font-bold">হাইলাইটস</h2>
+          <h2 className="text-2xl font-bold">Highlights</h2>
           <div className="mt-4 grid gap-3">
-            {product.highlights.map((item) => (
+            {highlights.length ? highlights.map((item) => (
               <div key={item} className="flex items-start gap-3 rounded-2xl border border-line bg-elevated p-4">
                 <CheckCircle2 className="mt-1 shrink-0 text-gold-light" size={18} />
                 <p className="leading-7 text-muted">{item}</p>
               </div>
-            ))}
+            )) : <p className="text-sm text-muted">No highlights have been added for this product.</p>}
           </div>
         </div>
 
         <div className="nexa-card p-5">
-          <h2 className="text-2xl font-bold">প্যাকেজে যা আছে</h2>
+          <h2 className="text-2xl font-bold">Package includes</h2>
           <div className="mt-4 space-y-3">
-            {product.includes.map((item) => (
+            {includes.length ? includes.map((item) => (
               <div key={item} className="rounded-2xl border border-line bg-elevated px-4 py-3 text-sm font-semibold">
                 {item}
               </div>
-            ))}
+            )) : <p className="text-sm text-muted">No package items have been added.</p>}
           </div>
         </div>
       </section>
@@ -151,7 +131,7 @@ export default function PublicProductDetailsPage({ params }: PublicProductDetail
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-sm text-gold-light">SKU: {product.sku}</p>
-            <h2 className="mt-1 text-2xl font-bold">পণ্যের সম্পূর্ণ তথ্য</h2>
+            <h2 className="mt-1 text-2xl font-bold">Product details</h2>
           </div>
           <span className="inline-flex rounded-full border border-line bg-elevated px-3 py-1 text-xs font-semibold text-muted">
             {product.category}
@@ -159,14 +139,26 @@ export default function PublicProductDetailsPage({ params }: PublicProductDetail
         </div>
 
         <div className="mt-5 grid gap-3 md:grid-cols-3">
-          {product.details.map((item) => (
+          {details.length ? details.map((item) => (
             <div key={item.label} className="rounded-2xl border border-line bg-elevated p-4">
               <p className="text-sm text-muted">{item.label}</p>
               <p className="mt-2 font-semibold">{item.value}</p>
             </div>
-          ))}
+          )) : <p className="text-sm text-muted">No extra details have been added.</p>}
         </div>
       </section>
+    </div>
+  );
+}
+
+function InfoBox({ icon, label, value }: { icon: ReactNode; label: string; value: string }) {
+  return (
+    <div className="rounded-2xl border border-line bg-elevated p-4">
+      <p className="flex items-center gap-2 text-sm font-semibold">
+        {icon}
+        {label}
+      </p>
+      <p className="mt-2 text-sm text-muted">{value}</p>
     </div>
   );
 }

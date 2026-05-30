@@ -4,18 +4,21 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:backend": "npm --prefix backend run dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
+    "@reduxjs/toolkit": "^2.12.0",
     "framer-motion": "^12.39.0",
     "lucide-react": "^1.16.0",
     "next": "14.2.35",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-hook-form": "^7.76.0",
+    "react-redux": "^9.3.0",
     "recharts": "^3.8.1",
     "zod": "^4.4.3"
   },

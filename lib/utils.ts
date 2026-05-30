@@ -11,8 +11,8 @@ export function taka(value: number) {
   return `৳${toBn(value.toLocaleString("en-IN"))}`;
 }
 
-export function referralLink(code = "NXG-RAFI-2048") {
-  return `https://giotobangladesh.com/register?ref=${code}`;
+export function referralLink(code: string) {
+  return code;
 }
 
 export function initials(name: string) {

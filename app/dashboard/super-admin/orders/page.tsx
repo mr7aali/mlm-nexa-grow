@@ -1,0 +1,160 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import { CheckCircle2, Clock3, Search, ShoppingBag, XCircle } from "lucide-react";
+import { Button, Card, Input, Select } from "@/components/ui";
+import { getApiErrorMessage } from "@/lib/api-error";
+import { useGetAdminOrdersQuery, useUpdateAdminOrderStatusMutation } from "@/lib/api";
+import type { AdminOrder, OrderStatus } from "@/lib/api-types";
+import { taka, toBn } from "@/lib/utils";
+
+const pageSize = 10;
+type StatusFilter = "all" | OrderStatus;
+
+function formatDate(value: string) {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? value : date.toLocaleString("en-GB");
+}
+
+export default function SuperAdminOrdersPage() {
+  const [page, setPage] = useState(1);
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState<StatusFilter>("all");
+  const [method, setMethod] = useState("");
+  const [message, setMessage] = useState("");
+  const query = useMemo(() => ({
+    page,
+    limit: pageSize,
+    search: search.trim() || undefined,
+    status: status === "all" ? undefined : status,
+    method: method.trim() || undefined,
+  }), [method, page, search, status]);
+  const { data, isLoading, error } = useGetAdminOrdersQuery(query);
+  const [updateOrder, { isLoading: updating }] = useUpdateAdminOrderStatusMutation();
+  const orders = data?.items ?? [];
+  const totalPages = data?.totalPages ?? 1;
+  const pageTotal = orders.reduce((sum, order) => sum + order.total, 0);
+
+  async function handleStatus(orderId: string, nextStatus: AdminOrder["status"]) {
+    setMessage("");
+    try {
+      await updateOrder({ orderId, status: nextStatus }).unwrap();
+      setMessage("Order status updated.");
+    } catch (err) {
+      setMessage(getApiErrorMessage(err, "Order status update failed"));
+    }
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
+        <div>
+          <p className="text-sm text-gold-light">Super admin</p>
+          <h2 className="heading-gradient text-4xl font-black">Checkout Orders</h2>
+        </div>
+        <div className="inline-flex w-fit items-center gap-2 rounded-full border border-gold/20 bg-gold/10 px-4 py-2 text-sm font-semibold text-gold-light">
+          <ShoppingBag size={17} />
+          Total {toBn(data?.total ?? 0)} orders
+        </div>
+      </div>
+
+      {message ? <p className="rounded-2xl border border-gold/20 bg-gold/10 px-4 py-3 text-sm text-gold">{message}</p> : null}
+      {error ? <p className="rounded-2xl border border-foreground/20 bg-foreground/5 px-4 py-3 text-sm text-foreground">{getApiErrorMessage(error, "Order history load failed")}</p> : null}
+
+      <div className="grid gap-5 md:grid-cols-4">
+        <Card><p className="text-sm text-muted">This page sales</p><p className="mt-2 text-3xl font-black text-gold-light">{taka(pageTotal)}</p></Card>
+        <Card><p className="text-sm text-muted">Confirmed</p><p className="mt-2 text-3xl font-black text-gold-light">{toBn(orders.filter((item) => item.status === "Confirmed").length)}</p></Card>
+        <Card><p className="text-sm text-muted">Pending</p><p className="mt-2 text-3xl font-black text-gold-light">{toBn(orders.filter((item) => item.status === "Pending").length)}</p></Card>
+        <Card><p className="text-sm text-muted">Cancelled</p><p className="mt-2 text-3xl font-black text-gold-light">{toBn(orders.filter((item) => item.status === "Cancelled").length)}</p></Card>
+      </div>
+
+      <Card className="p-5">
+        <div className="grid gap-3 lg:grid-cols-[1fr_180px_180px]">
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" size={16} />
+            <Input
+              value={search}
+              onChange={(event) => { setSearch(event.target.value); setPage(1); }}
+              placeholder="Search order, user, phone, product, SKU"
+              className="pl-10"
+            />
+          </div>
+          <Select value={status} onChange={(event) => { setStatus(event.target.value as StatusFilter); setPage(1); }}>
+            <option value="all">All status</option>
+            <option value="Pending">Pending</option>
+            <option value="Confirmed">Confirmed</option>
+            <option value="Cancelled">Cancelled</option>
+          </Select>
+          <Input value={method} onChange={(event) => { setMethod(event.target.value); setPage(1); }} placeholder="Payment method" />
+        </div>
+      </Card>
+
+      <Card className="overflow-x-auto p-0 scrollbar-soft">
+        <table className="w-full min-w-[1220px] text-left text-sm">
+          <thead className="bg-elevated text-muted">
+            <tr>{["Date", "Order", "Member", "Product", "Payment", "Quantity", "Total", "Status", "Action"].map((head) => <th key={head} className="px-5 py-4">{head}</th>)}</tr>
+          </thead>
+          <tbody>
+            {orders.length ? orders.map((item) => (
+              <tr key={item.id} className="border-t border-line align-top">
+                <td className="px-5 py-4 text-muted">{formatDate(item.createdAt)}</td>
+                <td className="px-5 py-4">
+                  <p className="font-semibold">{item.id}</p>
+                  <p className="mt-1 text-xs text-muted">{item.customerName}</p>
+                  <p className="mt-1 text-xs text-muted">{item.phone}</p>
+                </td>
+                <td className="px-5 py-4">
+                  <p className="font-semibold">{item.user?.name ?? item.customerName}</p>
+                  <p className="mt-1 text-xs text-muted">{item.user?.email ?? item.email}</p>
+                  <p className="mt-1 text-xs text-muted">Code: {item.user?.referralCode ?? "N/A"}</p>
+                </td>
+                <td className="px-5 py-4">
+                  <p className="font-semibold">{item.product?.name ?? item.productId}</p>
+                  <p className="mt-1 text-xs text-muted">{item.product?.sku ?? "Product not found"}</p>
+                  <p className="mt-1 text-xs text-muted">{item.product?.category ?? ""}</p>
+                </td>
+                <td className="px-5 py-4">{item.paymentMethod}</td>
+                <td className="px-5 py-4">{toBn(item.quantity)}</td>
+                <td className="px-5 py-4">
+                  <p className="font-bold text-gold-light">{taka(item.total)}</p>
+                  <p className="mt-1 text-xs text-muted">Shipping {taka(item.shipping)}</p>
+                </td>
+                <td className="px-5 py-4">{item.status}</td>
+                <td className="px-5 py-4">
+                  <div className="flex flex-wrap gap-2">
+                    <Button className="min-h-9 px-3 py-1 text-xs" disabled={updating} onClick={() => handleStatus(item.id, "Confirmed")}>
+                      <CheckCircle2 size={14} />
+                      Confirm
+                    </Button>
+                    <Button variant="outline" className="min-h-9 px-3 py-1 text-xs" disabled={updating} onClick={() => handleStatus(item.id, "Pending")}>
+                      <Clock3 size={14} />
+                      Pending
+                    </Button>
+                    <Button variant="danger" className="min-h-9 px-3 py-1 text-xs" disabled={updating} onClick={() => handleStatus(item.id, "Cancelled")}>
+                      <XCircle size={14} />
+                      Cancel
+                    </Button>
+                  </div>
+                </td>
+              </tr>
+            )) : (
+              <tr>
+                <td className="px-5 py-10 text-center text-muted" colSpan={9}>
+                  {isLoading ? "Order history loading..." : "No checkout order found."}
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </Card>
+
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-sm text-muted">Page {toBn(data?.page ?? page)} / {toBn(totalPages)}</p>
+        <div className="flex gap-2">
+          <Button variant="outline" disabled={page <= 1} onClick={() => setPage((old) => Math.max(1, old - 1))}>Previous</Button>
+          <Button disabled={page >= totalPages} onClick={() => setPage((old) => Math.min(totalPages, old + 1))}>Next</Button>
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -5,8 +5,9 @@ import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, ArrowRight, Copy, Gift, Layers3, Mail, MapPin, Menu, Network, Phone, ShieldCheck, ShoppingBag, Sparkles, Tag, UserPlus, WalletCards, X } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
+import { LanguageToggle } from "@/components/language-toggle";
 import { Badge, Card, SectionHeading } from "@/components/ui";
-import { commissionLevels, products } from "@/lib/mock-data";
+import { useGetProductsQuery } from "@/lib/api";
 import { taka, toBn } from "@/lib/utils";
 
 const testimonials = [
@@ -21,6 +22,15 @@ const slideImages = [
   "/slide_image/WhatsApp Image 2026-05-28 at 3.14.58 PM.jpeg",
   "/slide_image/WhatsApp Image 2026-05-28 at 3.19.59 PM.jpeg",
   "/slide_image/WhatsApp Image 2026-05-28 at 3.32.29 PM.jpeg",
+];
+
+const commissionLevels = [
+  { level: 1, earning: 200 },
+  { level: 2, earning: 600 },
+  { level: 3, earning: 2000 },
+  { level: 4, earning: 10000 },
+  { level: 5, earning: 50000 },
+  { level: 6, earning: 300000 },
 ];
 
 function FacebookIcon({ size = 18, className }: { size?: number; className?: string }) {
@@ -121,6 +131,7 @@ function WhatsAppIcon({ size = 18, className }: { size?: number; className?: str
 export default function Home() {
   const [level, setLevel] = useState(2);
   const [activeSlide, setActiveSlide] = useState(0);
+  const { data: products = [], isLoading } = useGetProductsQuery();
   const total = useMemo(
     () => commissionLevels.filter((item) => item.level <= level).reduce((sum, item) => sum + item.earning, 0),
     [level],
@@ -156,7 +167,8 @@ export default function Home() {
             <Link href="/login" className="hover:text-white">লগইন</Link>
           </div>
           <div className="flex items-center gap-2">
-            <Link href="/register" className="shrink-0 rounded-full bg-elevated px-4 py-2 text-sm font-bold text-gold transition hover:bg-elevated/90 sm:px-5 sm:py-2.5">যোগ দিন</Link>
+            <LanguageToggle className="hidden sm:inline-flex" />
+            <Link href="/products" className="shrink-0 rounded-full bg-elevated px-4 py-2 text-sm font-bold text-gold transition hover:bg-elevated/90 sm:px-5 sm:py-2.5">পণ্য কিনুন</Link>
             <details className="group relative md:hidden">
               <summary className="grid h-10 w-10 cursor-pointer list-none place-items-center rounded-full border border-white/25 text-white transition hover:bg-white/10 [&::-webkit-details-marker]:hidden">
                 <Menu className="group-open:hidden" size={20} />
@@ -164,6 +176,9 @@ export default function Home() {
                 <span className="sr-only">মেনু</span>
               </summary>
               <div className="absolute right-0 top-12 z-50 w-56 overflow-hidden rounded-2xl border border-white/15 bg-gold p-2 text-sm font-semibold text-white shadow-2xl">
+                <div className="px-2 py-2 sm:hidden">
+                  <LanguageToggle className="w-full justify-center" />
+                </div>
                 <Link href="/products" className="block rounded-xl px-4 py-3 transition hover:bg-white/10">পণ্য</Link>
                 <a href="#about" className="block rounded-xl px-4 py-3 transition hover:bg-white/10">আমাদের সম্পর্কে</a>
                 <a href="#calculator" className="block rounded-xl px-4 py-3 transition hover:bg-white/10">ক্যালকুলেটর</a>
@@ -193,8 +208,8 @@ export default function Home() {
               GIOTO Bangladesh পণ্য বিক্রয়, রেফারেল নেটওয়ার্ক, কমিশন ট্র্যাকিং এবং সদস্য ব্যবস্থাপনাকে এক জায়গায় সহজ করে।
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Link href="/register" className="gold-button inline-flex items-center justify-center gap-2 px-7 py-3 font-bold">
-                রেজিস্টার করুন <ArrowRight size={18} />
+              <Link href="/products" className="gold-button inline-flex items-center justify-center gap-2 px-7 py-3 font-bold">
+                পণ্য কিনে সদস্য হন <ArrowRight size={18} />
               </Link>
               <Link href="/dashboard" className="inline-flex items-center justify-center gap-2 rounded-full border border-elevated bg-transparent px-7 py-3 font-bold text-white transition hover:bg-gold-light/20">
                 সদস্য ড্যাশবোর্ড
@@ -317,8 +332,10 @@ export default function Home() {
           </Link>
         </div>
 
+        {isLoading ? <p className="mb-4 text-sm text-muted">পণ্য লোড হচ্ছে...</p> : null}
+
         <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
-          {products.map((product) => (
+          {products.length ? products.map((product) => (
             <Card key={product.id} asMotion className="flex min-h-full flex-col overflow-hidden p-0">
               <Link href={`/products/${product.id}`} className="relative block aspect-[4/3] overflow-hidden bg-elevated">
                 <Image
@@ -328,10 +345,12 @@ export default function Home() {
                   sizes="(min-width: 1024px) 25vw, (min-width: 768px) 50vw, 100vw"
                   className="object-cover transition duration-300 hover:scale-105"
                 />
-                <span className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-foreground px-3 py-1 text-xs font-bold text-white">
-                  <Tag size={14} />
-                  {product.offer}
-                </span>
+                {product.offer ? (
+                  <span className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-foreground px-3 py-1 text-xs font-bold text-white">
+                    <Tag size={14} />
+                    {product.offer}
+                  </span>
+                ) : null}
               </Link>
 
               <div className="flex flex-1 flex-col p-5">
@@ -349,7 +368,11 @@ export default function Home() {
                 </div>
               </div>
             </Card>
-          ))}
+          )) : (
+            <Card className="p-5">
+              <p className="text-sm text-muted">পণ্য নেই।</p>
+            </Card>
+          )}
         </div>
       </section>
 
@@ -389,9 +412,9 @@ export default function Home() {
             </div>
             <div className="grid gap-0 sm:grid-cols-3">
               {[
-                ["৪", "Product categories"],
-                ["৬", "Commission levels"],
-                ["২৪", "Active referrals"],
+                [toBn(products.length), "Product categories"],
+                [toBn(commissionLevels.length), "Commission levels"],
+                ["০", "Active referrals"],
               ].map(([value, label]) => (
                 <div key={label} className="border-b border-line p-5 sm:border-b-0 sm:border-r last:border-r-0">
                   <p className="text-3xl font-black text-gold-light">{value}</p>
@@ -474,8 +497,8 @@ export default function Home() {
           <Gift className="mx-auto text-gold-light" size={42} />
           <h2 className="heading-gradient mt-4 text-4xl font-black !text-white md:text-6xl">আজই নেটওয়ার্ক শুরু করুন</h2>
           <p className="mx-auto mt-4 max-w-2xl text-white/80">পণ্য শেয়ার করুন, নতুন সদস্য যুক্ত করুন এবং এক জায়গা থেকে আয়ের অগ্রগতি দেখুন।</p>
-          <Link href="/register" className="gold-button mt-8 inline-flex items-center gap-2 px-8 py-3 font-bold">
-            রেজিস্টার করুন <Copy size={17} />
+          <Link href="/products" className="gold-button mt-8 inline-flex items-center gap-2 px-8 py-3 font-bold">
+            পণ্য কিনুন <Copy size={17} />
           </Link>
         </div>
       </section>
@@ -531,7 +554,7 @@ export default function Home() {
             <h3 className="text-sm font-bold uppercase text-white/50">অ্যাকাউন্ট</h3>
             <div className="mt-4 grid gap-3 text-sm">
               <Link href="/login" className="text-white/75 transition hover:text-gold-light">লগইন</Link>
-              <Link href="/register" className="text-white/75 transition hover:text-gold-light">রেজিস্টার</Link>
+              <Link href="/products" className="text-white/75 transition hover:text-gold-light">পণ্য কিনুন</Link>
               <Link href="/dashboard/profile" className="text-white/75 transition hover:text-gold-light">প্রোফাইল</Link>
               <Link href="/dashboard/earnings" className="text-white/75 transition hover:text-gold-light">আয়</Link>
             </div>
@@ -544,7 +567,7 @@ export default function Home() {
               <p className="flex min-w-0 items-center gap-3"><Mail size={16} className="shrink-0 text-gold-light" /> <span className="break-all">contact@giotobangladesh.com</span></p>
               <p className="flex items-start gap-3"><MapPin size={16} className="mt-1 shrink-0 text-gold-light" /> <span>Nischintapur, Ashulia, Savar, Dhaka, Bangladesh</span></p>
             </div>
-            <Link href="/register" className="mt-6 inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-bold text-foreground transition hover:bg-gold-light hover:text-white">
+            <Link href="/products" className="mt-6 inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-bold text-foreground transition hover:bg-gold-light hover:text-white">
               শুরু করুন <ArrowRight size={16} />
             </Link>
           </div>

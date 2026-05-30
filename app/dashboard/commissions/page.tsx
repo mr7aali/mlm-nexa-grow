@@ -1,17 +1,22 @@
 "use client";
 
 import { Badge, Card, Progress } from "@/components/ui";
-import { commissionHistory, commissionLevels } from "@/lib/mock-data";
+import { useGetCommissionsQuery } from "@/lib/api";
 import { taka, toBn } from "@/lib/utils";
 
-const tone = (status: string) => status === "Paid" ? "green" : status === "In Progress" ? "blue" : status === "Unlocked" ? "gold" : "muted";
+const tone = (status: string) =>
+  status === "Paid" ? "green" : status === "In Progress" ? "blue" : status === "Unlocked" ? "gold" : "muted";
+
+const statusLabel = (status: string) =>
+  status === "Paid" ? "পেইড" : status === "In Progress" ? "চলমান" : status === "Unlocked" ? "আনলক" : "লকড";
 
 export default function CommissionsPage() {
-  const totalEarned = commissionLevels.filter((item) => item.status === "Paid").reduce((sum, item) => sum + item.earning, 0);
-  const potential = commissionLevels.reduce((sum, item) => sum + item.earning, 0);
-  const currentLevel = commissionLevels.find((item) => item.status === "In Progress") ?? commissionLevels[0];
-  const progress = (currentLevel.current / currentLevel.required) * 100;
-  const remaining = Math.max(0, currentLevel.required - currentLevel.current);
+  const { data, isLoading } = useGetCommissionsQuery();
+  const levels = data?.levels ?? [];
+  const history = data?.history ?? [];
+  const currentLevel = data?.currentLevel ?? levels[0];
+  const progress = currentLevel ? (currentLevel.current / currentLevel.required) * 100 : 0;
+  const remaining = currentLevel ? Math.max(0, currentLevel.required - currentLevel.current) : 0;
 
   return (
     <div className="space-y-6">
@@ -20,56 +25,62 @@ export default function CommissionsPage() {
         <h2 className="heading-gradient text-4xl font-black">কমিশন ট্র্যাকার</h2>
       </div>
 
+      {isLoading ? <p className="text-sm text-muted">কমিশন ডেটা লোড হচ্ছে...</p> : null}
+
       <div className="grid gap-5 md:grid-cols-3">
-        <Card><p className="text-muted">মোট অর্জিত</p><p className="mt-2 text-3xl font-black text-gold-light">{taka(totalEarned)}</p></Card>
-        <Card><p className="text-muted">সম্ভাব্য মোট আয়</p><p className="mt-2 text-3xl font-black text-gold-light">{taka(potential)}</p></Card>
-        <Card><p className="text-muted">পরবর্তী মাইলস্টোন</p><p className="mt-2 text-xl font-bold text-gold-light">আর {toBn(remaining)} জন রেফার করলে পরবর্তী ধাপ আনলক হবে</p></Card>
+        <Card><p className="text-muted">মোট অর্জিত</p><p className="mt-2 text-3xl font-black text-gold-light">{taka(data?.totalEarned ?? 0)}</p></Card>
+        <Card><p className="text-muted">সম্ভাব্য মোট আয়</p><p className="mt-2 text-3xl font-black text-gold-light">{taka(data?.potential ?? 0)}</p></Card>
+        <Card><p className="text-muted">পরবর্তী মাইলস্টোন</p><p className="mt-2 text-xl font-bold text-gold-light">{currentLevel ? `আর ${toBn(remaining)} জন রেফার করলে পরবর্তী ধাপ আনলক হবে` : "লেভেল সেট করা হয়নি"}</p></Card>
       </div>
 
-      <div className="grid gap-5">
-        <Card className="p-5">
-          <div className="mb-4 flex items-center justify-between">
-            <div>
-              <h3 className="text-xl font-bold">লেভেল {toBn(currentLevel.level)}</h3>
-              <p className="text-sm text-muted">প্রয়োজন {toBn(currentLevel.required)} আইডি · বর্তমান {toBn(currentLevel.current)}</p>
+      {currentLevel ? (
+        <div className="grid gap-5">
+          <Card className="p-5">
+            <div className="mb-4 flex items-center justify-between">
+              <div>
+                <h3 className="text-xl font-bold">লেভেল {toBn(currentLevel.level)}</h3>
+                <p className="text-sm text-muted">প্রয়োজন {toBn(currentLevel.required)} আইডি · বর্তমান {toBn(currentLevel.current)}</p>
+              </div>
+              <Badge tone={tone(currentLevel.status) as "green" | "blue" | "gold" | "muted"}>
+                {statusLabel(currentLevel.status)}
+              </Badge>
             </div>
-            <Badge tone={tone(currentLevel.status) as "green" | "blue" | "gold" | "muted"}>
-              {currentLevel.status === "Paid" ? "পেইড" : currentLevel.status === "In Progress" ? "চলমান" : currentLevel.status === "Unlocked" ? "আনলক" : "লকড"}
-            </Badge>
-          </div>
-          <Progress
-            value={progress}
-            color={
-              currentLevel.color === "emerald"
-                ? "green"
-                : currentLevel.color === "sky"
-                  ? "blue"
-                  : currentLevel.color === "violet"
-                    ? "purple"
-                    : currentLevel.color === "rose"
-                      ? "red"
-                      : currentLevel.color === "amber"
-                        ? "amber"
-                        : "gold"
-            }
-          />
-          <p className="mt-4 text-right font-bold text-gold-light">{taka(currentLevel.earning)}</p>
-        </Card>
-      </div>
+            <Progress
+              value={progress}
+              color={
+                currentLevel.color === "emerald"
+                  ? "green"
+                  : currentLevel.color === "sky"
+                    ? "blue"
+                    : currentLevel.color === "violet"
+                      ? "purple"
+                      : currentLevel.color === "rose"
+                        ? "red"
+                        : currentLevel.color === "amber"
+                          ? "amber"
+                          : "gold"
+              }
+            />
+            <p className="mt-4 text-right font-bold text-gold-light">{taka(currentLevel.earning)}</p>
+          </Card>
+        </div>
+      ) : null}
 
       <Card className="p-6">
         <h3 className="mb-5 text-2xl font-bold">কমিশন ইতিহাস</h3>
         <div className="space-y-4">
-          {commissionHistory.map((item) => (
+          {history.length ? history.map((item) => (
             <div key={item.id} className="flex flex-col justify-between gap-3 rounded-2xl border border-line bg-elevated p-4 md:flex-row md:items-center">
               <div>
                 <p className="font-bold">{item.level}</p>
                 <p className="text-sm text-muted">{item.date}</p>
               </div>
               <p className="text-xl font-black text-gold-light">{taka(item.amount)}</p>
-              <Badge tone={tone(item.status) as "green" | "blue" | "gold" | "muted"}>{item.status === "Paid" ? "পেইড" : item.status === "In Progress" ? "চলমান" : "আনলক"}</Badge>
+              <Badge tone={tone(item.status) as "green" | "blue" | "gold" | "muted"}>{statusLabel(item.status)}</Badge>
             </div>
-          ))}
+          )) : (
+            <p className="text-sm text-muted">কমিশন ইতিহাস নেই।</p>
+          )}
         </div>
       </Card>
     </div>

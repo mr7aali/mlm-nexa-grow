@@ -3,7 +3,8 @@
 import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import { Badge, Card, Input, Modal, Select } from "@/components/ui";
-import { referrals } from "@/lib/mock-data";
+import { useGetReferralsQuery } from "@/lib/api";
+import type { Referral } from "@/lib/api-types";
 import { taka, toBn } from "@/lib/utils";
 
 const pageSize = 10;
@@ -14,16 +15,18 @@ export default function ReferralsPage() {
   const [status, setStatus] = useState("all");
   const [date, setDate] = useState("");
   const [page, setPage] = useState(1);
-  const [selected, setSelected] = useState<(typeof referrals)[number] | null>(null);
+  const [selected, setSelected] = useState<Referral | null>(null);
+  const { data, isLoading } = useGetReferralsQuery();
+  const referralRows = useMemo(() => data?.rows ?? [], [data?.rows]);
 
   const filtered = useMemo(() => {
-    return referrals.filter((item) => {
+    return referralRows.filter((item) => {
       const search = `${item.name} ${item.phone}`.toLowerCase().includes(query.toLowerCase());
       const byLevel = level === "all" || String(item.level) === level;
       const byStatus = status === "all" || item.status === status;
       return search && byLevel && byStatus;
     });
-  }, [query, level, status]);
+  }, [query, level, status, referralRows]);
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const rows = filtered.slice((page - 1) * pageSize, page * pageSize);
 
@@ -34,13 +37,18 @@ export default function ReferralsPage() {
         <h2 className="heading-gradient text-4xl font-black">রেফারেল বিস্তারিত</h2>
       </div>
 
+      {isLoading ? <p className="text-sm text-muted">রেফারেল লোড হচ্ছে...</p> : null}
+
       <div className="grid gap-5 md:grid-cols-3">
         {[
-          ["ডাইরেক্ট রেফারেল", "১৮"],
-          ["মোট নেটওয়ার্ক", "৪২"],
-          ["এই মাসের নতুন", "১১"],
+          ["ডাইরেক্ট রেফারেল", toBn(data?.summary.directReferrals ?? 0)],
+          ["মোট নেটওয়ার্ক", toBn(data?.summary.totalNetwork ?? 0)],
+          ["এই মাসের নতুন", toBn(data?.summary.newThisMonth ?? 0)],
         ].map(([label, value]) => (
-          <Card key={label}><p className="text-sm text-muted">{label}</p><p className="mt-2 text-3xl font-black text-gold-light">{value}</p></Card>
+          <Card key={label}>
+            <p className="text-sm text-muted">{label}</p>
+            <p className="mt-2 text-3xl font-black text-gold-light">{value}</p>
+          </Card>
         ))}
       </div>
 
@@ -71,7 +79,7 @@ export default function ReferralsPage() {
             </tr>
           </thead>
           <tbody>
-            {rows.map((item) => (
+            {rows.length ? rows.map((item) => (
               <tr key={item.id} onClick={() => setSelected(item)} className="cursor-pointer border-t border-line hover:bg-gold/10">
                 <td className="px-5 py-4 font-semibold">{item.name}</td>
                 <td className="px-5 py-4 text-muted">{item.phone}</td>
@@ -81,7 +89,11 @@ export default function ReferralsPage() {
                 <td className="px-5 py-4"><Badge tone={item.status === "Active" ? "green" : "muted"}>{item.status === "Active" ? "সক্রিয়" : "নিষ্ক্রিয়"}</Badge></td>
                 <td className="px-5 py-4 text-gold-light">{taka(item.commissionEarned)}</td>
               </tr>
-            ))}
+            )) : (
+              <tr>
+                <td className="px-5 py-8 text-center text-muted" colSpan={7}>রেফারেল নেই।</td>
+              </tr>
+            )}
           </tbody>
         </table>
       </Card>

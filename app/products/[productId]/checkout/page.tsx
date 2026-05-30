@@ -1,45 +1,43 @@
-import type { Metadata } from "next";
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import type { ReactNode } from "react";
+import { useParams } from "next/navigation";
 import { ArrowLeft, PackageCheck, ShieldCheck, Truck } from "lucide-react";
-import { getProductById, products } from "@/lib/mock-data";
+import { useGetProductQuery } from "@/lib/api";
 import { taka } from "@/lib/utils";
 import { CheckoutForm } from "./checkout-form";
 
-type CheckoutPageProps = {
-  params: {
-    productId: string;
-  };
-};
+export default function CheckoutPage() {
+  const params = useParams<{ productId: string }>();
+  const productId = params.productId;
+  const { data: product, isLoading, isError } = useGetProductQuery(productId, { skip: !productId });
 
-export function generateStaticParams() {
-  return products.map((product) => ({
-    productId: product.id,
-  }));
-}
+  if (isLoading) {
+    return <div className="mx-auto max-w-7xl px-4 py-8 text-sm text-muted">Loading checkout...</div>;
+  }
 
-export function generateMetadata({ params }: CheckoutPageProps): Metadata {
-  const product = getProductById(params.productId);
-
-  return {
-    title: product ? `${product.name} checkout | GIOTO` : "Checkout",
-    description: product ? `${product.name} checkout page` : undefined,
-  };
-}
-
-export default function CheckoutPage({ params }: CheckoutPageProps) {
-  const product = getProductById(params.productId);
-
-  if (!product) {
-    notFound();
+  if (isError || !product) {
+    return (
+      <div className="mx-auto max-w-7xl px-4 py-8">
+        <Link href="/products" className="inline-flex items-center gap-2 text-sm font-semibold text-muted hover:text-gold">
+          <ArrowLeft size={17} />
+          All products
+        </Link>
+        <div className="mt-6 rounded-[18px] border border-line bg-surface p-6">
+          <h1 className="text-2xl font-bold">Product not found</h1>
+          <p className="mt-2 text-muted">Checkout is only available for products saved in MongoDB.</p>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
       <Link href={`/products/${product.id}`} className="inline-flex items-center gap-2 text-sm font-semibold text-muted hover:text-gold">
         <ArrowLeft size={17} />
-        পণ্যের বিস্তারিত
+        Product details
       </Link>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,0.95fr)_minmax(360px,1.05fr)]">
@@ -55,41 +53,37 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
             <div className="mt-5 rounded-2xl border border-line bg-elevated p-4">
               <div className="flex items-end justify-between gap-3">
                 <div>
-                  <p className="text-sm text-muted">অফার মূল্য</p>
+                  <p className="text-sm text-muted">Offer price</p>
                   <p className="mt-1 text-3xl font-black text-gold-light">{taka(product.price)}</p>
                 </div>
                 <div className="text-right text-sm">
                   <p className="text-muted line-through">{taka(product.originalPrice)}</p>
-                  <p className="font-semibold text-foreground">{product.offer}</p>
+                  {product.offer ? <p className="font-semibold text-foreground">{product.offer}</p> : null}
                 </div>
               </div>
             </div>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
-            <div className="rounded-2xl border border-line bg-surface p-4">
-              <p className="flex items-center gap-2 text-sm font-semibold">
-                <PackageCheck size={17} />
-                {product.stock}
-              </p>
-            </div>
-            <div className="rounded-2xl border border-line bg-surface p-4">
-              <p className="flex items-center gap-2 text-sm font-semibold">
-                <Truck size={17} />
-                {product.delivery}
-              </p>
-            </div>
-            <div className="rounded-2xl border border-line bg-surface p-4">
-              <p className="flex items-center gap-2 text-sm font-semibold">
-                <ShieldCheck size={17} />
-                নিরাপদ checkout
-              </p>
-            </div>
+            <Feature icon={<PackageCheck size={17} />} text={product.stock ?? "Available"} />
+            <Feature icon={<Truck size={17} />} text={product.delivery ?? "Standard delivery"} />
+            <Feature icon={<ShieldCheck size={17} />} text="Secure checkout" />
           </div>
         </aside>
 
         <CheckoutForm product={product} />
       </div>
+    </div>
+  );
+}
+
+function Feature({ icon, text }: { icon: ReactNode; text: string }) {
+  return (
+    <div className="rounded-2xl border border-line bg-surface p-4">
+      <p className="flex items-center gap-2 text-sm font-semibold">
+        {icon}
+        {text}
+      </p>
     </div>
   );
 }

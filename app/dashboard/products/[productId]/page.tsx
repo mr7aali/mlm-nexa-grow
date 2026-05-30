@@ -1,7 +1,9 @@
-import type { Metadata } from "next";
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import type { ReactNode } from "react";
+import { useParams } from "next/navigation";
 import {
   ArrowLeft,
   CheckCircle2,
@@ -14,40 +16,40 @@ import {
   Truck,
 } from "lucide-react";
 import { Badge, CopyButton } from "@/components/ui";
-import { getProductById, products } from "@/lib/mock-data";
-import { referralLink, taka } from "@/lib/utils";
+import { useGetMeQuery, useGetProductQuery } from "@/lib/api";
+import { taka } from "@/lib/utils";
 
-type ProductDetailsPageProps = {
-  params: {
-    productId: string;
-  };
-};
+export default function ProductDetailsPage() {
+  const params = useParams<{ productId: string }>();
+  const productId = params.productId;
+  const { data: product, isLoading, isError } = useGetProductQuery(productId, { skip: !productId });
+  const { data: me } = useGetMeQuery();
 
-export function generateStaticParams() {
-  return products.map((product) => ({
-    productId: product.id,
-  }));
-}
-
-export function generateMetadata({ params }: ProductDetailsPageProps): Metadata {
-  const product = getProductById(params.productId);
-
-  return {
-    title: product ? `${product.name} | পণ্য` : "পণ্য পাওয়া যায়নি",
-    description: product?.description,
-  };
-}
-
-export default function ProductDetailsPage({ params }: ProductDetailsPageProps) {
-  const product = getProductById(params.productId);
-
-  if (!product) {
-    notFound();
+  if (isLoading) {
+    return <p className="text-sm text-muted">পণ্য লোড হচ্ছে...</p>;
   }
 
-  const referralUrl = `${referralLink()}&product=${product.id}`;
+  if (isError || !product) {
+    return (
+      <div className="space-y-4">
+        <Link href="/dashboard/products" className="inline-flex items-center gap-2 text-sm font-semibold text-muted hover:text-gold">
+          <ArrowLeft size={17} />
+          পণ্যে ফিরে যান
+        </Link>
+        <div className="rounded-[18px] border border-line bg-surface p-6">
+          <h2 className="text-2xl font-bold">পণ্য পাওয়া যায়নি</h2>
+          <p className="mt-2 text-muted">এই পণ্যটি লাইভ ক্যাটালগে নেই।</p>
+        </div>
+      </div>
+    );
+  }
+
+  const referralUrl = me ? `/products/${product.id}/checkout?ref=${encodeURIComponent(me.referralCode)}` : "";
   const encodedReferralUrl = encodeURIComponent(referralUrl);
   const encodedShareText = encodeURIComponent(`${product.name} - ${referralUrl}`);
+  const highlights = product.highlights ?? [];
+  const includes = product.includes ?? [];
+  const details = product.details ?? [];
 
   return (
     <div className="space-y-6">
@@ -68,17 +70,19 @@ export default function ProductDetailsPage({ params }: ProductDetailsPageProps) 
               className="object-cover"
             />
           </div>
-          <div className="absolute left-4 top-4 inline-flex items-center gap-2 rounded-full bg-foreground px-4 py-2 text-sm font-bold text-white">
-            <Tag size={16} />
-            {product.offer}
-          </div>
+          {product.offer ? (
+            <div className="absolute left-4 top-4 inline-flex items-center gap-2 rounded-full bg-foreground px-4 py-2 text-sm font-bold text-white">
+              <Tag size={16} />
+              {product.offer}
+            </div>
+          ) : null}
         </div>
 
         <div className="space-y-5">
           <div>
             <p className="text-sm font-semibold text-gold-light">{product.category}</p>
             <h2 className="mt-2 text-3xl font-black leading-tight text-foreground md:text-5xl">{product.name}</h2>
-            <p className="mt-4 leading-8 text-muted">{product.full}</p>
+            <p className="mt-4 leading-8 text-muted">{product.full ?? product.description}</p>
           </div>
 
           <div className="rounded-[18px] border border-line bg-surface p-5">
@@ -87,51 +91,29 @@ export default function ProductDetailsPage({ params }: ProductDetailsPageProps) 
                 <p className="text-sm text-muted">অফার মূল্য</p>
                 <p className="mt-1 text-4xl font-black text-gold-light">{taka(product.price)}</p>
                 <p className="mt-1 text-sm text-muted">
-                  নিয়মিত মূল্য <span className="line-through">{taka(product.originalPrice)}</span>
+                  নিয়মিত মূল্য <span className="line-through">{taka(product.originalPrice)}</span>
                 </p>
               </div>
               <Badge tone="gold">সাশ্রয় {taka(product.originalPrice - product.price)}</Badge>
             </div>
 
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              <div className="rounded-2xl border border-line bg-elevated p-4">
-                <p className="flex items-center gap-2 text-sm font-semibold text-foreground">
-                  <PackageCheck size={17} />
-                  স্টক
-                </p>
-                <p className="mt-2 text-sm text-muted">{product.stock}</p>
-              </div>
-              <div className="rounded-2xl border border-line bg-elevated p-4">
-                <p className="flex items-center gap-2 text-sm font-semibold text-foreground">
-                  <Clock3 size={17} />
-                  অফার শেষ
-                </p>
-                <p className="mt-2 text-sm text-muted">{product.offerEnds}</p>
-              </div>
-              <div className="rounded-2xl border border-line bg-elevated p-4">
-                <p className="flex items-center gap-2 text-sm font-semibold text-foreground">
-                  <ShieldCheck size={17} />
-                  কমিশন
-                </p>
-                <p className="mt-2 text-sm text-muted">{taka(product.commission)}</p>
-              </div>
-              <div className="rounded-2xl border border-line bg-elevated p-4">
-                <p className="flex items-center gap-2 text-sm font-semibold text-foreground">
-                  <Truck size={17} />
-                  ডেলিভারি
-                </p>
-                <p className="mt-2 text-sm text-muted">{product.delivery}</p>
-              </div>
+              <InfoBox icon={<PackageCheck size={17} />} label="স্টক" value={product.stock ?? "স্টকে আছে"} />
+              <InfoBox icon={<Clock3 size={17} />} label="অফার শেষ" value={product.offerEnds ?? "নির্ধারিত নয়"} />
+              <InfoBox icon={<ShieldCheck size={17} />} label="কমিশন" value={taka(product.commission ?? 0)} />
+              <InfoBox icon={<Truck size={17} />} label="ডেলিভারি" value={product.delivery ?? "স্ট্যান্ডার্ড ডেলিভারি"} />
             </div>
           </div>
 
           <div className="rounded-[18px] border border-line bg-surface p-5">
-            <p className="mb-2 text-sm text-muted">প্রোডাক্ট রেফারেল লিংক</p>
-            <div className="break-all rounded-2xl border border-line bg-elevated p-4 text-sm text-gold-light">{referralUrl}</div>
+            <p className="mb-2 text-sm text-muted">প্রোডাক্ট রেফারেল চেকআউট</p>
+            <div className="break-all rounded-2xl border border-line bg-elevated p-4 text-sm text-gold-light">
+              {referralUrl || "চেকআউট লিংক লোড হচ্ছে..."}
+            </div>
             <div className="mt-4 grid gap-3 sm:grid-cols-3">
-              <CopyButton value={referralUrl} label="লিংক কপি" />
+              <CopyButton value={referralUrl} label="চেকআউট লিংক কপি" />
               <a
-                href={`https://wa.me/?text=${encodedShareText}`}
+                href={referralUrl ? `https://wa.me/?text=${encodedShareText}` : undefined}
                 target="_blank"
                 rel="noreferrer"
                 className="outline-gold inline-flex min-h-11 items-center justify-center gap-2 px-5 py-2.5 text-sm font-semibold transition hover:bg-gold/10"
@@ -140,7 +122,7 @@ export default function ProductDetailsPage({ params }: ProductDetailsPageProps) 
                 WhatsApp
               </a>
               <a
-                href={`https://www.facebook.com/sharer/sharer.php?u=${encodedReferralUrl}`}
+                href={referralUrl ? `https://www.facebook.com/sharer/sharer.php?u=${encodedReferralUrl}` : undefined}
                 target="_blank"
                 rel="noreferrer"
                 className="outline-gold inline-flex min-h-11 items-center justify-center gap-2 px-5 py-2.5 text-sm font-semibold transition hover:bg-gold/10"
@@ -157,23 +139,23 @@ export default function ProductDetailsPage({ params }: ProductDetailsPageProps) 
         <div className="nexa-card p-5">
           <h3 className="text-2xl font-bold">হাইলাইটস</h3>
           <div className="mt-4 grid gap-3">
-            {product.highlights.map((item) => (
+            {highlights.length ? highlights.map((item) => (
               <div key={item} className="flex items-start gap-3 rounded-2xl border border-line bg-elevated p-4">
                 <CheckCircle2 className="mt-1 shrink-0 text-gold-light" size={18} />
                 <p className="leading-7 text-muted">{item}</p>
               </div>
-            ))}
+            )) : <p className="text-sm text-muted">এই পণ্যের হাইলাইটস নেই।</p>}
           </div>
         </div>
 
         <div className="nexa-card p-5">
           <h3 className="text-2xl font-bold">প্যাকেজে যা আছে</h3>
           <div className="mt-4 space-y-3">
-            {product.includes.map((item) => (
+            {includes.length ? includes.map((item) => (
               <div key={item} className="rounded-2xl border border-line bg-elevated px-4 py-3 text-sm font-semibold text-foreground">
                 {item}
               </div>
-            ))}
+            )) : <p className="text-sm text-muted">প্যাকেজ আইটেম নেই।</p>}
           </div>
         </div>
       </section>
@@ -188,14 +170,26 @@ export default function ProductDetailsPage({ params }: ProductDetailsPageProps) 
         </div>
 
         <div className="mt-5 grid gap-3 md:grid-cols-3">
-          {product.details.map((item) => (
+          {details.length ? details.map((item) => (
             <div key={item.label} className="rounded-2xl border border-line bg-elevated p-4">
               <p className="text-sm text-muted">{item.label}</p>
               <p className="mt-2 font-semibold text-foreground">{item.value}</p>
             </div>
-          ))}
+          )) : <p className="text-sm text-muted">অতিরিক্ত তথ্য নেই।</p>}
         </div>
       </section>
+    </div>
+  );
+}
+
+function InfoBox({ icon, label, value }: { icon: ReactNode; label: string; value: string }) {
+  return (
+    <div className="rounded-2xl border border-line bg-elevated p-4">
+      <p className="flex items-center gap-2 text-sm font-semibold text-foreground">
+        {icon}
+        {label}
+      </p>
+      <p className="mt-2 text-sm text-muted">{value}</p>
     </div>
   );
 }

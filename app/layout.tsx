@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, Tiro_Bangla } from "next/font/google";
+import { ReduxProvider } from "@/components/redux-provider";
+import { LanguageProvider } from "@/lib/language";
 import "./globals.css";
 
 const jakarta = Plus_Jakarta_Sans({
@@ -30,7 +32,11 @@ export default function RootLayout({
       lang="bn"
       className={`${jakarta.variable} ${tiroBangla.variable} h-full antialiased`}
     >
-      <body className="min-h-full bg-background text-foreground">{children}</body>
+      <body className="min-h-full bg-background text-foreground">
+        <LanguageProvider>
+          <ReduxProvider>{children}</ReduxProvider>
+        </LanguageProvider>
+      </body>
     </html>
   );
 }

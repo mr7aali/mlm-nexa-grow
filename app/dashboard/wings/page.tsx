@@ -3,7 +3,8 @@
 import { useMemo, useState } from "react";
 import { Download, Minus, Plus, Search } from "lucide-react";
 import { Badge, Button, Card, Input, Select } from "@/components/ui";
-import { referralTree, type TreeNode } from "@/lib/mock-data";
+import { useGetWingsQuery } from "@/lib/api";
+import type { TreeNode } from "@/lib/api-types";
 import { initials, toBn } from "@/lib/utils";
 
 const depthClass: Record<number, string> = {
@@ -17,12 +18,13 @@ const depthClass: Record<number, string> = {
 };
 
 export default function WingsPage() {
-  const [expanded, setExpanded] = useState<Record<string, boolean>>({ root: true, "l1-a": true, "l1-b": true, "l2-d": true });
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({ root: true });
   const [level, setLevel] = useState("all");
   const [activeOnly, setActiveOnly] = useState(false);
   const [query, setQuery] = useState("");
-
-  const total = useMemo(() => countNodes(referralTree) - 1, []);
+  const { data, isLoading } = useGetWingsQuery();
+  const tree = data?.tree;
+  const total = useMemo(() => (tree ? countNodes(tree) - 1 : 0), [tree]);
 
   return (
     <div className="space-y-6">
@@ -34,12 +36,14 @@ export default function WingsPage() {
         <Button variant="outline"><Download size={16} /> ইমেজ এক্সপোর্ট</Button>
       </div>
 
+      {isLoading ? <p className="text-sm text-muted">নেটওয়ার্ক লোড হচ্ছে...</p> : null}
+
       <div className="grid gap-5 md:grid-cols-4">
         {[
-          ["লেফট উইং", "১২"],
-          ["রাইট উইং", "১৮"],
-          ["সক্রিয় সদস্য", "২৬"],
-          ["নিষ্ক্রিয় সদস্য", "৪"],
+          ["লেফট উইং", toBn(data?.summary.leftWing ?? 0)],
+          ["রাইট উইং", toBn(data?.summary.rightWing ?? 0)],
+          ["সক্রিয় সদস্য", toBn(data?.summary.activeMembers ?? 0)],
+          ["নিষ্ক্রিয় সদস্য", toBn(data?.summary.inactiveMembers ?? 0)],
         ].map(([label, value]) => (
           <Card key={label} className="p-5">
             <p className="text-sm text-muted">{label}</p>
@@ -68,12 +72,16 @@ export default function WingsPage() {
 
       <Card className="overflow-x-auto p-5 scrollbar-soft">
         <div className="min-w-[760px]">
-          <TreeView
-            node={referralTree}
-            expanded={expanded}
-            toggle={(id) => setExpanded((old) => ({ ...old, [id]: !old[id] }))}
-            filter={{ level, activeOnly, query }}
-          />
+          {tree ? (
+            <TreeView
+              node={tree}
+              expanded={expanded}
+              toggle={(id) => setExpanded((old) => ({ ...old, [id]: !old[id] }))}
+              filter={{ level, activeOnly, query }}
+            />
+          ) : (
+            <p className="text-sm text-muted">নেটওয়ার্ক ডেটা নেই।</p>
+          )}
         </div>
       </Card>
     </div>

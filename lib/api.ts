@@ -20,6 +20,7 @@ import type {
   EarningsResponse,
   PaginatedResponse,
   Product,
+  ProductCountResponse,
   ProductImageUpload,
   ProductInput,
   ProductUpdateInput,
@@ -169,6 +170,11 @@ export const api = createApi({
     getProducts: builder.query<Product[], void>({
       query: () => "/products",
       transformResponse: unwrap<Product[]>,
+      providesTags: ["Products"],
+    }),
+    getProductCount: builder.query<ProductCountResponse, void>({
+      query: () => "/products/count",
+      transformResponse: unwrap<ProductCountResponse>,
       providesTags: ["Products"],
     }),
     getProduct: builder.query<Product, string>({
@@ -414,6 +420,7 @@ export const {
   useGetAdminPaymentsQuery,
   useGetAdminWithdrawalsQuery,
   useGetProductQuery,
+  useGetProductCountQuery,
   useGetProductsQuery,
   useGetReferralsQuery,
   useGetWingsQuery,

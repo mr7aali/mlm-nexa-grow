@@ -22,6 +22,10 @@ export type Product = {
   details?: Array<{ label: string; value: string }>;
 };
 
+export type ProductCountResponse = {
+  count: number;
+};
+
 export type TreeNode = {
   id: string;
   name: string;

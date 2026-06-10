@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { CheckCircle2, CreditCard, Minus, Plus, Smartphone, Truck } from "lucide-react";
+import { CheckCircle2, CreditCard, Minus, Plus } from "lucide-react";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { useCreateOrderMutation } from "@/lib/api";
 import type { Order, Product } from "@/lib/api-types";
@@ -13,7 +13,7 @@ import { useAppDispatch } from "@/lib/hooks";
 export function CheckoutForm({ product }: { product: Product }) {
   const dispatch = useAppDispatch();
   const [quantity, setQuantity] = useState(1);
-  const [payment, setPayment] = useState("cash");
+  const [payment, setPayment] = useState("eps");
   const [initialReferralCode, setInitialReferralCode] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [order, setOrder] = useState<Order | null>(null);
@@ -50,6 +50,15 @@ export function CheckoutForm({ product }: { product: Product }) {
       }).unwrap();
       if (createdOrder.auth) {
         dispatch(setCredentials(createdOrder.auth));
+      }
+      if (createdOrder.payment?.redirectUrl) {
+        setMessage("Redirecting to EPS payment gateway...");
+        window.location.assign(createdOrder.payment.redirectUrl);
+        return;
+      }
+      if (payment === "eps") {
+        setMessage("EPS payment was not initialized. Check backend EPS credentials and API URL.");
+        return;
       }
       setOrder(createdOrder.order);
       setSubmitted(true);
@@ -147,13 +156,11 @@ export function CheckoutForm({ product }: { product: Product }) {
 
       <div className="mt-5">
         <p className="text-sm font-semibold text-muted">পেমেন্ট পদ্ধতি</p>
-        <div className="mt-3 grid gap-3 sm:grid-cols-3">
+        <div className="mt-3 grid gap-3">
           {[
-            ["cash", Truck, "Cash"],
-            ["bkash", Smartphone, "bKash"],
-            ["card", CreditCard, "Card"],
+            ["eps", CreditCard, "Pay with EPS"],
           ].map(([value, Icon, label]) => {
-            const TypedIcon = Icon as typeof Truck;
+            const TypedIcon = Icon as typeof CreditCard;
             const active = payment === value;
 
             return (
@@ -193,7 +200,7 @@ export function CheckoutForm({ product }: { product: Product }) {
       {message ? <p className="mt-5 rounded-2xl bg-gold/10 px-4 py-3 text-sm text-gold">{message}</p> : null}
 
       <button type="submit" disabled={isLoading} className="gold-button mt-5 inline-flex min-h-12 w-full items-center justify-center px-5 py-3 text-sm font-bold disabled:cursor-not-allowed disabled:opacity-60">
-        অর্ডার কনফার্ম করুন
+        {isLoading ? "Initializing EPS..." : "Pay with EPS"}
       </button>
     </form>
   );

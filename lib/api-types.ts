@@ -181,6 +181,11 @@ export type Order = {
   phone: string;
   address: string;
   paymentMethod: string;
+  paymentProvider?: string;
+  paymentStatus?: "Pending" | "Paid" | "Failed" | "Cancelled";
+  paymentTransactionId?: string;
+  paymentGatewayTransactionId?: string;
+  paymentVerifiedAt?: string;
   subtotal: number;
   shipping: number;
   total: number;
@@ -203,6 +208,11 @@ export type AdminOrder = Order & {
 export type PurchaseResponse = {
   order: Order;
   auth: AuthPayload | null;
+  payment?: {
+    provider: "eps";
+    redirectUrl: string;
+    transactionId: string;
+  } | null;
 };
 
 export type DashboardResponse = {

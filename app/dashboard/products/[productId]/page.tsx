@@ -100,7 +100,7 @@ export default function ProductDetailsPage() {
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
               <InfoBox icon={<PackageCheck size={17} />} label="স্টক" value={product.stock ?? "স্টকে আছে"} />
               <InfoBox icon={<Clock3 size={17} />} label="অফার শেষ" value={product.offerEnds ?? "নির্ধারিত নয়"} />
-              <InfoBox icon={<ShieldCheck size={17} />} label="কমিশন" value={taka(product.commission ?? 0)} />
+              <InfoBox icon={<ShieldCheck size={17} />} label="কমিশন ধাপ" value="প্রতিটি নিশ্চিত ক্রয় ধাপে যুক্ত হবে" />
               <InfoBox icon={<Truck size={17} />} label="ডেলিভারি" value={product.delivery ?? "স্ট্যান্ডার্ড ডেলিভারি"} />
             </div>
           </div>

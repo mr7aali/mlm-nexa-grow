@@ -30,10 +30,7 @@ import type {
 } from "@/lib/api-types";
 
 const apiBaseUrl =
-  process.env.NEXT_PUBLIC_API_URL ??
-  (process.env.NODE_ENV === "production"
-    ? "/_/backend/api"
-    : "http://localhost:5000/api");
+  process.env.NEXT_PUBLIC_API_URL || "https://giotobangladesh.com/api";
 
 const rawBaseQuery = fetchBaseQuery({
   baseUrl: apiBaseUrl,
@@ -147,7 +144,12 @@ export const api = createApi({
     }),
     resetPassword: builder.mutation<
       { updated: boolean },
-      { identifier: string; password: string; resetToken?: string; otp?: string }
+      {
+        identifier: string;
+        password: string;
+        resetToken?: string;
+        otp?: string;
+      }
     >({
       query: (body) => ({ url: "/auth/reset-password", method: "POST", body }),
       transformResponse: unwrap<{ updated: boolean }>,
@@ -201,7 +203,7 @@ export const api = createApi({
     >({
       query: (body) => ({ url: "/orders", method: "POST", body }),
       transformResponse: unwrap<PurchaseResponse>,
-      invalidatesTags: ["Auth", "Dashboard", "AdminOrders"],
+      invalidatesTags: ["Auth", "Dashboard", "Commissions", "AdminOrders"],
     }),
     getDashboard: builder.query<DashboardResponse, void>({
       query: () => "/dashboard",
@@ -237,13 +239,23 @@ export const api = createApi({
       { id: string },
       { amount: number; method: string; account: string }
     >({
-      query: (body) => ({ url: "/dashboard/withdrawals", method: "POST", body }),
+      query: (body) => ({
+        url: "/dashboard/withdrawals",
+        method: "POST",
+        body,
+      }),
       transformResponse: unwrap<{ id: string }>,
       invalidatesTags: ["Earnings", "Dashboard"],
     }),
     getAdminUsers: builder.query<
       PaginatedResponse<AdminUser>,
-      { page?: number; limit?: number; search?: string; status?: string; role?: string } | void
+      {
+        page?: number;
+        limit?: number;
+        search?: string;
+        status?: string;
+        role?: string;
+      } | void
     >({
       query: (params) => ({ url: "/admin/users", params: params ?? undefined }),
       transformResponse: unwrap<PaginatedResponse<AdminUser>>,
@@ -277,7 +289,11 @@ export const api = createApi({
       { user: AdminUser; note: string },
       { user: string; amount: number; note: string }
     >({
-      query: (body) => ({ url: "/admin/commissions/credit", method: "POST", body }),
+      query: (body) => ({
+        url: "/admin/commissions/credit",
+        method: "POST",
+        body,
+      }),
       transformResponse: unwrap<{ user: AdminUser; note: string }>,
       invalidatesTags: ["AdminUsers"],
     }),
@@ -288,9 +304,18 @@ export const api = createApi({
     }),
     getAdminPayments: builder.query<
       PaginatedResponse<AdminPayment>,
-      { page?: number; limit?: number; search?: string; status?: string; method?: string } | void
+      {
+        page?: number;
+        limit?: number;
+        search?: string;
+        status?: string;
+        method?: string;
+      } | void
     >({
-      query: (params) => ({ url: "/admin/payments", params: params ?? undefined }),
+      query: (params) => ({
+        url: "/admin/payments",
+        params: params ?? undefined,
+      }),
       transformResponse: unwrap<PaginatedResponse<AdminPayment>>,
       providesTags: ["AdminWithdrawals", "AdminUsers"],
     }),
@@ -304,13 +329,27 @@ export const api = createApi({
         body: { status },
       }),
       transformResponse: unwrap<AdminWithdrawal>,
-      invalidatesTags: ["AdminWithdrawals", "AdminUsers", "Earnings", "Dashboard"],
+      invalidatesTags: [
+        "AdminWithdrawals",
+        "AdminUsers",
+        "Earnings",
+        "Dashboard",
+      ],
     }),
     getAdminOrders: builder.query<
       PaginatedResponse<AdminOrder>,
-      { page?: number; limit?: number; search?: string; status?: string; method?: string } | void
+      {
+        page?: number;
+        limit?: number;
+        search?: string;
+        status?: string;
+        method?: string;
+      } | void
     >({
-      query: (params) => ({ url: "/admin/orders", params: params ?? undefined }),
+      query: (params) => ({
+        url: "/admin/orders",
+        params: params ?? undefined,
+      }),
       transformResponse: unwrap<PaginatedResponse<AdminOrder>>,
       providesTags: ["AdminOrders"],
     }),
@@ -324,7 +363,7 @@ export const api = createApi({
         body: { status },
       }),
       transformResponse: unwrap<AdminOrder>,
-      invalidatesTags: ["AdminOrders"],
+      invalidatesTags: ["AdminOrders", "Dashboard", "Commissions"],
     }),
     broadcastNotification: builder.mutation<
       { delivered: boolean },
@@ -335,9 +374,17 @@ export const api = createApi({
     }),
     getAdminProducts: builder.query<
       PaginatedResponse<Product>,
-      { page?: number; limit?: number; search?: string; category?: string } | void
+      {
+        page?: number;
+        limit?: number;
+        search?: string;
+        category?: string;
+      } | void
     >({
-      query: (params) => ({ url: "/admin/products", params: params ?? undefined }),
+      query: (params) => ({
+        url: "/admin/products",
+        params: params ?? undefined,
+      }),
       transformResponse: unwrap<PaginatedResponse<Product>>,
       providesTags: ["AdminProducts"],
     }),
@@ -370,7 +417,10 @@ export const api = createApi({
         { type: "Products", id: productId },
       ],
     }),
-    deleteAdminProduct: builder.mutation<{ deleted: boolean; productId: string }, string>({
+    deleteAdminProduct: builder.mutation<
+      { deleted: boolean; productId: string },
+      string
+    >({
       query: (productId) => ({
         url: `/admin/products/${productId}`,
         method: "DELETE",

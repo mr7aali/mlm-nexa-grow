@@ -100,7 +100,7 @@ export default function ProductsPage() {
               <div className="mt-3 flex flex-wrap items-center gap-3">
                 <p className="font-bold text-gold-light">{taka(selected.price)}</p>
                 <p className="text-sm text-muted line-through">{taka(selected.originalPrice)}</p>
-                <Badge tone="gold">কমিশন {taka(selected.commission ?? 0)}</Badge>
+                <Badge tone="gold">ক্রয় ধাপে যুক্ত হবে</Badge>
               </div>
             </div>
             <div>

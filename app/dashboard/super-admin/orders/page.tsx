@@ -113,7 +113,11 @@ export default function SuperAdminOrdersPage() {
                   <p className="mt-1 text-xs text-muted">{item.product?.sku ?? "Product not found"}</p>
                   <p className="mt-1 text-xs text-muted">{item.product?.category ?? ""}</p>
                 </td>
-                <td className="px-5 py-4">{item.paymentMethod}</td>
+                <td className="px-5 py-4">
+                  <p className="font-semibold">{item.paymentMethod}</p>
+                  {item.paymentStatus ? <p className="mt-1 text-xs text-muted">Payment: {item.paymentStatus}</p> : null}
+                  {item.paymentTransactionId ? <p className="mt-1 text-xs text-muted">Txn: {item.paymentTransactionId}</p> : null}
+                </td>
                 <td className="px-5 py-4">{toBn(item.quantity)}</td>
                 <td className="px-5 py-4">
                   <p className="font-bold text-gold-light">{taka(item.total)}</p>

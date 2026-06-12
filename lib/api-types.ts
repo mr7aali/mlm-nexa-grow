@@ -116,13 +116,29 @@ export type EarningsMonth = {
   pending: number;
 };
 
+export type WithdrawalMethod = "bKash" | "Nagad" | "Rocket" | "Bank" | "Card";
+
+export type PayoutDetails = {
+  provider: WithdrawalMethod;
+  accountType?: string;
+  accountName?: string;
+  accountNumber?: string;
+  phone?: string;
+  bankName?: string;
+  branchName?: string;
+  routingNumber?: string;
+  cardLast4?: string;
+  note?: string;
+};
+
 export type Withdrawal = {
   id: string;
   date: string;
   amount: number;
-  method: string;
+  method: WithdrawalMethod;
   status: string;
   account?: string;
+  payoutDetails?: PayoutDetails;
 };
 
 export type AdminUser = AuthUser & {
@@ -269,6 +285,8 @@ export type WingsResponse = {
 export type EarningsResponse = {
   balance: number;
   minimumWithdrawal: number;
+  paidWithdrawals?: number;
+  reservedWithdrawals?: number;
   earningsByMonth: EarningsMonth[];
   withdrawals: Withdrawal[];
 };

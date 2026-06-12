@@ -19,6 +19,7 @@ import type {
   DashboardResponse,
   EarningsResponse,
   PaginatedResponse,
+  PayoutDetails,
   Product,
   ProductCountResponse,
   ProductImageUpload,
@@ -237,7 +238,7 @@ export const api = createApi({
     }),
     createWithdrawal: builder.mutation<
       { id: string },
-      { amount: number; method: string; account: string }
+      { amount: number; method: PayoutDetails["provider"]; account: string; payoutDetails: PayoutDetails }
     >({
       query: (body) => ({
         url: "/dashboard/withdrawals",

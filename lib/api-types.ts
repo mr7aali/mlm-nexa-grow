@@ -75,8 +75,11 @@ export type PaginatedResponse<T> = {
 export type CommissionLevel = {
   level: number;
   required: number;
+  requiredPurchases?: number;
   earning: number;
   current: number;
+  currentPurchases?: number;
+  totalPurchases?: number;
   color: string;
   status: LevelStatus;
 };
@@ -175,6 +178,8 @@ export type Order = {
   id: string;
   userId: string;
   productId: string;
+  sponsorUserId?: string | null;
+  sponsorCode?: string | null;
   quantity: number;
   email: string;
   customerName: string;
@@ -219,6 +224,7 @@ export type DashboardResponse = {
   user: AuthUser;
   stats: {
     totalReferrals: number;
+    productPurchases: number;
     currentLevel: number;
     totalEarned: number;
     pendingCommission: number;
@@ -232,6 +238,7 @@ export type DashboardResponse = {
 };
 
 export type CommissionsResponse = {
+  productPurchases: number;
   totalEarned: number;
   potential: number;
   currentLevel: CommissionLevel;

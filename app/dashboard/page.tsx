@@ -142,6 +142,7 @@ export default function DashboardPage() {
 
   const stats = data?.stats ?? {
     totalReferrals: 0,
+    productPurchases: 0,
     currentLevel: 1,
     totalEarned: 0,
     pendingCommission: 0,
@@ -168,7 +169,7 @@ export default function DashboardPage() {
       <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
         {[
           [Network, "মোট রেফারেল", toBn(stats.totalReferrals)],
-          [Sparkles, "বর্তমান লেভেল", toBn(stats.currentLevel)],
+          [Sparkles, "যোগ্য পণ্য ক্রয়", toBn(stats.productPurchases)],
           [WalletCards, "মোট আয়", taka(stats.totalEarned)],
           [TrendingUp, "পেন্ডিং কমিশন", taka(stats.pendingCommission)],
         ].map(([Icon, label, value]) => {
@@ -191,19 +192,19 @@ export default function DashboardPage() {
         <Card className="p-6">
           <div className="mb-4 flex items-center justify-between">
             <h3 className="text-2xl font-bold">কমিশন অগ্রগতি</h3>
-            <span className="text-sm text-muted">লেভেল {toBn(currentLevel?.level ?? 1)}</span>
+            <span className="text-sm text-muted">ধাপ {toBn(currentLevel?.level ?? stats.currentLevel)}</span>
           </div>
           <p className="mb-3 text-muted">
             {currentLevel
-              ? `${toBn(currentLevel.required)} এর মধ্যে ${toBn(currentLevel.current)} আইডি হয়েছে`
+              ? `${toBn(currentLevel.required)} এর মধ্যে ${toBn(currentLevel.current)} পণ্য ক্রয় হয়েছে`
               : "কমিশন লেভেল এখনো পাওয়া যায়নি"}
           </p>
           <Progress value={progress} color="gold" />
           <div className="mt-6 grid gap-3 md:grid-cols-3">
             {levels.slice(0, 3).map((item) => (
               <div key={item.level} className="rounded-2xl border border-line bg-elevated p-4">
-                <p className="text-sm text-muted">লেভেল {toBn(item.level)}</p>
-                <p className="mt-1 font-bold text-gold-light">{toBn(item.current)} / {toBn(item.required)} আইডি</p>
+                <p className="text-sm text-muted">ধাপ {toBn(item.level)}</p>
+                <p className="mt-1 font-bold text-gold-light">{toBn(item.current)} / {toBn(item.required)} ক্রয়</p>
               </div>
             ))}
           </div>

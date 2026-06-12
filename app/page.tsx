@@ -55,12 +55,12 @@ const slideImages = [
 ];
 
 const commissionLevels = [
-  { level: 1, earning: 200 },
-  { level: 2, earning: 600 },
-  { level: 3, earning: 2000 },
-  { level: 4, earning: 10000 },
-  { level: 5, earning: 50000 },
-  { level: 6, earning: 300000 },
+  { level: 1, required: 6, earning: 200 },
+  { level: 2, required: 36, earning: 600 },
+  { level: 3, required: 216, earning: 2000 },
+  { level: 4, required: 1296, earning: 10000 },
+  { level: 5, required: 7776, earning: 50000 },
+  { level: 6, required: 46656, earning: 300000 },
 ];
 
 function FacebookIcon({
@@ -713,7 +713,7 @@ export default function Home() {
             <div className="grid gap-0 sm:grid-cols-3">
               {[
                 [toBn(products.length), "Product categories"],
-                [toBn(commissionLevels.length), "Commission levels"],
+                [toBn(commissionLevels.length), "Purchase steps"],
                 ["০", "Active referrals"],
               ].map(([value, label]) => (
                 <div
@@ -756,7 +756,7 @@ export default function Home() {
               "রেফার কোড দিয়ে সদস্য অ্যাকাউন্ট তৈরি করুন।",
             ],
             [Network, "রেফার", "আপনার অনন্য লিংক শেয়ার করে network দেখুন।"],
-            [WalletCards, "আয়", "লেভেল পূর্ণ হলে কমিশন অগ্রগতি আপডেট হয়।"],
+            [WalletCards, "আয়", "পণ্য ক্রয় ধাপ পূর্ণ হলে কমিশন অগ্রগতি আপডেট হয়।"],
           ].map(([Icon, title, text]) => {
             const TypedIcon = Icon as typeof UserPlus;
             return (
@@ -777,11 +777,11 @@ export default function Home() {
         <div>
           <SectionHeading
             title="আয় ক্যালকুলেটর"
-            text="লেভেল নির্বাচন করলে সম্ভাব্য cumulative earning সঙ্গে সঙ্গে দেখা যাবে।"
+            text="পণ্য ক্রয় ধাপ নির্বাচন করলে সম্ভাব্য cumulative earning সঙ্গে সঙ্গে দেখা যাবে।"
           />
         </div>
         <Card className="p-6">
-          <label className="text-sm text-muted">লেভেল নির্বাচন করুন</label>
+          <label className="text-sm text-muted">পণ্য ক্রয় ধাপ নির্বাচন করুন</label>
           <select
             value={level}
             onChange={(event) => setLevel(Number(event.target.value))}
@@ -789,10 +789,18 @@ export default function Home() {
           >
             {commissionLevels.map((item) => (
               <option key={item.level} value={item.level}>
-                লেভেল {toBn(item.level)}
+                ধাপ {toBn(item.level)} - {toBn(item.required)} purchase
               </option>
             ))}
           </select>
+          <div className="mt-4 grid gap-2 text-sm">
+            {commissionLevels.map((item) => (
+              <div key={item.level} className="flex items-center justify-between gap-3 rounded-2xl border border-line bg-elevated px-4 py-3">
+                <span className="text-muted">ধাপ {toBn(item.level)} · {toBn(item.required)} purchase</span>
+                <span className="font-bold text-gold-light">{taka(item.earning)}</span>
+              </div>
+            ))}
+          </div>
           <div className="mt-6 rounded-[20px] border border-gold/20 bg-gold/10 p-6">
             <p className="text-muted">সম্ভাব্য মোট আয়</p>
             <p className="mt-2 text-5xl font-black text-gold-light">

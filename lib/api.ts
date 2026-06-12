@@ -203,7 +203,7 @@ export const api = createApi({
     >({
       query: (body) => ({ url: "/orders", method: "POST", body }),
       transformResponse: unwrap<PurchaseResponse>,
-      invalidatesTags: ["Auth", "Dashboard", "AdminOrders"],
+      invalidatesTags: ["Auth", "Dashboard", "Commissions", "AdminOrders"],
     }),
     getDashboard: builder.query<DashboardResponse, void>({
       query: () => "/dashboard",
@@ -363,7 +363,7 @@ export const api = createApi({
         body: { status },
       }),
       transformResponse: unwrap<AdminOrder>,
-      invalidatesTags: ["AdminOrders"],
+      invalidatesTags: ["AdminOrders", "Dashboard", "Commissions"],
     }),
     broadcastNotification: builder.mutation<
       { delivered: boolean },

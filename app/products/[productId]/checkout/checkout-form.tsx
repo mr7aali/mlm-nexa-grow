@@ -6,7 +6,7 @@ import { CheckCircle2, CreditCard, Minus, Plus } from "lucide-react";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { useCreateOrderMutation } from "@/lib/api";
 import type { Order, Product } from "@/lib/api-types";
-import { taka } from "@/lib/utils";
+import { availableStock, isOutOfStock, taka } from "@/lib/utils";
 import { setCredentials } from "@/lib/auth-slice";
 import { useAppDispatch } from "@/lib/hooks";
 
@@ -19,6 +19,9 @@ export function CheckoutForm({ product }: { product: Product }) {
   const [order, setOrder] = useState<Order | null>(null);
   const [message, setMessage] = useState("");
   const [createOrder, { isLoading }] = useCreateOrderMutation();
+  const stock = availableStock(product.stock);
+  const soldOut = isOutOfStock(product.stock);
+  const maxQuantity = stock === null ? 10 : Math.min(10, Math.max(1, stock));
 
   const shipping = product.price * quantity >= 1500 ? 0 : 80;
   const subtotal = product.price * quantity;
@@ -32,6 +35,14 @@ export function CheckoutForm({ product }: { product: Product }) {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setMessage("");
+    if (soldOut) {
+      setMessage("This product is out of stock.");
+      return;
+    }
+    if (stock !== null && quantity > stock) {
+      setMessage(`Only ${stock} item${stock === 1 ? "" : "s"} available in stock.`);
+      return;
+    }
     const formData = new FormData(event.currentTarget);
     const fullName = String(formData.get("fullName") ?? "");
 
@@ -136,8 +147,9 @@ export function CheckoutForm({ product }: { product: Product }) {
         <div className="mt-3 flex items-center gap-3">
           <button
             type="button"
+            disabled={soldOut}
             onClick={() => setQuantity((value) => Math.max(1, value - 1))}
-            className="grid h-11 w-11 place-items-center rounded-full border border-gold text-gold transition hover:bg-gold/10"
+            className="grid h-11 w-11 place-items-center rounded-full border border-gold text-gold transition hover:bg-gold/10 disabled:cursor-not-allowed disabled:opacity-40"
             aria-label="পরিমাণ কমান"
           >
             <Minus size={16} />
@@ -145,8 +157,9 @@ export function CheckoutForm({ product }: { product: Product }) {
           <span className="grid h-11 min-w-14 place-items-center rounded-2xl bg-surface px-4 text-lg font-black">{quantity}</span>
           <button
             type="button"
-            onClick={() => setQuantity((value) => Math.min(10, value + 1))}
-            className="grid h-11 w-11 place-items-center rounded-full border border-gold text-gold transition hover:bg-gold/10"
+            disabled={soldOut || quantity >= maxQuantity}
+            onClick={() => setQuantity((value) => Math.min(maxQuantity, value + 1))}
+            className="grid h-11 w-11 place-items-center rounded-full border border-gold text-gold transition hover:bg-gold/10 disabled:cursor-not-allowed disabled:opacity-40"
             aria-label="পরিমাণ বাড়ান"
           >
             <Plus size={16} />
@@ -199,8 +212,8 @@ export function CheckoutForm({ product }: { product: Product }) {
 
       {message ? <p className="mt-5 rounded-2xl bg-gold/10 px-4 py-3 text-sm text-gold">{message}</p> : null}
 
-      <button type="submit" disabled={isLoading} className="gold-button mt-5 inline-flex min-h-12 w-full items-center justify-center px-5 py-3 text-sm font-bold disabled:cursor-not-allowed disabled:opacity-60">
-        {isLoading ? "Initializing EPS..." : "Pay with EPS"}
+      <button type="submit" disabled={isLoading || soldOut} className="gold-button mt-5 inline-flex min-h-12 w-full items-center justify-center px-5 py-3 text-sm font-bold disabled:cursor-not-allowed disabled:opacity-60">
+        {soldOut ? "Out of stock" : isLoading ? "Initializing EPS..." : "Pay with EPS"}
       </button>
     </form>
   );

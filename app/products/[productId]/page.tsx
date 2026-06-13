@@ -6,7 +6,7 @@ import type { ReactNode } from "react";
 import { useParams } from "next/navigation";
 import { ArrowLeft, ArrowRight, CheckCircle2, Clock3, PackageCheck, ShieldCheck, Tag, Truck } from "lucide-react";
 import { useGetProductQuery } from "@/lib/api";
-import { taka } from "@/lib/utils";
+import { isOutOfStock, stockLabel, taka } from "@/lib/utils";
 
 export default function PublicProductDetailsPage() {
   const params = useParams<{ productId: string }>();
@@ -35,6 +35,7 @@ export default function PublicProductDetailsPage() {
   const highlights = product.highlights ?? [];
   const includes = product.includes ?? [];
   const details = product.details ?? [];
+  const soldOut = isOutOfStock(product.stock);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
@@ -85,19 +86,25 @@ export default function PublicProductDetailsPage() {
             </div>
 
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              <InfoBox icon={<PackageCheck size={17} />} label="Stock" value={product.stock ?? "Available"} />
+              <InfoBox icon={<PackageCheck size={17} />} label="Stock" value={stockLabel(product.stock)} />
               <InfoBox icon={<Clock3 size={17} />} label="Offer ends" value={product.offerEnds ?? "Not scheduled"} />
               <InfoBox icon={<ShieldCheck size={17} />} label="Payment" value="Cash on delivery available" />
               <InfoBox icon={<Truck size={17} />} label="Delivery" value={product.delivery ?? "Standard delivery"} />
             </div>
 
-            <Link
-              href={`/products/${product.id}/checkout`}
-              className="gold-button mt-5 inline-flex w-full min-h-12 items-center justify-center gap-2 px-5 py-3 text-sm font-bold"
-            >
-              Checkout
-              <ArrowRight size={17} />
-            </Link>
+            {soldOut ? (
+              <div className="mt-5 inline-flex min-h-12 w-full cursor-not-allowed items-center justify-center rounded-full border border-line bg-elevated px-5 py-3 text-sm font-bold text-muted">
+                Out of stock
+              </div>
+            ) : (
+              <Link
+                href={`/products/${product.id}/checkout`}
+                className="gold-button mt-5 inline-flex w-full min-h-12 items-center justify-center gap-2 px-5 py-3 text-sm font-bold"
+              >
+                Checkout
+                <ArrowRight size={17} />
+              </Link>
+            )}
           </div>
         </div>
       </section>

@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { CheckCircle2, CreditCard, Minus, Plus } from "lucide-react";
+import { CheckCircle2, CreditCard } from "lucide-react";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { useCreateOrderMutation } from "@/lib/api";
 import type { Order, Product } from "@/lib/api-types";
@@ -12,7 +12,6 @@ import { useAppDispatch } from "@/lib/hooks";
 
 export function CheckoutForm({ product }: { product: Product }) {
   const dispatch = useAppDispatch();
-  const [quantity, setQuantity] = useState(1);
   const [payment, setPayment] = useState("eps");
   const [initialReferralCode, setInitialReferralCode] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -21,11 +20,10 @@ export function CheckoutForm({ product }: { product: Product }) {
   const [createOrder, { isLoading }] = useCreateOrderMutation();
   const stock = availableStock(product.stock);
   const soldOut = isOutOfStock(product.stock);
-  const maxQuantity = stock === null ? 10 : Math.min(10, Math.max(1, stock));
+  const quantity = 1;
 
-  const shipping = product.price * quantity >= 1500 ? 0 : 80;
   const subtotal = product.price * quantity;
-  const total = subtotal + shipping;
+  const total = subtotal;
   const orderId = useMemo(
     () => `GIOTO-${product.sku.split("-").pop()}-${Date.now().toString().slice(-5)}`,
     [product.sku],
@@ -43,8 +41,8 @@ export function CheckoutForm({ product }: { product: Product }) {
       setMessage("This product is out of stock.");
       return;
     }
-    if (stock !== null && quantity > stock) {
-      setMessage(`Only ${stock} item${stock === 1 ? "" : "s"} available in stock.`);
+    if (stock !== null && stock < 1) {
+      setMessage("This product is out of stock.");
       return;
     }
 
@@ -153,31 +151,6 @@ export function CheckoutForm({ product }: { product: Product }) {
         <span className="block text-xs text-muted">Enter the full address, at least 8 characters.</span>
       </label>
 
-      <div className="mt-5 rounded-2xl border border-line bg-elevated p-4">
-        <p className="text-sm font-semibold text-muted">Quantity</p>
-        <div className="mt-3 flex items-center gap-3">
-          <button
-            type="button"
-            disabled={soldOut}
-            onClick={() => setQuantity((value) => Math.max(1, value - 1))}
-            className="grid h-11 w-11 place-items-center rounded-full border border-gold text-gold transition hover:bg-gold/10 disabled:cursor-not-allowed disabled:opacity-40"
-            aria-label="Decrease quantity"
-          >
-            <Minus size={16} />
-          </button>
-          <span className="grid h-11 min-w-14 place-items-center rounded-2xl bg-surface px-4 text-lg font-black">{quantity}</span>
-          <button
-            type="button"
-            disabled={soldOut || quantity >= maxQuantity}
-            onClick={() => setQuantity((value) => Math.min(maxQuantity, value + 1))}
-            className="grid h-11 w-11 place-items-center rounded-full border border-gold text-gold transition hover:bg-gold/10 disabled:cursor-not-allowed disabled:opacity-40"
-            aria-label="Increase quantity"
-          >
-            <Plus size={16} />
-          </button>
-        </div>
-      </div>
-
       <div className="mt-5">
         <p className="text-sm font-semibold text-muted">Payment method</p>
         <div className="mt-3 grid gap-3">
@@ -208,10 +181,6 @@ export function CheckoutForm({ product }: { product: Product }) {
         <div className="flex justify-between gap-3 text-sm">
           <span className="text-muted">Subtotal</span>
           <span className="font-bold">{taka(subtotal)}</span>
-        </div>
-        <div className="flex justify-between gap-3 text-sm">
-          <span className="text-muted">Delivery charge</span>
-          <span className="font-bold">{shipping === 0 ? "Free" : taka(shipping)}</span>
         </div>
         <div className="border-t border-line pt-3">
           <div className="flex items-end justify-between gap-3">

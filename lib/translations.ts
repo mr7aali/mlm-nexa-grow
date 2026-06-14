@@ -109,7 +109,6 @@ const exactBnToEn: Record<string, string> = {
   "ড্যাশবোর্ডে যান": "Go to dashboard",
   "পেমেন্ট পদ্ধতি": "Payment method",
   সাবটোটাল: "Subtotal",
-  "ডেলিভারি চার্জ": "Delivery charge",
   ফ্রি: "Free",
   "পরিমাণ কমান": "Decrease quantity",
   "পরিমাণ বাড়ান": "Increase quantity",

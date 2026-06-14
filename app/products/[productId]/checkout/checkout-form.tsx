@@ -26,7 +26,10 @@ export function CheckoutForm({ product }: { product: Product }) {
   const shipping = product.price * quantity >= 1500 ? 0 : 80;
   const subtotal = product.price * quantity;
   const total = subtotal + shipping;
-  const orderId = useMemo(() => `GIOTO-${product.sku.split("-").pop()}-${Date.now().toString().slice(-5)}`, [product.sku]);
+  const orderId = useMemo(
+    () => `GIOTO-${product.sku.split("-").pop()}-${Date.now().toString().slice(-5)}`,
+    [product.sku],
+  );
 
   useEffect(() => {
     setInitialReferralCode(new URLSearchParams(window.location.search).get("ref") ?? "");
@@ -35,6 +38,7 @@ export function CheckoutForm({ product }: { product: Product }) {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setMessage("");
+
     if (soldOut) {
       setMessage("This product is out of stock.");
       return;
@@ -43,8 +47,9 @@ export function CheckoutForm({ product }: { product: Product }) {
       setMessage(`Only ${stock} item${stock === 1 ? "" : "s"} available in stock.`);
       return;
     }
+
     const formData = new FormData(event.currentTarget);
-    const fullName = String(formData.get("fullName") ?? "");
+    const fullName = String(formData.get("fullName") ?? "").trim();
 
     try {
       const createdOrder = await createOrder({
@@ -55,10 +60,11 @@ export function CheckoutForm({ product }: { product: Product }) {
         password: String(formData.get("password") ?? ""),
         referralCode: String(formData.get("referralCode") ?? "").trim() || undefined,
         customerName: fullName,
-        phone: String(formData.get("phone") ?? ""),
-        address: String(formData.get("address") ?? ""),
+        phone: String(formData.get("phone") ?? "").trim(),
+        address: String(formData.get("address") ?? "").trim(),
         paymentMethod: payment,
       }).unwrap();
+
       if (createdOrder.auth) {
         dispatch(setCredentials(createdOrder.auth));
       }
@@ -71,6 +77,7 @@ export function CheckoutForm({ product }: { product: Product }) {
         setMessage("EPS payment was not initialized. Check backend EPS credentials and API URL.");
         return;
       }
+
       setOrder(createdOrder.order);
       setSubmitted(true);
     } catch (error) {
@@ -84,16 +91,17 @@ export function CheckoutForm({ product }: { product: Product }) {
         <div className="grid h-14 w-14 place-items-center rounded-full bg-gold/10 text-gold-light">
           <CheckCircle2 size={30} />
         </div>
-        <h2 className="mt-5 text-3xl font-black">অর্ডার কনফার্ম হয়েছে</h2>
+        <h2 className="mt-5 text-3xl font-black">Order confirmed</h2>
         <p className="mt-3 leading-8 text-muted">
-          আপনার অর্ডার নম্বর <span className="font-bold text-foreground">{order?.id ?? orderId}</span>। আপনার সদস্য অ্যাকাউন্ট প্রস্তুত এবং সাইন ইন করা হয়েছে।
+          Your order number is <span className="font-bold text-foreground">{order?.id ?? orderId}</span>. Your
+          member account is ready and signed in.
         </p>
         <div className="mt-5 rounded-2xl border border-line bg-elevated p-4">
-          <p className="text-sm text-muted">মোট পেমেন্ট</p>
+          <p className="text-sm text-muted">Total payment</p>
           <p className="mt-1 text-3xl font-black text-gold-light">{taka(order?.total ?? total)}</p>
         </div>
         <Link href="/dashboard" className="gold-button mt-5 inline-flex min-h-12 w-full items-center justify-center px-5 py-3 text-sm font-bold">
-          ড্যাশবোর্ডে যান
+          Go to dashboard
         </Link>
       </div>
     );
@@ -101,56 +109,59 @@ export function CheckoutForm({ product }: { product: Product }) {
 
   return (
     <form onSubmit={handleSubmit} className="rounded-[18px] border border-line bg-surface p-5">
-      <h2 className="text-2xl font-bold">চেকআউট ও সদস্য অ্যাকাউন্ট</h2>
+      <h2 className="text-2xl font-bold">Checkout and member account</h2>
       <p className="mt-2 text-sm leading-6 text-muted">
-        নতুন হলে এই তথ্য দিয়ে সদস্য অ্যাকাউন্ট তৈরি হবে। আগে থেকে অ্যাকাউন্ট থাকলে একই ইমেইল ও পাসওয়ার্ড দিয়ে পণ্য কিনতে পারবেন।
+        If the email is new, a member account will be created during checkout. If the email already exists, enter that
+        account password to continue buying.
       </p>
 
       <div className="mt-5 grid gap-4 md:grid-cols-2">
         <label className="space-y-2">
-          <span className="text-sm font-semibold text-muted">পুরো নাম</span>
+          <span className="text-sm font-semibold text-muted">Full name</span>
           <input name="fullName" required minLength={3} className="h-12 w-full rounded-2xl border border-line bg-white px-4 outline-none focus:border-gold focus:ring-4 focus:ring-gold/10" />
         </label>
         <label className="space-y-2">
-          <span className="text-sm font-semibold text-muted">মোবাইল নম্বর</span>
+          <span className="text-sm font-semibold text-muted">Mobile number</span>
           <input name="phone" required minLength={8} inputMode="tel" placeholder="01XXXXXXXXX" className="h-12 w-full rounded-2xl border border-line bg-white px-4 outline-none focus:border-gold focus:ring-4 focus:ring-gold/10" />
-          <span className="block text-xs text-muted">কমপক্ষে ৮ সংখ্যার মোবাইল নম্বর লিখুন।</span>
+          <span className="block text-xs text-muted">Enter at least 8 digits.</span>
         </label>
         <label className="space-y-2">
-          <span className="text-sm font-semibold text-muted">ইমেইল</span>
+          <span className="text-sm font-semibold text-muted">Email</span>
           <input name="email" type="email" required className="h-12 w-full rounded-2xl border border-line bg-white px-4 outline-none focus:border-gold focus:ring-4 focus:ring-gold/10" />
         </label>
         <label className="space-y-2">
-          <span className="text-sm font-semibold text-muted">পাসওয়ার্ড</span>
+          <span className="text-sm font-semibold text-muted">Password</span>
           <input name="password" type="password" required minLength={6} className="h-12 w-full rounded-2xl border border-line bg-white px-4 outline-none focus:border-gold focus:ring-4 focus:ring-gold/10" />
-          <span className="block text-xs text-muted">নতুন অ্যাকাউন্টের পাসওয়ার্ড দিন, অথবা আগের অ্যাকাউন্টের পাসওয়ার্ড দিন।</span>
+          <span className="block text-xs text-muted">
+            New email: set a password. Existing email: enter the correct account password.
+          </span>
         </label>
         <label className="space-y-2 md:col-span-2">
-          <span className="text-sm font-semibold text-muted">রেফার কোড</span>
+          <span className="text-sm font-semibold text-muted">Referral code</span>
           <input key={initialReferralCode} name="referralCode" defaultValue={initialReferralCode} inputMode="numeric" placeholder="00000" className="h-12 w-full rounded-2xl border border-line bg-white px-4 outline-none focus:border-gold focus:ring-4 focus:ring-gold/10" />
         </label>
       </div>
 
       <label className="mt-4 block space-y-2">
-        <span className="text-sm font-semibold text-muted">ডেলিভারি ঠিকানা</span>
+        <span className="text-sm font-semibold text-muted">Delivery address</span>
         <textarea
           name="address"
           required
           minLength={8}
           className="min-h-28 w-full rounded-2xl border border-line bg-white px-4 py-3 outline-none focus:border-gold focus:ring-4 focus:ring-gold/10"
         />
-        <span className="block text-xs text-muted">পূর্ণ ঠিকানা লিখুন, কমপক্ষে ৮ অক্ষর।</span>
+        <span className="block text-xs text-muted">Enter the full address, at least 8 characters.</span>
       </label>
 
       <div className="mt-5 rounded-2xl border border-line bg-elevated p-4">
-        <p className="text-sm font-semibold text-muted">পরিমাণ</p>
+        <p className="text-sm font-semibold text-muted">Quantity</p>
         <div className="mt-3 flex items-center gap-3">
           <button
             type="button"
             disabled={soldOut}
             onClick={() => setQuantity((value) => Math.max(1, value - 1))}
             className="grid h-11 w-11 place-items-center rounded-full border border-gold text-gold transition hover:bg-gold/10 disabled:cursor-not-allowed disabled:opacity-40"
-            aria-label="পরিমাণ কমান"
+            aria-label="Decrease quantity"
           >
             <Minus size={16} />
           </button>
@@ -160,7 +171,7 @@ export function CheckoutForm({ product }: { product: Product }) {
             disabled={soldOut || quantity >= maxQuantity}
             onClick={() => setQuantity((value) => Math.min(maxQuantity, value + 1))}
             className="grid h-11 w-11 place-items-center rounded-full border border-gold text-gold transition hover:bg-gold/10 disabled:cursor-not-allowed disabled:opacity-40"
-            aria-label="পরিমাণ বাড়ান"
+            aria-label="Increase quantity"
           >
             <Plus size={16} />
           </button>
@@ -168,7 +179,7 @@ export function CheckoutForm({ product }: { product: Product }) {
       </div>
 
       <div className="mt-5">
-        <p className="text-sm font-semibold text-muted">পেমেন্ট পদ্ধতি</p>
+        <p className="text-sm font-semibold text-muted">Payment method</p>
         <div className="mt-3 grid gap-3">
           {[
             ["eps", CreditCard, "Pay with EPS"],
@@ -195,16 +206,16 @@ export function CheckoutForm({ product }: { product: Product }) {
 
       <div className="mt-5 space-y-3 rounded-2xl border border-line bg-elevated p-4">
         <div className="flex justify-between gap-3 text-sm">
-          <span className="text-muted">সাবটোটাল</span>
+          <span className="text-muted">Subtotal</span>
           <span className="font-bold">{taka(subtotal)}</span>
         </div>
         <div className="flex justify-between gap-3 text-sm">
-          <span className="text-muted">ডেলিভারি চার্জ</span>
-          <span className="font-bold">{shipping === 0 ? "ফ্রি" : taka(shipping)}</span>
+          <span className="text-muted">Delivery charge</span>
+          <span className="font-bold">{shipping === 0 ? "Free" : taka(shipping)}</span>
         </div>
         <div className="border-t border-line pt-3">
           <div className="flex items-end justify-between gap-3">
-            <span className="font-bold">মোট</span>
+            <span className="font-bold">Total</span>
             <span className="text-3xl font-black text-gold-light">{taka(total)}</span>
           </div>
         </div>

@@ -12,52 +12,101 @@ import { useAppDispatch } from "@/lib/hooks";
 const apiBaseUrl =
   process.env.NEXT_PUBLIC_API_URL || "https://giotobangladesh.com/api";
 
+type EpsVerifyResult = {
+  orderId: string;
+  status: string;
+  paymentStatus: string;
+};
+
 export function EpsPaymentResultClient() {
   const dispatch = useAppDispatch();
   const searchParams = useSearchParams();
   const [sessionMessage, setSessionMessage] = useState("");
   const orderId = searchParams.get("orderId") ?? "";
-  const orderStatus = searchParams.get("status") ?? "Pending";
-  const paymentStatus = searchParams.get("paymentStatus") ?? "Pending";
+  const initialStatus = searchParams.get("status") ?? "Pending";
+  const initialPaymentStatus = searchParams.get("paymentStatus") ?? "Pending";
+
+  const [orderStatus, setOrderStatus] = useState(initialStatus);
+  const [paymentStatus, setPaymentStatus] = useState(initialPaymentStatus);
+  const [verifying, setVerifying] = useState(true);
+
   const paid = paymentStatus === "Paid" || orderStatus === "Confirmed";
-  const failed = paymentStatus === "Failed" || paymentStatus === "Cancelled" || orderStatus === "Cancelled";
+  const failed =
+    paymentStatus === "Failed" ||
+    paymentStatus === "Cancelled" ||
+    orderStatus === "Cancelled";
+  const pending = !paid && !failed;
   const Icon = paid ? CheckCircle2 : failed ? XCircle : Clock3;
-  const title = paid ? "Payment confirmed" : failed ? "Payment not completed" : "Payment is being reviewed";
+  const title = paid
+    ? "Payment confirmed"
+    : failed
+      ? "Payment not completed"
+      : "Payment is being reviewed";
 
-  const refreshUrl = useMemo(
-    () => `${apiBaseUrl.replace(/\/+$/, "")}/auth/refresh`,
-    [],
-  );
+  const base = useMemo(() => apiBaseUrl.replace(/\/+$/, ""), []);
 
+  // Re-verify with the backend on load. This finalizes the order and provisions
+  // the member account even when the gateway settles just after the redirect.
   useEffect(() => {
-    if (!paid) return;
-
-    let cancelled = false;
-    async function refreshSession() {
-      try {
-        const response = await fetch(refreshUrl, {
-          method: "POST",
-          credentials: "include",
-        });
-        const payload = (await response.json()) as ApiResponse<AuthPayload>;
-
-        if (!cancelled && response.ok && payload.success) {
-          dispatch(setCredentials(payload.data));
-          setSessionMessage("Your member account is ready.");
-        }
-      } catch {
-        if (!cancelled) {
-          setSessionMessage("Payment is confirmed. Sign in if the dashboard asks again.");
-        }
-      }
+    if (!orderId) {
+      setVerifying(false);
+      return;
     }
 
-    refreshSession();
+    let cancelled = false;
+
+    async function verifyAndRefresh() {
+      let confirmed = paid;
+
+      try {
+        const verifyResponse = await fetch(
+          `${base}/payments/eps/orders/${encodeURIComponent(orderId)}/verify`,
+          { method: "POST", credentials: "include" },
+        );
+        const verifyPayload = (await verifyResponse.json()) as ApiResponse<EpsVerifyResult>;
+
+        if (!cancelled && verifyResponse.ok && verifyPayload.success) {
+          setOrderStatus(verifyPayload.data.status);
+          setPaymentStatus(verifyPayload.data.paymentStatus);
+          confirmed =
+            verifyPayload.data.paymentStatus === "Paid" ||
+            verifyPayload.data.status === "Confirmed";
+        }
+      } catch {
+        // Network hiccup: keep the status from the redirect params.
+      }
+
+      if (confirmed) {
+        try {
+          const response = await fetch(`${base}/auth/refresh`, {
+            method: "POST",
+            credentials: "include",
+          });
+          const payload = (await response.json()) as ApiResponse<AuthPayload>;
+
+          if (!cancelled && response.ok && payload.success) {
+            dispatch(setCredentials(payload.data));
+            setSessionMessage("Your member account is ready.");
+          }
+        } catch {
+          if (!cancelled) {
+            setSessionMessage(
+              "Payment is confirmed. Sign in if the dashboard asks again.",
+            );
+          }
+        }
+      }
+
+      if (!cancelled) setVerifying(false);
+    }
+
+    verifyAndRefresh();
 
     return () => {
       cancelled = true;
     };
-  }, [dispatch, paid, refreshUrl]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orderId, base, dispatch]);
 
   return (
     <main className="mx-auto grid min-h-[70vh] max-w-2xl place-items-center px-4 py-12">
@@ -69,6 +118,9 @@ export function EpsPaymentResultClient() {
         <p className="mt-3 text-sm leading-6 text-muted">
           Order {orderId || "reference"} is currently {orderStatus}. Payment status: {paymentStatus}.
         </p>
+        {verifying && pending ? (
+          <p className="mt-3 text-sm text-muted">Confirming your payment with the gateway...</p>
+        ) : null}
         {sessionMessage ? <p className="mt-3 text-sm text-muted">{sessionMessage}</p> : null}
         <div className="mt-6 grid gap-3 sm:grid-cols-2">
           <Link href="/dashboard" className="gold-button inline-flex min-h-12 items-center justify-center px-5 py-3 text-sm font-bold">

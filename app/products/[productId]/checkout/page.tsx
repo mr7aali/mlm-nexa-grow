@@ -6,7 +6,7 @@ import type { ReactNode } from "react";
 import { useParams } from "next/navigation";
 import { ArrowLeft, PackageCheck, ShieldCheck, Truck } from "lucide-react";
 import { useGetProductQuery } from "@/lib/api";
-import { taka } from "@/lib/utils";
+import { isOutOfStock, stockLabel, taka } from "@/lib/utils";
 import { CheckoutForm } from "./checkout-form";
 
 export default function CheckoutPage() {
@@ -28,6 +28,28 @@ export default function CheckoutPage() {
         <div className="mt-6 rounded-[18px] border border-line bg-surface p-6">
           <h1 className="text-2xl font-bold">Product not found</h1>
           <p className="mt-2 text-muted">Checkout is only available for products saved in MongoDB.</p>
+        </div>
+      </div>
+    );
+  }
+
+  const soldOut = isOutOfStock(product.stock);
+
+  if (soldOut) {
+    return (
+      <div className="mx-auto max-w-7xl px-4 py-8">
+        <Link href={`/products/${product.id}`} className="inline-flex items-center gap-2 text-sm font-semibold text-muted hover:text-gold">
+          <ArrowLeft size={17} />
+          Product details
+        </Link>
+        <div className="mt-6 rounded-[18px] border border-line bg-surface p-6">
+          <h1 className="text-3xl font-black">Out of stock</h1>
+          <p className="mt-3 leading-7 text-muted">
+            {product.name} is currently unavailable, so checkout and EPS payment are disabled.
+          </p>
+          <Link href="/products" className="outline-gold mt-5 inline-flex min-h-11 items-center justify-center px-5 py-2.5 text-sm font-semibold">
+            Browse products
+          </Link>
         </div>
       </div>
     );
@@ -65,7 +87,7 @@ export default function CheckoutPage() {
           </div>
 
           <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
-            <Feature icon={<PackageCheck size={17} />} text={product.stock ?? "Available"} />
+            <Feature icon={<PackageCheck size={17} />} text={stockLabel(product.stock)} />
             <Feature icon={<Truck size={17} />} text={product.delivery ?? "Standard delivery"} />
             <Feature icon={<ShieldCheck size={17} />} text="Secure checkout" />
           </div>

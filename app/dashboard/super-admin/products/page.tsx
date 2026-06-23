@@ -14,7 +14,7 @@ import {
   useUploadAdminProductImageMutation,
 } from "@/lib/api";
 import type { Product, ProductInput, ProductUpdateInput } from "@/lib/api-types";
-import { taka, toBn } from "@/lib/utils";
+import { stockLabel, taka, toBn } from "@/lib/utils";
 
 const pageSize = 8;
 
@@ -78,7 +78,7 @@ function formFromProduct(product: Product): ProductForm {
     price: String(product.price),
     originalPrice: String(product.originalPrice),
     commission: product.commission === undefined ? "" : String(product.commission),
-    stock: product.stock ?? "",
+    stock: product.stock === undefined ? "" : String(product.stock),
     offer: product.offer ?? "",
     offerEnds: product.offerEnds ?? "",
     delivery: product.delivery ?? "",
@@ -163,6 +163,7 @@ export default function SuperAdminProductsPage() {
     const price = Number(form.price);
     const originalPrice = Number(form.originalPrice);
     const commission = form.commission ? Number(form.commission) : undefined;
+    const stock = form.stock.trim() ? Number(form.stock) : undefined;
 
     if (!form.image) {
       throw new Error("পণ্যের ছবি আপলোড করুন।");
@@ -172,6 +173,9 @@ export default function SuperAdminProductsPage() {
     }
     if (commission !== undefined && (!Number.isFinite(commission) || commission < 0)) {
       throw new Error("সঠিক কমিশন লিখুন।");
+    }
+    if (stock !== undefined && (!Number.isInteger(stock) || stock < 0)) {
+      throw new Error("স্টক অবশ্যই ০ বা তার বেশি পূর্ণসংখ্যা হতে হবে।");
     }
 
     return {
@@ -183,7 +187,7 @@ export default function SuperAdminProductsPage() {
       price,
       originalPrice,
       commission,
-      stock: form.stock.trim() || undefined,
+      stock,
       offer: form.offer.trim() || undefined,
       offerEnds: form.offerEnds.trim() || undefined,
       delivery: form.delivery.trim() || undefined,
@@ -328,7 +332,7 @@ export default function SuperAdminProductsPage() {
                   <Input type="number" value={form.price} onChange={(e) => updateField("price", e.target.value)} placeholder="অফার মূল্য" required />
                   <Input type="number" value={form.originalPrice} onChange={(e) => updateField("originalPrice", e.target.value)} placeholder="নিয়মিত মূল্য" required />
                   <Input type="number" value={form.commission} onChange={(e) => updateField("commission", e.target.value)} placeholder="কমিশন" />
-                  <Input value={form.stock} onChange={(e) => updateField("stock", e.target.value)} placeholder="স্টক" />
+                  <Input type="number" min={0} step={1} value={form.stock} onChange={(e) => updateField("stock", e.target.value)} placeholder="স্টক" />
                 </div>
                 <div className="grid gap-3 md:grid-cols-2">
                   <Input value={form.offer} onChange={(e) => updateField("offer", e.target.value)} placeholder="অফার টেক্সট" />
@@ -381,7 +385,7 @@ export default function SuperAdminProductsPage() {
                 </div>
                 <div className="text-right">
                   <p className="text-xs text-muted line-through">{taka(product.originalPrice)}</p>
-                  <p className="text-xs font-semibold text-foreground">{product.stock ?? "স্টক তথ্য নেই"}</p>
+                  <p className="text-xs font-semibold text-foreground">{stockLabel(product.stock, "স্টক তথ্য নেই", "স্টক", "স্টক শেষ")}</p>
                 </div>
               </div>
               <div className="mt-4 grid grid-cols-3 gap-2">

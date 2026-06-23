@@ -30,9 +30,6 @@ export default function CommissionsPage() {
   const progress = currentLevel
     ? (currentLevel.current / currentLevel.required) * 100
     : 0;
-  const remaining = currentLevel
-    ? Math.max(0, currentLevel.required - currentLevel.current)
-    : 0;
   const purchaseCount = data?.productPurchases ?? 0;
 
   return (
@@ -50,7 +47,7 @@ export default function CommissionsPage() {
         <p className="text-sm text-muted">কমিশন ডেটা লোড হচ্ছে...</p>
       ) : null}
 
-      <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-2">
         <Card>
           <p className="text-muted">যোগ্য পণ্য ক্রয়</p>
           <p className="mt-2 text-3xl font-black text-gold-light">
@@ -63,20 +60,12 @@ export default function CommissionsPage() {
             {taka(data?.totalEarned ?? 0)}
           </p>
         </Card>
-        <Card>
+        {/* <Card>
           <p className="text-muted">সম্ভাব্য মোট আয়</p>
           <p className="mt-2 text-3xl font-black text-gold-light">
             {taka(data?.potential ?? 0)}
           </p>
-        </Card>
-        <Card>
-          <p className="text-muted">পরবর্তী মাইলস্টোন</p>
-          <p className="mt-2 text-xl font-bold text-gold-light">
-            {currentLevel
-              ? `আর ${toBn(remaining)} পণ্য ক্রয় হলে পরবর্তী ধাপ আনলক হবে`
-              : "লেভেল সেট করা হয়নি"}
-          </p>
-        </Card>
+        </Card> */}
       </div>
 
       {currentLevel ? (
@@ -87,10 +76,10 @@ export default function CommissionsPage() {
                 <h3 className="text-xl font-bold">
                   ধাপ {toBn(currentLevel.level)}
                 </h3>
-                <p className="text-sm text-muted">
+                {/* <p className="text-sm text-muted">
                   প্রয়োজন {toBn(currentLevel.required)} পণ্য ক্রয় · বর্তমান{" "}
                   {toBn(currentLevel.current)}
-                </p>
+                </p> */}
               </div>
               <Badge
                 tone={

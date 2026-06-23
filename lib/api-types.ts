@@ -12,7 +12,7 @@ export type Product = {
   offer?: string;
   offerEnds?: string;
   commission?: number;
-  stock?: string;
+  stock?: number;
   sku: string;
   delivery?: string;
   description?: string;
@@ -173,7 +173,7 @@ export type ProductInput = {
   offer?: string;
   offerEnds?: string;
   commission?: number;
-  stock?: string;
+  stock?: number;
   sku: string;
   delivery?: string;
   description?: string;

@@ -7,14 +7,15 @@ import { Eye, MessageCircle, Share2, Tag } from "lucide-react";
 import { Badge, Button, CopyButton, Modal } from "@/components/ui";
 import { useGetMeQuery, useGetProductsQuery } from "@/lib/api";
 import type { Product } from "@/lib/api-types";
-import { taka } from "@/lib/utils";
+import { isOutOfStock, stockLabel, taka } from "@/lib/utils";
 
 export default function ProductsPage() {
   const [selected, setSelected] = useState<Product | null>(null);
   const { data, isLoading } = useGetProductsQuery();
   const { data: me } = useGetMeQuery();
   const productRows = data ?? [];
-  const link = selected && me ? `/products/${selected.id}/checkout?ref=${encodeURIComponent(me.referralCode)}` : "";
+  const selectedSoldOut = selected ? isOutOfStock(selected.stock) : false;
+  const link = selected && me && !selectedSoldOut ? `/products/${selected.id}/checkout?ref=${encodeURIComponent(me.referralCode)}` : "";
 
   return (
     <div className="space-y-6">
@@ -28,6 +29,7 @@ export default function ProductsPage() {
       <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
         {productRows.length ? productRows.map((product) => {
           const detailsHref = `/dashboard/products/${product.id}`;
+          const soldOut = isOutOfStock(product.stock);
 
           return (
             <article key={product.id} className="nexa-card group relative flex min-h-full flex-col overflow-hidden bg-surface">
@@ -50,7 +52,7 @@ export default function ProductsPage() {
               <div className="flex flex-1 flex-col p-5">
                 <div className="flex items-center justify-between gap-3">
                   <Badge tone="purple">{product.category}</Badge>
-                  <span className="text-xs font-semibold text-gold-light">{product.stock}</span>
+                  <span className="text-xs font-semibold text-gold-light">{stockLabel(product.stock, "স্টকে আছে", "স্টক", "স্টক শেষ")}</span>
                 </div>
 
                 <h3 className="mt-4 text-xl font-bold">{product.name}</h3>
@@ -77,8 +79,8 @@ export default function ProductsPage() {
                     <Eye size={16} />
                     বিস্তারিত
                   </Link>
-                  <Button variant="outline" className="w-full px-4" onClick={() => setSelected(product)}>
-                    রেফার করুন
+                  <Button variant="outline" className="w-full px-4" disabled={soldOut} onClick={() => setSelected(product)}>
+                    {soldOut ? "স্টক শেষ" : "রেফার করুন"}
                   </Button>
                 </div>
               </div>
@@ -105,12 +107,18 @@ export default function ProductsPage() {
             </div>
             <div>
               <p className="mb-2 text-sm text-muted">প্রোডাক্ট রেফারেল চেকআউট</p>
-              <div className="break-all rounded-2xl border border-line bg-elevated p-4 text-sm text-gold-light">{link}</div>
+              <div className="break-all rounded-2xl border border-line bg-elevated p-4 text-sm text-gold-light">{selectedSoldOut ? "স্টক শেষ, চেকআউট লিংক বন্ধ আছে।" : link}</div>
             </div>
             <div className="grid gap-3 sm:grid-cols-3">
-              <CopyButton value={link} label="চেকআউট লিংক কপি" />
-              <Button variant="outline"><MessageCircle size={16} /> WhatsApp</Button>
-              <Button variant="outline"><Share2 size={16} /> Facebook</Button>
+              {selectedSoldOut ? (
+                <p className="rounded-2xl border border-line bg-elevated px-4 py-3 text-sm text-muted sm:col-span-3">স্টক শেষ, তাই শেয়ার বন্ধ আছে।</p>
+              ) : (
+                <>
+                  <CopyButton value={link} label="চেকআউট লিংক কপি" />
+                  <Button variant="outline"><MessageCircle size={16} /> WhatsApp</Button>
+                  <Button variant="outline"><Share2 size={16} /> Facebook</Button>
+                </>
+              )}
             </div>
           </div>
         ) : null}

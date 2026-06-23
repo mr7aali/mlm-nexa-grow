@@ -15,6 +15,29 @@ export function referralLink(code: string) {
   return code;
 }
 
+export function isOutOfStock(stock?: number | string | null) {
+  if (stock === undefined || stock === null || stock === "") return false;
+  const value = Number(stock);
+  return Number.isFinite(value) && value <= 0;
+}
+
+export function availableStock(stock?: number | string | null) {
+  if (stock === undefined || stock === null || stock === "") return null;
+  const value = Number(stock);
+  return Number.isFinite(value) ? Math.max(0, Math.trunc(value)) : null;
+}
+
+export function stockLabel(
+  stock?: number | string | null,
+  fallback = "Available",
+  unitLabel = "in stock",
+  outLabel = "Out of stock",
+) {
+  const value = availableStock(stock);
+  if (value === null) return fallback;
+  return value > 0 ? `${toBn(value)} ${unitLabel}` : outLabel;
+}
+
 export function initials(name: string) {
   return name
     .split(" ")

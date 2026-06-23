@@ -121,7 +121,6 @@ export default function SuperAdminOrdersPage() {
                 <td className="px-5 py-4">{toBn(item.quantity)}</td>
                 <td className="px-5 py-4">
                   <p className="font-bold text-gold-light">{taka(item.total)}</p>
-                  <p className="mt-1 text-xs text-muted">Shipping {taka(item.shipping)}</p>
                 </td>
                 <td className="px-5 py-4">{item.status}</td>
                 <td className="px-5 py-4">

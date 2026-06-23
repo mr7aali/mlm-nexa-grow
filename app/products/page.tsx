@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, ShoppingBag, Tag } from "lucide-react";
 import { useGetProductsQuery } from "@/lib/api";
-import { taka } from "@/lib/utils";
+import { isOutOfStock, stockLabel, taka } from "@/lib/utils";
 
 export default function PublicProductsPage() {
   const { data, isLoading } = useGetProductsQuery();
@@ -38,6 +38,7 @@ export default function PublicProductsPage() {
               const detailsHref = `/products/${product.id}`;
               const checkoutHref = `/products/${product.id}/checkout`;
               const highlights = product.highlights ?? [];
+              const soldOut = isOutOfStock(product.stock);
 
               return (
                 <article
@@ -68,9 +69,9 @@ export default function PublicProductsPage() {
                       <span className="inline-flex rounded-full border border-gold-light bg-gold-light/20 px-3 py-1 text-xs font-semibold text-gold">
                         {product.category}
                       </span>
-                      {product.stock ? (
+                      {product.stock !== undefined ? (
                         <span className="text-xs font-semibold text-gold-light">
-                          {product.stock}
+                          {stockLabel(product.stock)}
                         </span>
                       ) : null}
                     </div>
@@ -123,13 +124,19 @@ export default function PublicProductsPage() {
                       >
                         Details
                       </Link>
-                      <Link
-                        href={checkoutHref}
-                        className="gold-button inline-flex min-h-11 items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold"
-                      >
-                        Buy
-                        <ArrowRight size={16} />
-                      </Link>
+                      {soldOut ? (
+                        <span className="inline-flex min-h-11 cursor-not-allowed items-center justify-center gap-2 rounded-full border border-line bg-elevated px-4 py-2.5 text-sm font-semibold text-muted">
+                          Out of stock
+                        </span>
+                      ) : (
+                        <Link
+                          href={checkoutHref}
+                          className="gold-button inline-flex min-h-11 items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold"
+                        >
+                          Buy
+                          <ArrowRight size={16} />
+                        </Link>
+                      )}
                     </div>
                   </div>
                 </article>

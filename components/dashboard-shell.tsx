@@ -35,7 +35,11 @@ const navItems = [
   { href: "/dashboard", label: "ড্যাশবোর্ড", icon: LayoutDashboard },
   { href: "/dashboard/wings", label: "মাই উইংস", icon: Network },
   { href: "/dashboard/referrals", label: "রেফারেল", icon: Users },
-  { href: "/dashboard/commissions", label: "কমিশন", icon: ChartNoAxesCombined },
+  {
+    href: "/dashboard/commissions",
+    label: "জেনারেশন ইনকাম",
+    icon: ChartNoAxesCombined,
+  },
   { href: "/dashboard/products", label: "পণ্য", icon: Boxes },
   { href: "/dashboard/payments", label: "পেমেন্ট", icon: CreditCard },
   { href: "/dashboard/earnings", label: "আয়", icon: Coins },
@@ -43,10 +47,26 @@ const navItems = [
 ];
 
 const adminNavItems = [
-  { href: "/dashboard/super-admin/users", label: "ইউজার ম্যানেজ", icon: ShieldCheck },
-  { href: "/dashboard/super-admin/products", label: "পণ্য যোগ", icon: PackagePlus },
-  { href: "/dashboard/super-admin/orders", label: "Checkout Orders", icon: ShoppingBag },
-  { href: "/dashboard/super-admin/payments", label: "পেমেন্ট", icon: ReceiptText },
+  {
+    href: "/dashboard/super-admin/users",
+    label: "ইউজার ম্যানেজ",
+    icon: ShieldCheck,
+  },
+  {
+    href: "/dashboard/super-admin/products",
+    label: "পণ্য যোগ",
+    icon: PackagePlus,
+  },
+  {
+    href: "/dashboard/super-admin/orders",
+    label: "Checkout Orders",
+    icon: ShoppingBag,
+  },
+  {
+    href: "/dashboard/super-admin/payments",
+    label: "পেমেন্ট",
+    icon: ReceiptText,
+  },
 ];
 
 const memberOnlyPaths = [
@@ -64,17 +84,22 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const dispatch = useAppDispatch();
   const accessToken = useAppSelector((state) => state.auth.accessToken);
   const storedUser = useAppSelector((state) => state.auth.user);
-  const { data: currentUser } = useGetMeQuery(undefined, { skip: !accessToken });
+  const { data: currentUser } = useGetMeQuery(undefined, {
+    skip: !accessToken,
+  });
   const [logout] = useLogoutMutation();
   const [open, setOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const activeUser = currentUser ?? storedUser;
-  const isAdminRole = activeUser?.role === "admin" || activeUser?.role === "super-admin";
-  const visibleNavItems = isAdminRole ? [
-    { href: "/dashboard", label: "ড্যাশবোর্ড", icon: LayoutDashboard },
-    { href: "/dashboard/profile", label: "প্রোফাইল", icon: User },
-    ...adminNavItems,
-  ] : navItems;
+  const isAdminRole =
+    activeUser?.role === "admin" || activeUser?.role === "super-admin";
+  const visibleNavItems = isAdminRole
+    ? [
+        { href: "/dashboard", label: "ড্যাশবোর্ড", icon: LayoutDashboard },
+        { href: "/dashboard/profile", label: "প্রোফাইল", icon: User },
+        ...adminNavItems,
+      ]
+    : navItems;
 
   useEffect(() => {
     if (!accessToken) {
@@ -83,7 +108,9 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   }, [accessToken, router]);
 
   useEffect(() => {
-    const isMemberOnlyPath = memberOnlyPaths.some((path) => pathname === path || pathname.startsWith(`${path}/`));
+    const isMemberOnlyPath = memberOnlyPaths.some(
+      (path) => pathname === path || pathname.startsWith(`${path}/`),
+    );
 
     if (accessToken && activeUser && isAdminRole && isMemberOnlyPath) {
       router.replace("/dashboard/super-admin/payments");
@@ -91,7 +118,9 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   }, [accessToken, activeUser, isAdminRole, pathname, router]);
 
   async function handleLogout() {
-    await logout().unwrap().catch(() => undefined);
+    await logout()
+      .unwrap()
+      .catch(() => undefined);
     dispatch(clearCredentials());
     router.replace("/login");
   }
@@ -104,7 +133,13 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (activeUser && isAdminRole && memberOnlyPaths.some((path) => pathname === path || pathname.startsWith(`${path}/`))) {
+  if (
+    activeUser &&
+    isAdminRole &&
+    memberOnlyPaths.some(
+      (path) => pathname === path || pathname.startsWith(`${path}/`),
+    )
+  ) {
     return (
       <main className="grid min-h-screen place-items-center bg-background text-muted">
         রিডাইরেক্ট হচ্ছে...
@@ -113,15 +148,31 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   }
 
   const sidebar = (
-    <aside className={cn("flex h-full flex-col border-r border-gold bg-sidebar text-white transition-all", collapsed ? "w-20" : "w-72")}>
+    <aside
+      className={cn(
+        "flex h-full flex-col border-r border-gold bg-sidebar text-white transition-all",
+        collapsed ? "w-20" : "w-72",
+      )}
+    >
       <div className="flex h-20 items-center justify-between px-5">
         <Link href="/" className="flex items-center gap-3">
-          <BrandLogo className="h-14 w-56" priority framed={false} variant="wide" />
+          <BrandLogo
+            className="h-14 w-56"
+            priority
+            framed={false}
+            variant="wide"
+          />
         </Link>
-        <button onClick={() => setCollapsed((value) => !value)} className="hidden rounded-full p-2 text-white/80 hover:bg-gold-light/20 hover:text-white lg:block">
+        <button
+          onClick={() => setCollapsed((value) => !value)}
+          className="hidden rounded-full p-2 text-white/80 hover:bg-gold-light/20 hover:text-white lg:block"
+        >
           {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
         </button>
-        <button onClick={() => setOpen(false)} className="rounded-full p-2 text-white/80 hover:bg-gold-light/20 hover:text-white lg:hidden">
+        <button
+          onClick={() => setOpen(false)}
+          className="rounded-full p-2 text-white/80 hover:bg-gold-light/20 hover:text-white lg:hidden"
+        >
           <X size={18} />
         </button>
       </div>
@@ -137,7 +188,9 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
               onClick={() => setOpen(false)}
               className={cn(
                 "flex items-center gap-3 rounded-r-2xl border-l-4 px-4 py-3 text-sm font-semibold transition",
-                active ? "border-elevated bg-elevated text-gold" : "border-transparent text-white/80 hover:bg-gold-light/20 hover:text-white",
+                active
+                  ? "border-elevated bg-elevated text-gold"
+                  : "border-transparent text-white/80 hover:bg-gold-light/20 hover:text-white",
               )}
             >
               <Icon size={19} />
@@ -155,23 +208,40 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="fixed inset-y-0 left-0 z-40 hidden lg:block">{sidebar}</div>
-      {open ? <div className="fixed inset-0 z-50 bg-foreground/60 lg:hidden"><div className="h-full w-72">{sidebar}</div></div> : null}
+      <div className="fixed inset-y-0 left-0 z-40 hidden lg:block">
+        {sidebar}
+      </div>
+      {open ? (
+        <div className="fixed inset-0 z-50 bg-foreground/60 lg:hidden">
+          <div className="h-full w-72">{sidebar}</div>
+        </div>
+      ) : null}
 
-      <div className={cn("transition-all", collapsed ? "lg:pl-20" : "lg:pl-72")}>
+      <div
+        className={cn("transition-all", collapsed ? "lg:pl-20" : "lg:pl-72")}
+      >
         <header className="sticky top-0 z-30 flex h-20 items-center justify-between border-b border-line bg-background/86 px-4 backdrop-blur-xl md:px-8">
           <div className="flex items-center gap-3">
-            <Button variant="ghost" className="px-3 lg:hidden" onClick={() => setOpen(true)}>
+            <Button
+              variant="ghost"
+              className="px-3 lg:hidden"
+              onClick={() => setOpen(true)}
+            >
               <Menu size={20} />
             </Button>
             <div>
               <p className="text-xs text-muted">স্বাগতম</p>
-              <h1 className="text-lg font-bold text-foreground">{activeUser?.name ?? "সদস্য"}</h1>
+              <h1 className="text-lg font-bold text-foreground">
+                {activeUser?.name ?? "সদস্য"}
+              </h1>
             </div>
           </div>
           <div className="flex items-center gap-3">
             <LanguageToggle tone="light" className="hidden md:inline-flex" />
-            <button className="relative rounded-full border border-line bg-surface p-3 text-gold-light" aria-label="নোটিফিকেশন">
+            <button
+              className="relative rounded-full border border-line bg-surface p-3 text-gold-light"
+              aria-label="নোটিফিকেশন"
+            >
               <Bell size={18} />
               <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-gold-light" />
             </button>

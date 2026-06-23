@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { Badge, CopyButton } from "@/components/ui";
 import { useGetMeQuery, useGetProductQuery } from "@/lib/api";
-import { taka } from "@/lib/utils";
+import { isOutOfStock, stockLabel, taka } from "@/lib/utils";
 
 export default function ProductDetailsPage() {
   const params = useParams<{ productId: string }>();
@@ -44,7 +44,8 @@ export default function ProductDetailsPage() {
     );
   }
 
-  const referralUrl = me ? `/products/${product.id}/checkout?ref=${encodeURIComponent(me.referralCode)}` : "";
+  const soldOut = isOutOfStock(product.stock);
+  const referralUrl = me && !soldOut ? `/products/${product.id}/checkout?ref=${encodeURIComponent(me.referralCode)}` : "";
   const encodedReferralUrl = encodeURIComponent(referralUrl);
   const encodedShareText = encodeURIComponent(`${product.name} - ${referralUrl}`);
   const highlights = product.highlights ?? [];
@@ -98,7 +99,7 @@ export default function ProductDetailsPage() {
             </div>
 
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              <InfoBox icon={<PackageCheck size={17} />} label="স্টক" value={product.stock ?? "স্টকে আছে"} />
+              <InfoBox icon={<PackageCheck size={17} />} label="স্টক" value={stockLabel(product.stock, "স্টকে আছে", "স্টক", "স্টক শেষ")} />
               <InfoBox icon={<Clock3 size={17} />} label="অফার শেষ" value={product.offerEnds ?? "নির্ধারিত নয়"} />
               <InfoBox icon={<ShieldCheck size={17} />} label="কমিশন ধাপ" value="প্রতিটি নিশ্চিত ক্রয় ধাপে যুক্ত হবে" />
               <InfoBox icon={<Truck size={17} />} label="ডেলিভারি" value={product.delivery ?? "স্ট্যান্ডার্ড ডেলিভারি"} />
@@ -108,28 +109,34 @@ export default function ProductDetailsPage() {
           <div className="rounded-[18px] border border-line bg-surface p-5">
             <p className="mb-2 text-sm text-muted">প্রোডাক্ট রেফারেল চেকআউট</p>
             <div className="break-all rounded-2xl border border-line bg-elevated p-4 text-sm text-gold-light">
-              {referralUrl || "চেকআউট লিংক লোড হচ্ছে..."}
+              {soldOut ? "স্টক শেষ, চেকআউট লিংক বন্ধ আছে।" : referralUrl || "চেকআউট লিংক লোড হচ্ছে..."}
             </div>
             <div className="mt-4 grid gap-3 sm:grid-cols-3">
-              <CopyButton value={referralUrl} label="চেকআউট লিংক কপি" />
-              <a
-                href={referralUrl ? `https://wa.me/?text=${encodedShareText}` : undefined}
-                target="_blank"
-                rel="noreferrer"
-                className="outline-gold inline-flex min-h-11 items-center justify-center gap-2 px-5 py-2.5 text-sm font-semibold transition hover:bg-gold/10"
-              >
-                <MessageCircle size={16} />
-                WhatsApp
-              </a>
-              <a
-                href={referralUrl ? `https://www.facebook.com/sharer/sharer.php?u=${encodedReferralUrl}` : undefined}
-                target="_blank"
-                rel="noreferrer"
-                className="outline-gold inline-flex min-h-11 items-center justify-center gap-2 px-5 py-2.5 text-sm font-semibold transition hover:bg-gold/10"
-              >
-                <Share2 size={16} />
-                Facebook
-              </a>
+              {soldOut ? (
+                <p className="rounded-2xl border border-line bg-elevated px-4 py-3 text-sm text-muted sm:col-span-3">স্টক শেষ, তাই শেয়ার বন্ধ আছে।</p>
+              ) : (
+                <>
+                  <CopyButton value={referralUrl} label="চেকআউট লিংক কপি" />
+                  <a
+                    href={referralUrl ? `https://wa.me/?text=${encodedShareText}` : undefined}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="outline-gold inline-flex min-h-11 items-center justify-center gap-2 px-5 py-2.5 text-sm font-semibold transition hover:bg-gold/10"
+                  >
+                    <MessageCircle size={16} />
+                    WhatsApp
+                  </a>
+                  <a
+                    href={referralUrl ? `https://www.facebook.com/sharer/sharer.php?u=${encodedReferralUrl}` : undefined}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="outline-gold inline-flex min-h-11 items-center justify-center gap-2 px-5 py-2.5 text-sm font-semibold transition hover:bg-gold/10"
+                  >
+                    <Share2 size={16} />
+                    Facebook
+                  </a>
+                </>
+              )}
             </div>
           </div>
         </div>

@@ -18,7 +18,9 @@ const depthClass: Record<number, string> = {
 };
 
 export default function WingsPage() {
-  const [expanded, setExpanded] = useState<Record<string, boolean>>({ root: true });
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({
+    root: true,
+  });
   const [level, setLevel] = useState("all");
   const [activeOnly, setActiveOnly] = useState(false);
   const [query, setQuery] = useState("");
@@ -33,10 +35,14 @@ export default function WingsPage() {
           <p className="text-sm text-gold-light">রেফারেল নেটওয়ার্ক</p>
           <h2 className="heading-gradient text-4xl font-black">মাই উইংস</h2>
         </div>
-        <Button variant="outline"><Download size={16} /> ইমেজ এক্সপোর্ট</Button>
+        <Button variant="outline">
+          <Download size={16} /> ইমেজ এক্সপোর্ট
+        </Button>
       </div>
 
-      {isLoading ? <p className="text-sm text-muted">নেটওয়ার্ক লোড হচ্ছে...</p> : null}
+      {isLoading ? (
+        <p className="text-sm text-muted">নেটওয়ার্ক লোড হচ্ছে...</p>
+      ) : null}
 
       <div className="grid gap-5 md:grid-cols-4">
         {[
@@ -55,28 +61,49 @@ export default function WingsPage() {
       <Card className="p-5">
         <div className="grid gap-3 md:grid-cols-[1fr_180px_180px_auto]">
           <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" size={16} />
-            <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="নাম দিয়ে খুঁজুন" className="pl-10" />
+            <Search
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-muted"
+              size={16}
+            />
+            <Input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="নাম দিয়ে খুঁজুন"
+              className="pl-10"
+            />
           </div>
           <Select value={level} onChange={(e) => setLevel(e.target.value)}>
             <option value="all">সব লেভেল</option>
-            {[1, 2, 3, 4, 5, 6].map((item) => <option key={item} value={item}>লেভেল {toBn(item)}</option>)}
+            {[1, 2, 3, 4, 5, 6].map((item) => (
+              <option key={item} value={item}>
+                লেভেল {toBn(item)}
+              </option>
+            ))}
           </Select>
           <label className="flex h-12 items-center gap-2 rounded-2xl border border-line bg-elevated/70 px-4 text-sm text-muted">
-            <input type="checkbox" checked={activeOnly} onChange={(event) => setActiveOnly(event.target.checked)} className="accent-gold" />
+            <input
+              type="checkbox"
+              checked={activeOnly}
+              onChange={(event) => setActiveOnly(event.target.checked)}
+              className="accent-gold"
+            />
             শুধু সক্রিয়
           </label>
-          <div className="rounded-2xl border border-gold/20 bg-gold/10 px-4 py-3 text-sm text-gold-light">মোট নেটওয়ার্ক: {toBn(total)}</div>
+          <div className="rounded-2xl border border-gold/20 bg-gold/10 px-4 py-3 text-sm text-gold-light">
+            মোট নেটওয়ার্ক: {toBn(total)}
+          </div>
         </div>
       </Card>
 
       <Card className="overflow-x-auto p-5 scrollbar-soft">
-        <div className="min-w-[760px]">
+        <div className="min-w-[760px]" style={{ border: "1px solid red" }}>
           {tree ? (
             <TreeView
               node={tree}
               expanded={expanded}
-              toggle={(id) => setExpanded((old) => ({ ...old, [id]: !old[id] }))}
+              toggle={(id) =>
+                setExpanded((old) => ({ ...old, [id]: !old[id] }))
+              }
               filter={{ level, activeOnly, query }}
             />
           ) : (
@@ -103,30 +130,60 @@ function TreeView({
   const hasChildren = Boolean(node.children?.length);
   const childrenVisible = expanded[node.id] && hasChildren;
 
-  if (!visible && node.id !== "root" && !node.children?.some((child) => matchesDeep(child, filter))) return null;
+  if (
+    !visible &&
+    node.id !== "root" &&
+    !node.children?.some((child) => matchesDeep(child, filter))
+  )
+    return null;
 
   return (
     <div className="pl-4">
       <div className="flex items-center gap-3 py-3">
-        <button onClick={() => hasChildren && toggle(node.id)} className="grid h-8 w-8 place-items-center rounded-full border border-line text-muted">
-          {hasChildren ? expanded[node.id] ? <Minus size={15} /> : <Plus size={15} /> : null}
+        <button
+          onClick={() => hasChildren && toggle(node.id)}
+          className="grid h-8 w-8 place-items-center rounded-full border border-line text-muted"
+        >
+          {hasChildren ? (
+            expanded[node.id] ? (
+              <Minus size={15} />
+            ) : (
+              <Plus size={15} />
+            )
+          ) : null}
         </button>
-        <div className={`flex min-w-[360px] items-center gap-3 rounded-[18px] border p-4 ${depthClass[node.level] ?? depthClass[6]}`}>
-          <div className="grid h-11 w-11 place-items-center rounded-full bg-background text-sm font-bold text-gold-light">{initials(node.name)}</div>
+        <div
+          className={`flex min-w-[360px] items-center gap-3 rounded-[18px] border p-4 ${depthClass[node.level] ?? depthClass[6]}`}
+        >
+          <div className="grid h-11 w-11 place-items-center rounded-full bg-background text-sm font-bold text-gold-light">
+            {initials(node.name)}
+          </div>
           <div className="flex-1">
             <div className="flex items-center gap-2">
               <h3 className="font-bold">{node.name}</h3>
-              <Badge tone={node.active ? "green" : "muted"}>{node.active ? "সক্রিয়" : "নিষ্ক্রিয়"}</Badge>
+              <Badge tone={node.active ? "green" : "muted"}>
+                {node.active ? "সক্রিয়" : "নিষ্ক্রিয়"}
+              </Badge>
             </div>
-            <p className="text-sm text-muted">যোগদান: {node.joined} · নিজস্ব রেফারেল: {toBn(node.referrals)}</p>
+            <p className="text-sm text-muted">
+              যোগদান: {node.joined} · নিজস্ব রেফারেল: {toBn(node.referrals)}
+            </p>
           </div>
-          <Badge tone={node.level === 0 ? "gold" : "purple"}>{node.level === 0 ? "মূল" : `লেভেল ${toBn(node.level)}`}</Badge>
+          <Badge tone={node.level === 0 ? "gold" : "purple"}>
+            {node.level === 0 ? "মূল" : `লেভেল ${toBn(node.level)}`}
+          </Badge>
         </div>
       </div>
       {childrenVisible ? (
         <div className="ml-4 border-l border-line">
           {node.children?.map((child) => (
-            <TreeView key={child.id} node={child} expanded={expanded} toggle={toggle} filter={filter} />
+            <TreeView
+              key={child.id}
+              node={child}
+              expanded={expanded}
+              toggle={toggle}
+              filter={filter}
+            />
           ))}
         </div>
       ) : null}
@@ -134,17 +191,33 @@ function TreeView({
   );
 }
 
-function matches(node: TreeNode, filter: { level: string; activeOnly: boolean; query: string }) {
-  const byLevel = filter.level === "all" || String(node.level) === filter.level || node.id === "root";
+function matches(
+  node: TreeNode,
+  filter: { level: string; activeOnly: boolean; query: string },
+) {
+  const byLevel =
+    filter.level === "all" ||
+    String(node.level) === filter.level ||
+    node.id === "root";
   const byActive = !filter.activeOnly || node.active;
-  const byQuery = !filter.query || node.name.toLowerCase().includes(filter.query.toLowerCase());
+  const byQuery =
+    !filter.query ||
+    node.name.toLowerCase().includes(filter.query.toLowerCase());
   return byLevel && byActive && byQuery;
 }
 
-function matchesDeep(node: TreeNode, filter: { level: string; activeOnly: boolean; query: string }): boolean {
-  return matches(node, filter) || Boolean(node.children?.some((child) => matchesDeep(child, filter)));
+function matchesDeep(
+  node: TreeNode,
+  filter: { level: string; activeOnly: boolean; query: string },
+): boolean {
+  return (
+    matches(node, filter) ||
+    Boolean(node.children?.some((child) => matchesDeep(child, filter)))
+  );
 }
 
 function countNodes(node: TreeNode): number {
-  return 1 + (node.children?.reduce((sum, child) => sum + countNodes(child), 0) ?? 0);
+  return (
+    1 + (node.children?.reduce((sum, child) => sum + countNodes(child), 0) ?? 0)
+  );
 }

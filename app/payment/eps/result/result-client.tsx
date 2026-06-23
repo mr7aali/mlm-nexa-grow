@@ -25,6 +25,7 @@ export function EpsPaymentResultClient() {
   const orderId = searchParams.get("orderId") ?? "";
   const initialStatus = searchParams.get("status") ?? "Pending";
   const initialPaymentStatus = searchParams.get("paymentStatus") ?? "Pending";
+  const checkoutToken = searchParams.get("checkoutToken") ?? "";
 
   const [orderStatus, setOrderStatus] = useState(initialStatus);
   const [paymentStatus, setPaymentStatus] = useState(initialPaymentStatus);
@@ -61,7 +62,12 @@ export function EpsPaymentResultClient() {
       try {
         const verifyResponse = await fetch(
           `${base}/payments/eps/orders/${encodeURIComponent(orderId)}/verify`,
-          { method: "POST", credentials: "include" },
+          {
+            method: "POST",
+            credentials: "include",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ checkoutToken }),
+          },
         );
         const verifyPayload = (await verifyResponse.json()) as ApiResponse<EpsVerifyResult>;
 
@@ -106,7 +112,7 @@ export function EpsPaymentResultClient() {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [orderId, base, dispatch]);
+  }, [orderId, checkoutToken, base, dispatch]);
 
   return (
     <main className="mx-auto grid min-h-[70vh] max-w-2xl place-items-center px-4 py-12">
@@ -122,10 +128,12 @@ export function EpsPaymentResultClient() {
           <p className="mt-3 text-sm text-muted">Confirming your payment with the gateway...</p>
         ) : null}
         {sessionMessage ? <p className="mt-3 text-sm text-muted">{sessionMessage}</p> : null}
-        <div className="mt-6 grid gap-3 sm:grid-cols-2">
-          <Link href="/dashboard" className="gold-button inline-flex min-h-12 items-center justify-center px-5 py-3 text-sm font-bold">
-            Dashboard
-          </Link>
+        <div className={`mt-6 grid gap-3 ${paid ? "sm:grid-cols-2" : ""}`}>
+          {paid ? (
+            <Link href="/dashboard" className="gold-button inline-flex min-h-12 items-center justify-center px-5 py-3 text-sm font-bold">
+              Dashboard
+            </Link>
+          ) : null}
           <Link href="/products" className="outline-gold inline-flex min-h-12 items-center justify-center px-5 py-3 text-sm font-bold">
             Continue shopping
           </Link>

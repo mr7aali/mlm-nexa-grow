@@ -7,11 +7,8 @@ import { getApiErrorMessage } from "@/lib/api-error";
 import { useCreateOrderMutation } from "@/lib/api";
 import type { Order, Product } from "@/lib/api-types";
 import { availableStock, isOutOfStock, taka } from "@/lib/utils";
-import { setCredentials } from "@/lib/auth-slice";
-import { useAppDispatch } from "@/lib/hooks";
 
 export function CheckoutForm({ product }: { product: Product }) {
-  const dispatch = useAppDispatch();
   const [payment, setPayment] = useState("eps");
   const [initialReferralCode, setInitialReferralCode] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -63,9 +60,6 @@ export function CheckoutForm({ product }: { product: Product }) {
         paymentMethod: payment,
       }).unwrap();
 
-      if (createdOrder.auth) {
-        dispatch(setCredentials(createdOrder.auth));
-      }
       if (createdOrder.payment?.redirectUrl) {
         setMessage("Redirecting to EPS payment gateway...");
         window.location.assign(createdOrder.payment.redirectUrl);

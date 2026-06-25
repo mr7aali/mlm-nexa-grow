@@ -83,6 +83,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const accessToken = useAppSelector((state) => state.auth.accessToken);
+  const authHydrated = useAppSelector((state) => state.auth.hydrated);
   const storedUser = useAppSelector((state) => state.auth.user);
   const { data: currentUser } = useGetMeQuery(undefined, {
     skip: !accessToken,
@@ -102,10 +103,10 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     : navItems;
 
   useEffect(() => {
-    if (!accessToken) {
+    if (authHydrated && !accessToken) {
       router.replace("/login");
     }
-  }, [accessToken, router]);
+  }, [accessToken, authHydrated, router]);
 
   useEffect(() => {
     const isMemberOnlyPath = memberOnlyPaths.some(
@@ -125,7 +126,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     router.replace("/login");
   }
 
-  if (!accessToken) {
+  if (!authHydrated || !accessToken) {
     return (
       <main className="grid min-h-screen place-items-center bg-background text-muted">
         লোড হচ্ছে...

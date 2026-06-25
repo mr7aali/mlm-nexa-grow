@@ -5,7 +5,10 @@ import Link from "next/link";
 import { useState } from "react";
 import { Eye, MessageCircle, Share2, Tag } from "lucide-react";
 import { Badge, Button, CopyButton, Modal } from "@/components/ui";
-import { useGetMeQuery, useGetProductsQuery } from "@/lib/api";
+import {
+  useGetMeQuery,
+  useGetProductsQuery,
+} from "@/lib/api";
 import type { Product } from "@/lib/api-types";
 import { isOutOfStock, stockLabel, taka } from "@/lib/utils";
 
@@ -15,7 +18,10 @@ export default function ProductsPage() {
   const { data: me } = useGetMeQuery();
   const productRows = data ?? [];
   const selectedSoldOut = selected ? isOutOfStock(selected.stock) : false;
-  const link = selected && me && !selectedSoldOut ? `/products/${selected.id}/checkout?ref=${encodeURIComponent(me.referralCode)}` : "";
+  const link =
+    selected && me && !selectedSoldOut
+      ? `/products/${selected.id}/checkout?ref=${encodeURIComponent(me.referralCode)}`
+      : "";
 
   return (
     <div className="space-y-6">

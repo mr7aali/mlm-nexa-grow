@@ -144,3 +144,74 @@ body {
   background: rgba(232, 82, 10, 0.25);
   border-radius: 999px;
 }
+
+.network-tree ul {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  margin: 0;
+  padding: 34px 0 0;
+}
+
+.network-tree > ul {
+  padding-top: 0;
+}
+
+.network-tree li {
+  position: relative;
+  list-style: none;
+  padding: 34px 10px 0;
+  text-align: center;
+}
+
+.network-tree > ul > li {
+  padding-top: 0;
+}
+
+.network-tree li::before,
+.network-tree li::after {
+  position: absolute;
+  top: 0;
+  right: 50%;
+  width: 50%;
+  height: 34px;
+  content: "";
+  border-top: 1px solid var(--line);
+}
+
+.network-tree li::after {
+  right: auto;
+  left: 50%;
+  border-left: 1px solid var(--line);
+}
+
+.network-tree li:only-child::before,
+.network-tree li:only-child::after,
+.network-tree > ul > li::before,
+.network-tree > ul > li::after {
+  display: none;
+}
+
+.network-tree li:first-child::before,
+.network-tree li:last-child::after {
+  border: 0;
+}
+
+.network-tree li:last-child::before {
+  border-right: 1px solid var(--line);
+  border-radius: 0 6px 0 0;
+}
+
+.network-tree li:first-child::after {
+  border-radius: 6px 0 0;
+}
+
+.network-tree ul ul::before {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 0;
+  height: 34px;
+  content: "";
+  border-left: 1px solid var(--line);
+}

@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { type ReactNode } from "react";
 import { useParams } from "next/navigation";
 import {
   ArrowLeft,
@@ -16,7 +16,10 @@ import {
   Truck,
 } from "lucide-react";
 import { Badge, CopyButton } from "@/components/ui";
-import { useGetMeQuery, useGetProductQuery } from "@/lib/api";
+import {
+  useGetMeQuery,
+  useGetProductQuery,
+} from "@/lib/api";
 import { isOutOfStock, stockLabel, taka } from "@/lib/utils";
 
 export default function ProductDetailsPage() {
@@ -45,7 +48,10 @@ export default function ProductDetailsPage() {
   }
 
   const soldOut = isOutOfStock(product.stock);
-  const referralUrl = me && !soldOut ? `/products/${product.id}/checkout?ref=${encodeURIComponent(me.referralCode)}` : "";
+  const referralUrl =
+    me && !soldOut
+      ? `/products/${product.id}/checkout?ref=${encodeURIComponent(me.referralCode)}`
+      : "";
   const encodedReferralUrl = encodeURIComponent(referralUrl);
   const encodedShareText = encodeURIComponent(`${product.name} - ${referralUrl}`);
   const highlights = product.highlights ?? [];

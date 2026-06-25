@@ -28,12 +28,15 @@ export type ProductCountResponse = {
 
 export type TreeNode = {
   id: string;
+  userId: string;
   name: string;
   level: number;
   joined: string;
   referrals: number;
   active: boolean;
-  children?: TreeNode[];
+  position: "Root" | "Left" | "Right";
+  left: TreeNode | null;
+  right: TreeNode | null;
 };
 
 export type Role = "member" | "admin" | "super-admin";
@@ -279,7 +282,30 @@ export type WingsResponse = {
     inactiveMembers: number;
     totalNetwork: number;
   };
+  dailyPairs: {
+    businessDate: string;
+    leftVolume: number;
+    rightVolume: number;
+    pairCount: number;
+    pairLimit: number;
+    commissionAmount: number;
+    commissionPaid: boolean;
+    resetsAtTimeZone: string;
+  };
+  pendingPlacements: Array<{
+    id: string;
+    name: string;
+    phone: string;
+    joined: string;
+    active: boolean;
+  }>;
   tree: TreeNode;
+};
+
+export type ReferralPlacementTokens = {
+  referralCode: string;
+  left: string;
+  right: string;
 };
 
 export type EarningsResponse = {

@@ -27,6 +27,7 @@ import type {
   ProductUpdateInput,
   PurchaseResponse,
   ReferralsResponse,
+  ReferralPlacementTokens,
   WingsResponse,
 } from "@/lib/api-types";
 
@@ -225,6 +226,40 @@ export const api = createApi({
       query: () => "/dashboard/wings",
       transformResponse: unwrap<WingsResponse>,
       providesTags: ["Wings"],
+    }),
+    assignWingPlacement: builder.mutation<
+      {
+        memberId: string;
+        memberName: string;
+        sponsorWing: "Left" | "Right";
+        parentUserId: string;
+        position: "Left" | "Right";
+        placedAt: string;
+      },
+      {
+        memberId: string;
+        parentUserId: string;
+        position: "Left" | "Right";
+      }
+    >({
+      query: (body) => ({
+        url: "/dashboard/wings/placements",
+        method: "POST",
+        body,
+      }),
+      transformResponse: unwrap<{
+        memberId: string;
+        memberName: string;
+        sponsorWing: "Left" | "Right";
+        parentUserId: string;
+        position: "Left" | "Right";
+        placedAt: string;
+      }>,
+      invalidatesTags: ["Wings", "Dashboard", "Referrals", "Commissions"],
+    }),
+    getReferralPlacementTokens: builder.query<ReferralPlacementTokens, void>({
+      query: () => "/dashboard/referral-placement-tokens",
+      transformResponse: unwrap<ReferralPlacementTokens>,
     }),
     getEarnings: builder.query<EarningsResponse, void>({
       query: () => "/dashboard/earnings",
@@ -451,6 +486,7 @@ export const api = createApi({
 });
 
 export const {
+  useAssignWingPlacementMutation,
   useChangePasswordMutation,
   useCreateOrderMutation,
   useCreateAdminProductMutation,
@@ -474,6 +510,7 @@ export const {
   useGetProductCountQuery,
   useGetProductsQuery,
   useGetReferralsQuery,
+  useGetReferralPlacementTokensQuery,
   useGetWingsQuery,
   useLoginMutation,
   useLogoutMutation,

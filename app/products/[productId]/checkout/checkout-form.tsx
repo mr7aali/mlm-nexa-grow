@@ -10,7 +10,7 @@ import { availableStock, isOutOfStock, taka } from "@/lib/utils";
 
 export function CheckoutForm({ product }: { product: Product }) {
   const [payment, setPayment] = useState("eps");
-  const [initialReferralCode, setInitialReferralCode] = useState("");
+  const [referralCode, setReferralCode] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [order, setOrder] = useState<Order | null>(null);
   const [message, setMessage] = useState("");
@@ -27,7 +27,8 @@ export function CheckoutForm({ product }: { product: Product }) {
   );
 
   useEffect(() => {
-    setInitialReferralCode(new URLSearchParams(window.location.search).get("ref") ?? "");
+    const params = new URLSearchParams(window.location.search);
+    setReferralCode(params.get("ref") ?? "");
   }, []);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -42,7 +43,6 @@ export function CheckoutForm({ product }: { product: Product }) {
       setMessage("This product is out of stock.");
       return;
     }
-
     const formData = new FormData(event.currentTarget);
     const fullName = String(formData.get("fullName") ?? "").trim();
 
@@ -53,7 +53,7 @@ export function CheckoutForm({ product }: { product: Product }) {
         fullName,
         email: String(formData.get("email") ?? "").trim().toLowerCase(),
         password: String(formData.get("password") ?? ""),
-        referralCode: String(formData.get("referralCode") ?? "").trim() || undefined,
+        referralCode: referralCode.trim() || undefined,
         customerName: fullName,
         phone: String(formData.get("phone") ?? "").trim(),
         address: String(formData.get("address") ?? "").trim(),
@@ -130,7 +130,17 @@ export function CheckoutForm({ product }: { product: Product }) {
         </label>
         <label className="space-y-2 md:col-span-2">
           <span className="text-sm font-semibold text-muted">Referral code</span>
-          <input key={initialReferralCode} name="referralCode" defaultValue={initialReferralCode} inputMode="numeric" placeholder="00000" className="h-12 w-full rounded-2xl border border-line bg-white px-4 outline-none focus:border-gold focus:ring-4 focus:ring-gold/10" />
+          <input
+            name="referralCode"
+            value={referralCode}
+            onChange={(event) => setReferralCode(event.target.value)}
+            inputMode="numeric"
+            placeholder="Enter referral code (optional)"
+            className="h-12 w-full rounded-2xl border border-line bg-white px-4 outline-none focus:border-gold focus:ring-4 focus:ring-gold/10"
+          />
+          <span className="block text-xs text-muted">
+            Your referrer will place your account in their binary tree after payment.
+          </span>
         </label>
       </div>
 

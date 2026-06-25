@@ -25,7 +25,6 @@ import {
 } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
 import { LanguageToggle } from "@/components/language-toggle";
-import { Button } from "@/components/ui";
 import { useGetMeQuery, useLogoutMutation } from "@/lib/api";
 import { clearCredentials } from "@/lib/auth-slice";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
@@ -126,6 +125,11 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     router.replace("/login");
   }
 
+  function openMobileMenu() {
+    setCollapsed(false);
+    setOpen(true);
+  }
+
   if (!authHydrated || !accessToken) {
     return (
       <main className="grid min-h-screen place-items-center bg-background text-muted">
@@ -151,14 +155,14 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const sidebar = (
     <aside
       className={cn(
-        "flex h-full flex-col border-r border-gold bg-sidebar text-white transition-all",
-        collapsed ? "w-20" : "w-72",
+        "flex h-full w-[min(18rem,calc(100vw-2rem))] flex-col border-r border-gold bg-sidebar text-white transition-all",
+        collapsed ? "lg:w-20" : "lg:w-72",
       )}
     >
-      <div className="flex h-20 items-center justify-between px-5">
-        <Link href="/" className="flex items-center gap-3">
+      <div className="flex h-20 items-center justify-between gap-2 px-4 sm:px-5">
+        <Link href="/" className="flex min-w-0 items-center gap-3">
           <BrandLogo
-            className="h-14 w-56"
+            className="h-14 w-full max-w-56"
             priority
             framed={false}
             variant="wide"
@@ -214,33 +218,43 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       </div>
       {open ? (
         <div className="fixed inset-0 z-50 bg-foreground/60 lg:hidden">
-          <div className="h-full w-72">{sidebar}</div>
+          <div className="h-full w-[min(18rem,calc(100vw-2rem))]">
+            {sidebar}
+          </div>
         </div>
       ) : null}
 
       <div
         className={cn("transition-all", collapsed ? "lg:pl-20" : "lg:pl-72")}
       >
-        <header className="sticky top-0 z-30 flex h-20 items-center justify-between border-b border-line bg-background/86 px-4 backdrop-blur-xl md:px-8">
-          <div className="flex items-center gap-3">
-            <Button
-              variant="ghost"
-              className="px-3 lg:hidden"
-              onClick={() => setOpen(true)}
+        <header className="sticky top-0 z-30 flex h-16 min-w-0 items-center justify-between gap-2 border-b border-line bg-background/86 px-3 backdrop-blur-xl sm:h-20 sm:gap-3 sm:px-4 md:px-8">
+          <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
+            <button
+              type="button"
+              className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-gold transition hover:bg-gold/10 lg:hidden"
+              onClick={openMobileMenu}
+              aria-label="মেনু খুলুন"
+              title="মেনু খুলুন"
             >
               <Menu size={20} />
-            </Button>
-            <div>
-              <p className="text-xs text-muted">স্বাগতম</p>
-              <h1 className="text-lg font-bold text-foreground">
+            </button>
+            <div className="hidden min-w-0 flex-1 sm:block">
+              <p className="truncate text-[11px] text-muted sm:text-xs">
+                স্বাগতম
+              </p>
+              <h1
+                className="truncate text-sm font-bold text-foreground sm:text-lg"
+                title={activeUser?.name ?? "সদস্য"}
+              >
                 {activeUser?.name ?? "সদস্য"}
               </h1>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <LanguageToggle tone="light" className="hidden md:inline-flex" />
+          <div className="flex shrink-0 items-center gap-1 sm:gap-2 md:gap-3">
+            <LanguageToggle tone="light" />
             <button
-              className="relative rounded-full border border-line bg-surface p-3 text-gold-light"
+              type="button"
+              className="relative grid h-10 w-10 shrink-0 place-items-center rounded-full border border-line bg-surface text-gold-light sm:h-11 sm:w-11"
               aria-label="নোটিফিকেশন"
             >
               <Bell size={18} />
@@ -249,17 +263,23 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             <button
               type="button"
               onClick={handleLogout}
-              className="rounded-full border border-line bg-surface p-3 text-muted transition hover:border-gold hover:text-gold"
+              className="hidden h-10 w-10 shrink-0 place-items-center rounded-full border border-line bg-surface text-muted transition hover:border-gold hover:text-gold sm:grid sm:h-11 sm:w-11"
               aria-label="লগআউট"
             >
               <LogOut size={18} />
             </button>
-            <div className="grid h-11 w-11 place-items-center rounded-full bg-gold font-bold text-white">
+            <div
+              className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-gold text-xs font-bold text-white sm:h-11 sm:w-11 sm:text-base"
+              title={activeUser?.name ?? "সদস্য"}
+              aria-label={activeUser?.name ?? "সদস্য"}
+            >
               {activeUser ? initials(activeUser.name) : "স"}
             </div>
           </div>
         </header>
-        <main className="px-4 py-6 md:px-8">{children}</main>
+        <main className="min-w-0 px-3 py-5 sm:px-4 sm:py-6 md:px-8">
+          {children}
+        </main>
       </div>
     </div>
   );

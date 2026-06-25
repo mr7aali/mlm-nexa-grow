@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   CalendarClock,
   Check,
@@ -11,6 +11,7 @@ import {
   MousePointerClick,
   Network,
   Search,
+  SlidersHorizontal,
   UserCheck,
   UserPlus,
   UserRound,
@@ -39,6 +40,7 @@ export default function WingsPage() {
   const [selectedMemberId, setSelectedMemberId] = useState("");
   const [assigningMemberId, setAssigningMemberId] = useState("");
   const [placementMessage, setPlacementMessage] = useState("");
+  const treeViewportRef = useRef<HTMLDivElement>(null);
   const { data, isLoading } = useGetWingsQuery();
   const [assignWingPlacement] = useAssignWingPlacementMutation();
   const tree = data?.tree;
@@ -69,6 +71,21 @@ export default function WingsPage() {
   useEffect(() => {
     if (hasFilter) setCollapsed({});
   }, [hasFilter]);
+
+  useEffect(() => {
+    if (!filteredTree || window.innerWidth >= 768) return;
+
+    const frame = window.requestAnimationFrame(() => {
+      const viewport = treeViewportRef.current;
+      if (!viewport) return;
+      viewport.scrollLeft = Math.max(
+        0,
+        (viewport.scrollWidth - viewport.clientWidth) / 2,
+      );
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [filteredTree, selectedMemberId]);
 
   function toggleNode(id: string) {
     setCollapsed((current) => ({ ...current, [id]: !current[id] }));
@@ -128,18 +145,18 @@ export default function WingsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       <header className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
           <p className="text-sm font-semibold text-gold">রেফারেল নেটওয়ার্ক</p>
-          <h2 className="mt-1 text-3xl font-black text-foreground md:text-4xl">
+          <h2 className="mt-1 text-2xl font-black text-foreground sm:text-3xl md:text-4xl">
             মাই উইংস
           </h2>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
+          <p className="mt-1 max-w-2xl text-sm leading-6 text-muted md:mt-2">
             আপনার অ্যাকাউন্ট থেকে শুরু করে সম্পূর্ণ ডাউনলাইন কাঠামো দেখুন।
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="hidden items-center gap-2 md:flex">
           <button
             type="button"
             onClick={() => setCollapsed({})}
@@ -159,7 +176,7 @@ export default function WingsPage() {
         </div>
       </header>
 
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+      <section className="grid grid-cols-2 gap-2 sm:gap-4 xl:grid-cols-5">
         <SummaryItem
           icon={Network}
           label="মোট নেটওয়ার্ক"
@@ -180,11 +197,13 @@ export default function WingsPage() {
           label="নিষ্ক্রিয় সদস্য"
           value={inactiveMembers}
         />
-        <SummaryItem
-          icon={UserPlus}
-          label="প্লেসমেন্ট অপেক্ষমাণ"
-          value={pendingPlacements.length}
-        />
+        <div className="col-span-2 xl:col-span-1">
+          <SummaryItem
+            icon={UserPlus}
+            label="প্লেসমেন্ট অপেক্ষমাণ"
+            value={pendingPlacements.length}
+          />
+        </div>
       </section>
 
       <PendingPlacementQueue
@@ -195,7 +214,7 @@ export default function WingsPage() {
         onSelect={selectMember}
       />
 
-      <section className="grid gap-4 lg:grid-cols-[1fr_1fr_1.2fr]">
+      <section className="grid grid-cols-2 gap-2 sm:gap-4 lg:grid-cols-[1fr_1fr_1.2fr]">
         <PairMetric
           label="আজকের লেফট ভলিউম"
           value={data?.dailyPairs.leftVolume ?? 0}
@@ -206,7 +225,7 @@ export default function WingsPage() {
           value={data?.dailyPairs.rightVolume ?? 0}
           icon={ChevronDown}
         />
-        <div className="border border-line bg-white p-5">
+        <div className="col-span-2 border border-line bg-white p-4 sm:p-5 lg:col-span-1">
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-sm text-muted">আজকের Pair Matching</p>
@@ -250,7 +269,18 @@ export default function WingsPage() {
         </div>
       </section>
 
-      <section className="grid gap-3 border-y border-line py-4 md:grid-cols-[minmax(240px,1fr)_180px_180px_auto]">
+      <MobileFilters
+        query={query}
+        level={level}
+        activeOnly={activeOnly}
+        disabled={Boolean(selectedMember)}
+        shownCount={filteredTree ? countNodes(filteredTree) - 1 : 0}
+        setQuery={setQuery}
+        setLevel={setLevel}
+        setActiveOnly={setActiveOnly}
+      />
+
+      <section className="hidden gap-3 border-y border-line py-4 md:grid md:grid-cols-[minmax(240px,1fr)_180px_180px_auto]">
         <div className="relative">
           <Search
             className="absolute left-4 top-1/2 -translate-y-1/2 text-muted"
@@ -296,34 +326,29 @@ export default function WingsPage() {
       ) : filteredTree ? (
         <section
           id="binary-placement-tree"
-          className="scroll-mt-5 overflow-hidden rounded-lg border border-line bg-white"
+          className="scroll-mt-20 overflow-hidden border border-line bg-white md:scroll-mt-5 md:rounded-lg"
         >
           {selectedMember ? (
-            <div className="flex flex-col justify-between gap-3 border-b border-gold/25 bg-gold/10 px-5 py-4 sm:flex-row sm:items-center">
-              <div className="flex items-center gap-3">
-                <MousePointerClick className="shrink-0 text-gold" size={20} />
-                <div>
-                  <p className="font-bold text-foreground">
-                    {selectedMember.name} এর জন্য খালি স্লট নির্বাচন করুন
-                  </p>
-                  <p className="mt-1 text-sm text-muted">
-                    ট্রির যেকোনো সদস্যের নিচে খালি লেফট বা রাইট স্লটে ক্লিক করুন।
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setSelectedMemberId("")}
-                className="h-10 border border-line bg-white px-4 text-sm font-semibold text-muted transition hover:border-gold hover:text-gold"
-              >
-                নির্বাচন বাতিল
-              </button>
-            </div>
+            <PlacementBanner
+              memberName={selectedMember.name}
+              onCancel={() => setSelectedMemberId("")}
+            />
           ) : null}
-          <div className="border-b border-line bg-elevated/60 px-5 py-3 text-xs font-medium text-muted">
-            বাম বা ডানে স্ক্রল করে সম্পূর্ণ নেটওয়ার্ক দেখুন
+          <div className="flex items-center justify-between gap-3 border-b border-line bg-elevated/60 px-4 py-3 text-xs font-medium text-muted sm:px-5">
+            <span className="md:hidden">
+              সম্পূর্ণ ট্রি দেখতে বাম-ডানে সোয়াইপ করুন
+            </span>
+            <span className="hidden md:inline">
+              বাম বা ডানে স্ক্রল করে সম্পূর্ণ নেটওয়ার্ক দেখুন
+            </span>
+            <span className="shrink-0 font-semibold text-gold">
+              {toBn(Math.max(0, countNodes(filteredTree) - 1))} সদস্য
+            </span>
           </div>
-          <div className="scrollbar-soft overflow-x-auto px-5 py-8">
+          <div
+            ref={treeViewportRef}
+            className="scrollbar-soft overflow-x-auto overscroll-x-contain px-2 py-6 touch-pan-x sm:px-4 md:px-5 md:py-8"
+          >
             <div className="network-tree mx-auto w-max min-w-full">
               <ul>
                 <TreeBranch
@@ -351,6 +376,112 @@ export default function WingsPage() {
   );
 }
 
+function MobileFilters({
+  query,
+  level,
+  activeOnly,
+  disabled,
+  shownCount,
+  setQuery,
+  setLevel,
+  setActiveOnly,
+}: {
+  query: string;
+  level: string;
+  activeOnly: boolean;
+  disabled: boolean;
+  shownCount: number;
+  setQuery: (value: string) => void;
+  setLevel: (value: string) => void;
+  setActiveOnly: (value: boolean) => void;
+}) {
+  return (
+    <details className="group border border-line bg-white md:hidden">
+      <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 px-4 py-3">
+        <span className="inline-flex items-center gap-2 text-sm font-bold text-foreground">
+          <SlidersHorizontal size={17} className="text-gold" />
+          নেটওয়ার্ক ফিল্টার
+        </span>
+        <span className="inline-flex items-center gap-2 text-xs font-semibold text-muted">
+          {toBn(shownCount)} জন
+          <ChevronDown
+            size={16}
+            className="transition group-open:rotate-180"
+          />
+        </span>
+      </summary>
+      <div className="grid gap-3 border-t border-line p-4">
+        <div className="relative">
+          <Search
+            className="absolute left-4 top-1/2 -translate-y-1/2 text-muted"
+            size={16}
+          />
+          <Input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            disabled={disabled}
+            placeholder="সদস্যের নাম খুঁজুন"
+            className="pl-10"
+          />
+        </div>
+        <div className="grid grid-cols-[1fr_auto] gap-3">
+          <Select
+            value={level}
+            onChange={(event) => setLevel(event.target.value)}
+            disabled={disabled}
+          >
+            <option value="all">সব লেভেল</option>
+            {[1, 2, 3, 4, 5, 6].map((item) => (
+              <option key={item} value={item}>
+                লেভেল {toBn(item)}
+              </option>
+            ))}
+          </Select>
+          <label className="flex h-12 items-center gap-2 border border-line bg-white px-3 text-sm font-medium text-muted">
+            <input
+              type="checkbox"
+              checked={activeOnly}
+              onChange={(event) => setActiveOnly(event.target.checked)}
+              disabled={disabled}
+              className="h-4 w-4 accent-gold"
+            />
+            সক্রিয়
+          </label>
+        </div>
+      </div>
+    </details>
+  );
+}
+
+function PlacementBanner({
+  memberName,
+  onCancel,
+}: {
+  memberName: string;
+  onCancel: () => void;
+}) {
+  return (
+    <div className="flex flex-col justify-between gap-3 border-b border-gold/25 bg-gold/10 px-4 py-4 sm:flex-row sm:items-center sm:px-5">
+      <div className="flex min-w-0 items-start gap-3">
+        <MousePointerClick className="mt-0.5 shrink-0 text-gold" size={20} />
+        <div className="min-w-0">
+          <p className="truncate font-bold text-foreground">{memberName}</p>
+          <p className="mt-1 text-xs leading-5 text-muted sm:text-sm">
+            যেকোনো সদস্যের খালি লেফট বা রাইট স্লট বেছে নিন।
+          </p>
+        </div>
+      </div>
+      <button
+        type="button"
+        onClick={onCancel}
+        className="h-10 shrink-0 border border-line bg-white px-4 text-sm font-semibold text-muted transition hover:border-gold hover:text-gold"
+      >
+        নির্বাচন বাতিল
+      </button>
+    </div>
+  );
+}
+
 function PendingPlacementQueue({
   members,
   assigningMemberId,
@@ -366,15 +497,15 @@ function PendingPlacementQueue({
 }) {
   return (
     <section className="overflow-hidden border border-line bg-white">
-      <div className="flex flex-col justify-between gap-3 border-b border-line px-5 py-4 sm:flex-row sm:items-center">
+      <div className="flex items-start justify-between gap-3 border-b border-line px-4 py-4 sm:items-center sm:px-5">
         <div>
           <div className="flex items-center gap-2">
             <UserPlus size={18} className="text-gold" />
-            <h3 className="text-lg font-bold text-foreground">
+            <h3 className="text-base font-bold text-foreground sm:text-lg">
               নতুন সদস্য প্লেসমেন্ট
             </h3>
           </div>
-          <p className="mt-1 text-sm text-muted">
+          <p className="mt-1 hidden text-sm text-muted sm:block">
             সদস্য নির্বাচন করুন, তারপর ট্রির যেকোনো খালি লেফট বা রাইট স্লটে ক্লিক করুন।
           </p>
         </div>
@@ -397,7 +528,7 @@ function PendingPlacementQueue({
             return (
               <article
                 key={member.id}
-                className={`grid gap-4 px-5 py-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-center ${
+                className={`grid gap-3 px-4 py-4 sm:px-5 md:grid-cols-[minmax(0,1fr)_auto] md:items-center ${
                   selected ? "bg-gold/5" : ""
                 }`}
               >
@@ -414,8 +545,8 @@ function PendingPlacementQueue({
                         {member.active ? "সক্রিয়" : "নিষ্ক্রিয়"}
                       </Badge>
                     </div>
-                    <p className="mt-1 text-sm text-muted">
-                      {member.phone} · পেমেন্ট সদস্য · {formatJoined(member.joined)}
+                    <p className="mt-1 truncate text-xs text-muted sm:text-sm">
+                      {member.phone} · {formatJoined(member.joined)}
                     </p>
                   </div>
                 </div>
@@ -424,7 +555,7 @@ function PendingPlacementQueue({
                   type="button"
                   disabled={Boolean(assigningMemberId)}
                   onClick={() => onSelect(member.id)}
-                  className={`inline-flex h-11 min-w-44 items-center justify-center gap-2 border px-4 text-sm font-bold transition disabled:cursor-not-allowed disabled:opacity-50 ${
+                  className={`inline-flex h-11 w-full items-center justify-center gap-2 border px-4 text-sm font-bold transition disabled:cursor-not-allowed disabled:opacity-50 md:w-auto md:min-w-44 ${
                     selected
                       ? "border-gold bg-gold text-white"
                       : "border-line bg-white text-foreground hover:border-gold hover:text-gold"
@@ -468,13 +599,15 @@ function SummaryItem({
   value: number;
 }) {
   return (
-    <div className="flex items-center gap-4 border-b border-line bg-white px-4 py-5 sm:border-b-0 sm:border-l-4 sm:border-l-gold">
-      <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-gold/10 text-gold">
-        <Icon size={19} />
+    <div className="flex min-h-24 items-center gap-3 border border-line bg-white px-3 py-4 sm:min-h-0 sm:gap-4 sm:border-b-0 sm:border-l-4 sm:border-l-gold sm:px-4 sm:py-5">
+      <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-gold/10 text-gold sm:h-10 sm:w-10">
+        <Icon size={18} />
       </div>
-      <div>
-        <p className="text-sm text-muted">{label}</p>
-        <p className="mt-1 text-2xl font-black text-foreground">{toBn(value)}</p>
+      <div className="min-w-0">
+        <p className="text-xs leading-5 text-muted sm:text-sm">{label}</p>
+        <p className="mt-0.5 text-xl font-black text-foreground sm:mt-1 sm:text-2xl">
+          {toBn(value)}
+        </p>
       </div>
     </div>
   );
@@ -490,10 +623,12 @@ function PairMetric({
   value: number;
 }) {
   return (
-    <div className="flex items-center justify-between border border-line bg-white p-5">
+    <div className="flex min-h-28 items-center justify-between border border-line bg-white p-4 sm:p-5">
       <div>
-        <p className="text-sm text-muted">{label}</p>
-        <p className="mt-2 text-3xl font-black text-foreground">{toBn(value)}</p>
+        <p className="text-xs leading-5 text-muted sm:text-sm">{label}</p>
+        <p className="mt-1 text-2xl font-black text-foreground sm:mt-2 sm:text-3xl">
+          {toBn(value)}
+        </p>
       </div>
       <div className="grid h-10 w-10 place-items-center rounded-full bg-elevated text-gold">
         <Icon size={19} />
@@ -594,7 +729,7 @@ function TreeSlot({
         type="button"
         disabled={!selectedMemberName || assigning}
         onClick={() => onPlace(parentUserId, position)}
-        className={`mx-auto flex h-[148px] w-[210px] flex-col items-center justify-center gap-2 border border-dashed text-sm font-semibold transition ${
+        className={`mx-auto flex h-[118px] w-[158px] flex-col items-center justify-center gap-1.5 border border-dashed px-2 text-xs font-semibold transition sm:h-[132px] sm:w-[184px] md:h-[148px] md:w-[210px] md:gap-2 md:text-sm ${
           selectedMemberName
             ? "border-gold bg-gold/5 text-gold hover:bg-gold hover:text-white"
             : "border-line bg-elevated/40 text-muted"
@@ -636,27 +771,27 @@ function MemberNode({
 
   return (
     <article
-      className={`relative mx-auto w-[210px] border bg-white text-left shadow-sm ${
+      className={`relative mx-auto w-[158px] border bg-white text-left shadow-sm sm:w-[184px] md:w-[210px] ${
         isRoot
           ? "border-gold shadow-[0_10px_28px_rgba(232,82,10,0.14)]"
           : "border-line"
       }`}
     >
       <div className={`h-1 ${isRoot ? "bg-gold" : node.active ? "bg-emerald-500" : "bg-zinc-300"}`} />
-      <div className="p-4">
-        <div className="flex items-start gap-3">
+      <div className="p-3 md:p-4">
+        <div className="flex items-start gap-2 md:gap-3">
           <div
-            className={`grid h-10 w-10 shrink-0 place-items-center rounded-full text-sm font-bold ${
+            className={`grid h-8 w-8 shrink-0 place-items-center rounded-full text-xs font-bold md:h-10 md:w-10 md:text-sm ${
               isRoot ? "bg-gold text-white" : "bg-elevated text-gold"
             }`}
           >
             {initials(node.name)}
           </div>
           <div className="min-w-0 flex-1">
-            <h3 className="truncate text-sm font-bold text-foreground" title={node.name}>
+            <h3 className="truncate text-xs font-bold text-foreground md:text-sm" title={node.name}>
               {node.name}
             </h3>
-            <p className="mt-1 text-xs text-muted">
+            <p className="mt-1 truncate text-[10px] text-muted md:text-xs">
               {isRoot
                 ? "রুট সদস্য"
                 : `${node.position === "Left" ? "লেফট" : "রাইট"} · লেভেল ${toBn(node.level)}`}
@@ -664,15 +799,21 @@ function MemberNode({
           </div>
         </div>
 
-        <div className="mt-4 flex items-center justify-between border-t border-line pt-3">
-          <Badge tone={node.active ? "green" : "muted"}>
+        <div className="mt-3 flex items-center justify-between gap-1 border-t border-line pt-2 md:mt-4 md:pt-3">
+          <span
+            className={`rounded-full border px-2 py-1 text-[9px] font-semibold md:text-xs ${
+              node.active
+                ? "border-gold bg-gold/10 text-gold"
+                : "border-line bg-elevated text-muted"
+            }`}
+          >
             {node.active ? "সক্রিয়" : "নিষ্ক্রিয়"}
-          </Badge>
-          <span className="text-xs font-medium text-muted">
+          </span>
+          <span className="text-[9px] font-medium text-muted md:text-xs">
             {toBn(node.referrals)} রেফারেল
           </span>
         </div>
-        <p className="mt-3 truncate text-xs text-muted" title={node.joined}>
+        <p className="mt-2 truncate text-[9px] text-muted md:mt-3 md:text-xs" title={node.joined}>
           যোগদান: {formatJoined(node.joined)}
         </p>
       </div>
@@ -681,7 +822,7 @@ function MemberNode({
         <button
           type="button"
           onClick={toggle}
-          className="absolute -bottom-4 left-1/2 z-10 grid h-8 w-8 -translate-x-1/2 place-items-center rounded-full border border-gold bg-white text-gold shadow-sm transition hover:bg-gold hover:text-white"
+          className="absolute -bottom-3 left-1/2 z-10 grid h-7 w-7 -translate-x-1/2 place-items-center rounded-full border border-gold bg-white text-gold shadow-sm transition hover:bg-gold hover:text-white md:-bottom-4 md:h-8 md:w-8"
           aria-label={collapsed ? "শাখা খুলুন" : "শাখা বন্ধ করুন"}
           title={collapsed ? "শাখা খুলুন" : "শাখা বন্ধ করুন"}
         >

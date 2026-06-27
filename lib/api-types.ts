@@ -52,6 +52,7 @@ export type AuthUser = {
   referralCode: string;
   joined: string;
   earned: number;
+  generationCoins?: number;
   referrals: number;
   role: Role;
 };
@@ -111,6 +112,14 @@ export type CommissionHistoryItem = {
   date: string;
   amount: number;
   status: string;
+};
+
+export type WingCommissionLevel = {
+  level: number;
+  required: number;
+  current: number;
+  earning: number;
+  status: LevelStatus;
 };
 
 export type EarningsMonth = {
@@ -263,6 +272,24 @@ export type CommissionsResponse = {
   currentLevel: CommissionLevel;
   history: CommissionHistoryItem[];
   levels: CommissionLevel[];
+  wingsIncome?: {
+    totalEarned: number;
+    dailyCap: number;
+    paidToday: number;
+    remainingToday: number;
+    completedLevels: number;
+    nextReward: number;
+    history: CommissionHistoryItem[];
+    levels: WingCommissionLevel[];
+  };
+  generationIncome?: {
+    coins: number;
+    totalEarned: number;
+    potential: number;
+    currentLevel: CommissionLevel;
+    history: CommissionHistoryItem[];
+    levels: CommissionLevel[];
+  };
 };
 
 export type ReferralsResponse = {

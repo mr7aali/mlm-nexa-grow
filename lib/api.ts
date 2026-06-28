@@ -25,6 +25,7 @@ import type {
   ProductImageUpload,
   ProductInput,
   ProductUpdateInput,
+  ProfileUpdateInput,
   PurchaseResponse,
   ReferralsResponse,
   ReferralPlacementTokens,
@@ -158,7 +159,7 @@ export const api = createApi({
     }),
     updateProfile: builder.mutation<
       AuthUser,
-      { fullName: string; phone: string }
+      ProfileUpdateInput
     >({
       query: (body) => ({ url: "/auth/profile", method: "PATCH", body }),
       transformResponse: unwrap<AuthUser>,

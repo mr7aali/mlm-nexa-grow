@@ -47,6 +47,21 @@ export type AuthUser = {
   name: string;
   email: string;
   phone: string;
+  fatherName?: string;
+  motherName?: string;
+  dateOfBirth?: string;
+  religion?: string;
+  gender?: string;
+  bloodGroup?: string;
+  nidOrBirthCertificate?: string;
+  nomineeName?: string;
+  nomineeRelation?: string;
+  nomineeAddress?: string;
+  nomineeVillage?: string;
+  nomineePostOffice?: string;
+  nomineeDistrict?: string;
+  profilePicture?: string;
+  mission?: string;
   level: number;
   status: UserStatus;
   referralCode: string;
@@ -55,6 +70,27 @@ export type AuthUser = {
   generationCoins?: number;
   referrals: number;
   role: Role;
+  referredByCode?: string | null;
+};
+
+export type ProfileUpdateInput = {
+  fullName: string;
+  phone: string;
+  fatherName?: string;
+  motherName?: string;
+  dateOfBirth?: string;
+  religion?: string;
+  gender?: string;
+  bloodGroup?: string;
+  nidOrBirthCertificate?: string;
+  nomineeName?: string;
+  nomineeRelation?: string;
+  nomineeAddress?: string;
+  nomineeVillage?: string;
+  nomineePostOffice?: string;
+  nomineeDistrict?: string;
+  profilePicture?: string;
+  mission?: string;
 };
 
 export type AuthPayload = {

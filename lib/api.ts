@@ -165,6 +165,19 @@ export const api = createApi({
       transformResponse: unwrap<AuthUser>,
       invalidatesTags: ["Auth", "Dashboard"],
     }),
+    uploadProfilePicture: builder.mutation<ProductImageUpload, File>({
+      query: (file) => {
+        const body = new FormData();
+        body.append("image", file);
+
+        return {
+          url: "/auth/profile-picture",
+          method: "POST",
+          body,
+        };
+      },
+      transformResponse: unwrap<ProductImageUpload>,
+    }),
     changePassword: builder.mutation<
       { updated: boolean },
       { current: string; next: string }
@@ -524,5 +537,6 @@ export const {
   useUpdateAdminUserRoleMutation,
   useUpdateAdminWithdrawalStatusMutation,
   useUpdateProfileMutation,
+  useUploadProfilePictureMutation,
   useVerifyOtpMutation,
 } = api;

@@ -1,44 +1,43 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Camera,
+  Check,
   Copy,
   IdCard,
+  PencilLine,
   ShieldCheck,
   Target,
   UserRound,
   Users,
   WalletCards,
 } from "lucide-react";
-import {
-  Badge,
-  Button,
-  Card,
-  CopyButton,
-  Input,
-  Textarea,
-} from "@/components/ui";
+import { Badge, Button, Card, Input, Select, Textarea } from "@/components/ui";
 import { getApiErrorMessage } from "@/lib/api-error";
 import {
   useChangePasswordMutation,
   useGetEarningsQuery,
   useGetMeQuery,
   useUpdateProfileMutation,
+  useUploadProfilePictureMutation,
 } from "@/lib/api";
 import { initials, taka, toBn } from "@/lib/utils";
 
 const optionalText = z.string().max(600);
+const genderOptions = ["Male", "Female", "Other"] as const;
+const bloodGroupOptions = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"] as const;
 
 const profileSchema = z.object({
   fullName: z.string().min(3, "Name is required"),
   phone: z.string().min(8, "Mobile number is required"),
   fatherName: optionalText,
   motherName: optionalText,
+  address: optionalText,
   dateOfBirth: optionalText,
   religion: optionalText,
   gender: optionalText,
@@ -51,6 +50,7 @@ const profileSchema = z.object({
   nomineePostOffice: optionalText,
   nomineeDistrict: optionalText,
   profilePicture: optionalText,
+  profilePicturePublicId: optionalText,
   mission: optionalText,
 });
 
@@ -119,6 +119,11 @@ function Field({
 
 export default function ProfilePage() {
   const [message, setMessage] = useState("");
+  const [edit, setEdit] = useState(false);
+  const [copiedReferral, setCopiedReferral] = useState<"code" | "link" | null>(
+    null,
+  );
+  const profilePictureInputRef = useRef<HTMLInputElement>(null);
   const { data: me } = useGetMeQuery();
   const { data: earnings } = useGetEarningsQuery(undefined, {
     skip: me?.role !== "member",
@@ -127,6 +132,8 @@ export default function ProfilePage() {
   const referralCode = me?.referralCode ?? "";
   const [updateProfile, { isLoading: profileSaving }] =
     useUpdateProfileMutation();
+  const [uploadProfilePicture, { isLoading: pictureUploading }] =
+    useUploadProfilePictureMutation();
   const [changePassword, { isLoading: passwordSaving }] =
     useChangePasswordMutation();
   const profileForm = useForm<ProfileFormValues>({
@@ -136,6 +143,7 @@ export default function ProfilePage() {
       phone: "",
       fatherName: "",
       motherName: "",
+      address: "",
       dateOfBirth: "",
       religion: "",
       gender: "",
@@ -148,12 +156,14 @@ export default function ProfilePage() {
       nomineePostOffice: "",
       nomineeDistrict: "",
       profilePicture: "",
+      profilePicturePublicId: "",
       mission: "",
     },
   });
   const passwordForm = useForm<z.infer<typeof passwordSchema>>({
     resolver: zodResolver(passwordSchema),
   });
+  const profilePicturePreview = profileForm.watch("profilePicture");
 
   useEffect(() => {
     if (!me) return;
@@ -163,6 +173,7 @@ export default function ProfilePage() {
       phone: me.phone,
       fatherName: me.fatherName ?? "",
       motherName: me.motherName ?? "",
+      address: me.address ?? "",
       dateOfBirth: me.dateOfBirth ?? "",
       religion: me.religion ?? "",
       gender: me.gender ?? "",
@@ -175,6 +186,7 @@ export default function ProfilePage() {
       nomineePostOffice: me.nomineePostOffice ?? "",
       nomineeDistrict: me.nomineeDistrict ?? "",
       profilePicture: me.profilePicture ?? "",
+      profilePicturePublicId: me.profilePicturePublicId ?? "",
       mission: me.mission ?? "",
     });
   }, [me, profileForm]);
@@ -188,6 +200,7 @@ export default function ProfilePage() {
       { label: "Father", value: me?.fatherName },
       { label: "Mother", value: me?.motherName },
       { label: "Mobile", value: me?.phone },
+      { label: "Address", value: me?.address },
       { label: "E-mail", value: me?.email },
       { label: "Date of Birth", value: formatDate(me?.dateOfBirth) },
       { label: "Religion", value: me?.religion },
@@ -216,6 +229,7 @@ export default function ProfilePage() {
     try {
       await updateProfile(values).unwrap();
       setMessage("Profile updated.");
+      setEdit(false);
     } catch (error) {
       setMessage(getApiErrorMessage(error, "Profile update failed"));
     }
@@ -231,6 +245,60 @@ export default function ProfilePage() {
     }
   }
 
+  async function handleReferralCopy(type: "code" | "link") {
+    if (!referralCode) return;
+
+    if (!navigator.clipboard) {
+      setMessage("Clipboard is not available in this browser.");
+      return;
+    }
+
+    const value =
+      type === "code"
+        ? referralCode
+        : `${window.location.origin}/products?ref=${encodeURIComponent(
+            referralCode,
+          )}`;
+
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopiedReferral(type);
+      window.setTimeout(() => setCopiedReferral(null), 1800);
+    } catch {
+      setMessage("Copy failed. Please try again.");
+    }
+  }
+
+  async function handleProfilePictureUpload(file?: File) {
+    if (!file) return;
+
+    try {
+      const uploaded = await uploadProfilePicture(file).unwrap();
+      const values = {
+        ...profileForm.getValues(),
+        profilePicture: uploaded.url,
+        profilePicturePublicId: uploaded.publicId,
+      };
+
+      profileForm.setValue("profilePicture", uploaded.url, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+      profileForm.setValue("profilePicturePublicId", uploaded.publicId, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+      await updateProfile(values).unwrap();
+      setMessage("Profile picture updated.");
+    } catch (error) {
+      setMessage(getApiErrorMessage(error, "Profile picture upload failed"));
+    } finally {
+      if (profilePictureInputRef.current) {
+        profilePictureInputRef.current.value = "";
+      }
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -242,36 +310,67 @@ export default function ProfilePage() {
 
       <Card className="p-4 md:p-6">
         <div className="space-y-5">
-          <div
-            className="rounded-lg border border-line bg-elevated p-4"
-            style={{ border: "1px solid red" }}
-          >
+          <div className="rounded-lg border border-line bg-elevated p-4">
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <div className="flex min-w-0 items-center gap-4">
-                <div className="relative shrink-0">
-                  {me?.profilePicture ? (
+                <div className="relative h-20 w-20 shrink-0">
+                  {profilePicturePreview || me?.profilePicture ? (
                     <Image
-                      src={me.profilePicture}
-                      alt={me.name}
+                      src={profilePicturePreview || me?.profilePicture || ""}
+                      alt={me?.name ?? "Profile picture"}
                       width={88}
                       height={88}
                       unoptimized
-                      className="h-20 w-20 rounded-full border border-gold/30 object-cover"
+                      className={`h-20 w-20 rounded-full border border-gold/30 object-cover transition ${
+                        pictureUploading ? "opacity-45" : "opacity-100"
+                      }`}
                     />
                   ) : (
-                    <div className="grid h-20 w-20 place-items-center rounded-full bg-gold text-3xl font-black text-white">
+                    <div
+                      className={`grid h-20 w-20 place-items-center rounded-full bg-gold text-3xl font-black text-white transition ${
+                        pictureUploading ? "opacity-45" : "opacity-100"
+                      }`}
+                    >
                       {me ? initials(me.name) : "M"}
                     </div>
                   )}
-                  <span className="absolute bottom-0 right-0 grid h-8 w-8 place-items-center rounded-full bg-surface text-gold-light shadow-sm">
-                    <Camera size={15} />
-                  </span>
+                  {pictureUploading ? (
+                    <div className="absolute inset-0 grid place-items-center rounded-full bg-foreground/35 backdrop-blur-[1px]">
+                      <span
+                        className="h-7 w-7 animate-spin rounded-full border-2 border-white/40 border-t-white"
+                        aria-label="Uploading profile picture"
+                      />
+                    </div>
+                  ) : null}
+                  <input
+                    ref={profilePictureInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(event) =>
+                      handleProfilePictureUpload(event.target.files?.[0])
+                    }
+                  />
+                  <button
+                    type="button"
+                    disabled={pictureUploading}
+                    onClick={() => profilePictureInputRef.current?.click()}
+                    className="absolute bottom-0 right-0 grid h-8 w-8 place-items-center rounded-full border border-line bg-surface text-gold-light shadow-sm transition hover:border-gold disabled:cursor-wait disabled:opacity-80"
+                    aria-label="Change profile picture"
+                    title="Change profile picture"
+                  >
+                    {pictureUploading ? (
+                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-gold-light/30 border-t-gold-light" />
+                    ) : (
+                      <Camera size={15} />
+                    )}
+                  </button>
                 </div>
                 <div className="min-w-0">
                   <h3 className="truncate text-2xl font-black">
                     {me?.name ?? "Member"}
                   </h3>
-                  <div className="mt-2 flex flex-wrap gap-2">
+                  <div className="mt-2 flex min-h-7 flex-wrap gap-2">
                     <Badge>{me?.status ?? "Loading"}</Badge>
                     <Badge tone="muted">
                       {isMember
@@ -279,27 +378,45 @@ export default function ProfilePage() {
                         : (me?.role ?? "role")}
                     </Badge>
                   </div>
+                  {pictureUploading ? (
+                    <p className="mt-1 text-xs font-semibold text-gold-light">
+                      Uploading profile picture...
+                    </p>
+                  ) : null}
                 </div>
               </div>
 
-              {isMember ? (
-                <div className="rounded-lg border border-gold/20 bg-gold/10 px-4 py-3 md:min-w-52">
-                  <div className="flex items-center gap-2 text-gold-light">
-                    <WalletCards size={18} />
-                    <p className="text-xs font-semibold">Current balance</p>
+              <div className="flex flex-col gap-3 sm:flex-row md:items-center">
+                {isMember ? (
+                  <div className="min-h-20 rounded-lg border border-gold/20 bg-gold/10 px-4 py-3 md:min-w-52">
+                    <div className="flex items-center gap-2 text-gold-light">
+                      <WalletCards size={18} />
+                      <p className="text-xs font-semibold">Current balance</p>
+                    </div>
+                    <p className="mt-1 text-2xl font-black text-gold-light">
+                      {taka(earnings?.balance ?? 0)}
+                    </p>
                   </div>
-                  <p className="mt-1 text-2xl font-black text-gold-light">
-                    {taka(earnings?.balance ?? 0)}
-                  </p>
-                </div>
-              ) : (
-                <div className="rounded-lg border border-gold/20 bg-gold/10 px-4 py-3 md:min-w-52">
-                  <div className="flex items-center gap-2 text-gold-light">
-                    <ShieldCheck size={18} />
-                    <p className="text-xs font-semibold">Management account</p>
+                ) : (
+                  <div className="flex min-h-20 items-center rounded-lg border border-gold/20 bg-gold/10 px-4 py-3 md:min-w-52">
+                    <div className="flex items-center gap-2 text-gold-light">
+                      <ShieldCheck size={18} />
+                      <p className="text-xs font-semibold">
+                        Management account
+                      </p>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+                <Button
+                  type="button"
+                  variant={edit ? "outline" : "primary"}
+                  className="min-h-11 min-w-36 justify-center whitespace-nowrap"
+                  onClick={() => setEdit((value) => !value)}
+                >
+                  <PencilLine size={16} />
+                  {edit ? "Close edit" : "Edit profile"}
+                </Button>
+              </div>
             </div>
 
             {me?.mission ? (
@@ -315,112 +432,149 @@ export default function ProfilePage() {
             ) : null}
           </div>
 
-          <div className="space-y-5">
-            <section className="rounded-lg border border-line p-4">
-              <div className="mb-3 flex items-center gap-3">
-                <IdCard size={20} className="text-gold-light" />
-                <h3 className="text-xl font-bold md:text-2xl">User Data</h3>
-              </div>
-              <DetailGrid items={identityItems} />
-            </section>
+          {!edit ? (
+            <div className="space-y-5">
+              <section className="rounded-lg border border-line p-4">
+                <div className="mb-3 flex items-center gap-3">
+                  <IdCard size={20} className="text-gold-light" />
+                  <h3 className="text-xl font-bold md:text-2xl">User Data</h3>
+                </div>
+                <DetailGrid items={identityItems} />
+              </section>
 
-            <section className="rounded-lg border border-line p-4">
-              <div className="mb-3 flex items-center gap-3">
-                <Users size={20} className="text-gold-light" />
-                <h3 className="text-xl font-bold md:text-2xl">Nominee</h3>
-              </div>
-              <DetailGrid items={nomineeItems} />
-            </section>
-          </div>
+              <section className="rounded-lg border border-line p-4">
+                <div className="mb-3 flex items-center gap-3">
+                  <Users size={20} className="text-gold-light" />
+                  <h3 className="text-xl font-bold md:text-2xl">Nominee</h3>
+                </div>
+                <DetailGrid items={nomineeItems} />
+              </section>
+            </div>
+          ) : null}
         </div>
       </Card>
 
-      <Card className="p-6">
-        <div className="mb-5 flex items-center gap-3">
-          <UserRound size={22} className="text-gold-light" />
-          <h3 className="text-2xl font-bold">Edit Profile</h3>
-        </div>
-        <form
-          className="space-y-6"
-          onSubmit={profileForm.handleSubmit(handleProfileSave)}
-        >
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            <Field label="Name">
-              <Input {...profileForm.register("fullName")} />
-            </Field>
-            <Field label="Mobile">
-              <Input {...profileForm.register("phone")} />
-            </Field>
-            <Field label="Profile picture URL">
-              <Input {...profileForm.register("profilePicture")} />
-            </Field>
-            <Field label="Father">
-              <Input {...profileForm.register("fatherName")} />
-            </Field>
-            <Field label="Mother">
-              <Input {...profileForm.register("motherName")} />
-            </Field>
-            <Field label="Date of Birth">
-              <Input type="date" {...profileForm.register("dateOfBirth")} />
-            </Field>
-            <Field label="Religion">
-              <Input {...profileForm.register("religion")} />
-            </Field>
-            <Field label="Gender">
-              <Input {...profileForm.register("gender")} />
-            </Field>
-            <Field label="Blood Group">
-              <Input {...profileForm.register("bloodGroup")} />
-            </Field>
-            <Field label="NID/BC">
-              <Input {...profileForm.register("nidOrBirthCertificate")} />
-            </Field>
-            <Field label="Nominee Name">
-              <Input {...profileForm.register("nomineeName")} />
-            </Field>
-            <Field label="Nominee Relation">
-              <Input {...profileForm.register("nomineeRelation")} />
-            </Field>
-            <Field label="Nominee Village">
-              <Input {...profileForm.register("nomineeVillage")} />
-            </Field>
-            <Field label="Nominee Post office">
-              <Input {...profileForm.register("nomineePostOffice")} />
-            </Field>
-            <Field label="Nominee District">
-              <Input {...profileForm.register("nomineeDistrict")} />
-            </Field>
-          </div>
 
-          <div className="grid gap-4 lg:grid-cols-2">
-            <Field label="Nominee Address">
-              <Textarea {...profileForm.register("nomineeAddress")} />
-            </Field>
-            <Field label="Mission">
-              <Textarea {...profileForm.register("mission")} />
-            </Field>
+      {edit ? (
+        <Card className="p-6">
+          <div className="mb-5 flex items-center gap-3">
+            <UserRound size={22} className="text-gold-light" />
+            <h3 className="text-2xl font-bold">Edit Profile</h3>
           </div>
+          <form
+            className="space-y-6"
+            onSubmit={profileForm.handleSubmit(handleProfileSave)}
+          >
+            <input type="hidden" {...profileForm.register("profilePicture")} />
+            <input
+              type="hidden"
+              {...profileForm.register("profilePicturePublicId")}
+            />
 
-          {profileForm.formState.errors.fullName ? (
-            <p className="text-sm text-gold">
-              {profileForm.formState.errors.fullName.message}
-            </p>
-          ) : null}
-          {profileForm.formState.errors.phone ? (
-            <p className="text-sm text-gold">
-              {profileForm.formState.errors.phone.message}
-            </p>
-          ) : null}
-          {message ? (
-            <p className="rounded-lg bg-gold/10 px-4 py-3 text-sm text-gold">
-              {message}
-            </p>
-          ) : null}
-          <Button type="submit" disabled={profileSaving}>
-            Save profile
-          </Button>
-        </form>
-      </Card>
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              <Field label="Name">
+                <Input {...profileForm.register("fullName")} />
+              </Field>
+              <Field label="Mobile">
+                <Input {...profileForm.register("phone")} />
+              </Field>
+              <Field label="Father">
+                <Input {...profileForm.register("fatherName")} />
+              </Field>
+              <Field label="Mother">
+                <Input {...profileForm.register("motherName")} />
+              </Field>
+              <Field label="Date of Birth">
+                <Input type="date" {...profileForm.register("dateOfBirth")} />
+              </Field>
+              <Field label="Religion">
+                <Input {...profileForm.register("religion")} />
+              </Field>
+              <Field label="Gender">
+                <Select {...profileForm.register("gender")}>
+                  <option value="">Select gender</option>
+                  {genderOptions.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+              <Field label="Blood Group">
+                <Select {...profileForm.register("bloodGroup")}>
+                  <option value="">Select blood group</option>
+                  {bloodGroupOptions.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+              <Field label="NID/BC">
+                <Input {...profileForm.register("nidOrBirthCertificate")} />
+              </Field>
+              <Field label="Nominee Name">
+                <Input {...profileForm.register("nomineeName")} />
+              </Field>
+              <Field label="Nominee Relation">
+                <Input {...profileForm.register("nomineeRelation")} />
+              </Field>
+              <Field label="Nominee Village">
+                <Input {...profileForm.register("nomineeVillage")} />
+              </Field>
+              <Field label="Nominee Post office">
+                <Input {...profileForm.register("nomineePostOffice")} />
+              </Field>
+              <Field label="Nominee District">
+                <Input {...profileForm.register("nomineeDistrict")} />
+              </Field>
+            </div>
+
+            <div className="grid gap-4 lg:grid-cols-2">
+              <Field label="Address">
+                <Textarea {...profileForm.register("address")} />
+              </Field>
+              <Field label="Nominee Address">
+                <Textarea {...profileForm.register("nomineeAddress")} />
+              </Field>
+            </div>
+
+            <div>
+              <Field label="Mission">
+                <Textarea {...profileForm.register("mission")} />
+              </Field>
+            </div>
+
+            {profileForm.formState.errors.fullName ? (
+              <p className="text-sm text-gold">
+                {profileForm.formState.errors.fullName.message}
+              </p>
+            ) : null}
+            {profileForm.formState.errors.phone ? (
+              <p className="text-sm text-gold">
+                {profileForm.formState.errors.phone.message}
+              </p>
+            ) : null}
+            {message ? (
+              <p className="rounded-lg bg-gold/10 px-4 py-3 text-sm text-gold">
+                {message}
+              </p>
+            ) : null}
+            <div className="flex flex-wrap gap-3">
+              <Button type="submit" disabled={profileSaving}>
+                Save profile
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setEdit(false)}
+              >
+                Cancel
+              </Button>
+            </div>
+          </form>
+        </Card>
+      ) : null}
 
       <div className="grid gap-6 xl:grid-cols-2">
         <Card className="p-6">
@@ -451,18 +605,46 @@ export default function ProfilePage() {
             <div className="break-all rounded-lg border border-line bg-elevated p-4 text-3xl font-black tracking-[0.18em] text-gold-light">
               {referralCode || "Loading..."}
             </div>
-            <div className="mt-4 flex flex-wrap gap-3">
-              <CopyButton value={referralCode} label="Copy code" />
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
               <Button
                 type="button"
                 variant="outline"
-                onClick={() =>
-                  referralCode && navigator.clipboard?.writeText(referralCode)
-                }
+                className="min-w-36"
+                disabled={!referralCode}
+                onClick={() => handleReferralCopy("code")}
               >
-                <Copy size={16} /> Copy referral
+                {copiedReferral === "code" ? (
+                  <Check size={16} />
+                ) : (
+                  <Copy size={16} />
+                )}
+                {copiedReferral === "code" ? "Code copied" : "Copy code"}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="min-w-36"
+                disabled={!referralCode}
+                onClick={() => handleReferralCopy("link")}
+              >
+                {copiedReferral === "link" ? (
+                  <Check size={16} />
+                ) : (
+                  <Copy size={16} />
+                )}
+                {copiedReferral === "link" ? "Link copied" : "Copy referral"}
               </Button>
             </div>
+            {/* <p
+              className="mt-3 min-h-5 text-sm font-semibold text-gold-light"
+              aria-live="polite"
+            >
+              {copiedReferral === "code"
+                ? "Referral code copied."
+                : copiedReferral === "link"
+                  ? "Referral link copied."
+                  : ""}
+            </p> */}
           </Card>
         ) : null}
       </div>

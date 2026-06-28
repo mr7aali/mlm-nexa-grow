@@ -49,6 +49,7 @@ export type AuthUser = {
   phone: string;
   fatherName?: string;
   motherName?: string;
+  address?: string;
   dateOfBirth?: string;
   religion?: string;
   gender?: string;
@@ -61,6 +62,7 @@ export type AuthUser = {
   nomineePostOffice?: string;
   nomineeDistrict?: string;
   profilePicture?: string;
+  profilePicturePublicId?: string;
   mission?: string;
   level: number;
   status: UserStatus;
@@ -78,6 +80,7 @@ export type ProfileUpdateInput = {
   phone: string;
   fatherName?: string;
   motherName?: string;
+  address?: string;
   dateOfBirth?: string;
   religion?: string;
   gender?: string;
@@ -90,6 +93,7 @@ export type ProfileUpdateInput = {
   nomineePostOffice?: string;
   nomineeDistrict?: string;
   profilePicture?: string;
+  profilePicturePublicId?: string;
   mission?: string;
 };
 
@@ -317,6 +321,11 @@ export type CommissionsResponse = {
     nextReward: number;
     history: CommissionHistoryItem[];
     levels: WingCommissionLevel[];
+  };
+  referralIncome?: {
+    totalEarned: number;
+    bonusAmount: number;
+    history: CommissionHistoryItem[];
   };
   generationIncome?: {
     coins: number;

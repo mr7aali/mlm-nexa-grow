@@ -26,11 +26,136 @@ import {
   useUpdateProfileMutation,
   useUploadProfilePictureMutation,
 } from "@/lib/api";
+import { useI18n } from "@/lib/i18n";
 import { initials, taka, toBn } from "@/lib/utils";
 
 const optionalText = z.string().max(600);
+const religionOptions = [
+  "Islam",
+  "Hinduism",
+  "Christianity",
+  "Buddhism",
+  "Other",
+] as const;
 const genderOptions = ["Male", "Female", "Other"] as const;
-const bloodGroupOptions = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"] as const;
+const bloodGroupOptions = [
+  "A+",
+  "A-",
+  "B+",
+  "B-",
+  "AB+",
+  "AB-",
+  "O+",
+  "O-",
+] as const;
+
+const localizedOptions: Record<string, { bn: string; en: string }> = {
+  Islam: { bn: "ইসলাম", en: "Islam" },
+  Hinduism: { bn: "হিন্দু", en: "Hinduism" },
+  Christianity: { bn: "খ্রিস্টান", en: "Christianity" },
+  Buddhism: { bn: "বৌদ্ধ", en: "Buddhism" },
+  Other: { bn: "অন্যান্য", en: "Other" },
+  Male: { bn: "পুরুষ", en: "Male" },
+  Female: { bn: "নারী", en: "Female" },
+};
+
+const profileText = {
+  memberAccount: { bn: "সদস্য অ্যাকাউন্ট", en: "Member account" },
+  profile: { bn: "প্রোফাইল", en: "Profile" },
+  memberFallback: { bn: "সদস্য", en: "Member" },
+  profilePicture: { bn: "প্রোফাইল ছবি", en: "Profile picture" },
+  roleFallback: { bn: "রোল", en: "role" },
+  loading: { bn: "লোড হচ্ছে...", en: "Loading..." },
+  level: { bn: "লেভেল", en: "Level" },
+  currentBalance: { bn: "বর্তমান ব্যালেন্স", en: "Current balance" },
+  managementAccount: {
+    bn: "ম্যানেজমেন্ট অ্যাকাউন্ট",
+    en: "Management account",
+  },
+  uploadingProfilePicture: {
+    bn: "প্রোফাইল ছবি আপলোড হচ্ছে...",
+    en: "Uploading profile picture...",
+  },
+  changeProfilePicture: {
+    bn: "প্রোফাইল ছবি পরিবর্তন করুন",
+    en: "Change profile picture",
+  },
+  mission: { bn: "মিশন", en: "Mission" },
+  userData: { bn: "ইউজার ডাটা", en: "User Data" },
+  nominee: { bn: "নমিনি", en: "Nominee" },
+  editProfile: { bn: "প্রোফাইল এডিট", en: "Edit Profile" },
+  closeEdit: { bn: "এডিট বন্ধ", en: "Close edit" },
+  saveProfile: { bn: "প্রোফাইল সেভ", en: "Save profile" },
+  cancel: { bn: "বাতিল", en: "Cancel" },
+  changePassword: { bn: "পাসওয়ার্ড পরিবর্তন", en: "Change Password" },
+  currentPassword: { bn: "বর্তমান পাসওয়ার্ড", en: "Current password" },
+  newPassword: { bn: "নতুন পাসওয়ার্ড", en: "New password" },
+  updatePassword: { bn: "পাসওয়ার্ড আপডেট", en: "Update password" },
+  referralCode: { bn: "রেফার কোড", en: "Referral Code" },
+  copyCode: { bn: "কোড কপি", en: "Copy code" },
+  codeCopied: { bn: "কোড কপি হয়েছে", en: "Code copied" },
+  copyReferral: { bn: "রেফার লিংক কপি", en: "Copy referral" },
+  linkCopied: { bn: "লিংক কপি হয়েছে", en: "Link copied" },
+  directMember: { bn: "ডিরেক্ট সদস্য", en: "Direct member" },
+  notProvided: { bn: "অনুগ্রহ করে তথ্য দিন", en: "Please provide this info" },
+  selectReligion: { bn: "ধর্ম নির্বাচন করুন", en: "Select religion" },
+  selectGender: { bn: "লিঙ্গ নির্বাচন করুন", en: "Select gender" },
+  selectBloodGroup: {
+    bn: "রক্তের গ্রুপ নির্বাচন করুন",
+    en: "Select blood group",
+  },
+  profileUpdated: { bn: "প্রোফাইল আপডেট হয়েছে।", en: "Profile updated." },
+  profileUpdateFailed: {
+    bn: "প্রোফাইল আপডেট ব্যর্থ হয়েছে",
+    en: "Profile update failed",
+  },
+  passwordUpdated: { bn: "পাসওয়ার্ড আপডেট হয়েছে।", en: "Password updated." },
+  passwordUpdateFailed: {
+    bn: "পাসওয়ার্ড আপডেট ব্যর্থ হয়েছে",
+    en: "Password update failed",
+  },
+  clipboardUnavailable: {
+    bn: "এই ব্রাউজারে ক্লিপবোর্ড ব্যবহার করা যাচ্ছে না।",
+    en: "Clipboard is not available in this browser.",
+  },
+  copyFailed: {
+    bn: "কপি ব্যর্থ হয়েছে। আবার চেষ্টা করুন।",
+    en: "Copy failed. Please try again.",
+  },
+  profilePictureUpdated: {
+    bn: "প্রোফাইল ছবি আপডেট হয়েছে।",
+    en: "Profile picture updated.",
+  },
+  profilePictureUploadFailed: {
+    bn: "প্রোফাইল ছবি আপলোড ব্যর্থ হয়েছে",
+    en: "Profile picture upload failed",
+  },
+};
+
+const profileLabels = {
+  idStatus: { bn: "আইডি স্ট্যাটাস", en: "ID Status" },
+  userId: { bn: "ইউজার আইডি", en: "User ID" },
+  name: { bn: "নাম", en: "Name" },
+  user: { bn: "ইউজার", en: "User" },
+  father: { bn: "পিতা", en: "Father" },
+  mother: { bn: "মাতা", en: "Mother" },
+  mobile: { bn: "মোবাইল", en: "Mobile" },
+  address: { bn: "ঠিকানা", en: "Address" },
+  email: { bn: "ই-মেইল", en: "E-mail" },
+  dateOfBirth: { bn: "জন্ম তারিখ", en: "Date of Birth" },
+  religion: { bn: "ধর্ম", en: "Religion" },
+  gender: { bn: "লিঙ্গ", en: "Gender" },
+  bloodGroup: { bn: "রক্তের গ্রুপ", en: "Blood Group" },
+  nidBc: { bn: "এনআইডি/জন্ম সনদ", en: "NID/BC" },
+  joinDate: { bn: "যোগদানের তারিখ", en: "Join Date" },
+  referToYou: { bn: "আপনাকে রেফার করেছে", en: "Refer to you" },
+  nomineeName: { bn: "নমিনির নাম", en: "Nominee Name" },
+  nomineeRelation: { bn: "নমিনির সম্পর্ক", en: "Nominee Relation" },
+  nomineeAddress: { bn: "নমিনির ঠিকানা", en: "Nominee Address" },
+  nomineeVillage: { bn: "নমিনির গ্রাম", en: "Nominee Village" },
+  nomineePostOffice: { bn: "নমিনির পোস্ট অফিস", en: "Nominee Post office" },
+  nomineeDistrict: { bn: "নমিনির জেলা", en: "Nominee District" },
+};
 
 const profileSchema = z.object({
   fullName: z.string().min(3, "Name is required"),
@@ -66,21 +191,35 @@ type DetailItem = {
   value?: string | number | null;
 };
 
-const emptyValue = "Not provided";
+type Language = "bn" | "en";
 
-function formatDate(value?: string | null) {
-  if (!value) return emptyValue;
+function localize(value: { bn: string; en: string }, language: Language) {
+  return value[language];
+}
+
+function optionLabel(value: string, language: Language) {
+  return localizedOptions[value]?.[language] ?? value;
+}
+
+function formatDate(value: string | null | undefined, language: Language) {
+  if (!value) return "";
   const date = new Date(value);
   if (!Number.isFinite(date.getTime())) return value;
 
-  return date.toLocaleDateString("en-GB", {
+  return date.toLocaleDateString(language === "bn" ? "bn-BD" : "en-GB", {
     year: "numeric",
     month: "short",
     day: "2-digit",
   });
 }
 
-function DetailGrid({ items }: { items: DetailItem[] }) {
+function DetailGrid({
+  items,
+  emptyValue,
+}: {
+  items: DetailItem[];
+  emptyValue: string;
+}) {
   return (
     <div className="grid gap-2 sm:grid-cols-2 2xl:grid-cols-3">
       {items.map((item) => (
@@ -118,6 +257,8 @@ function Field({
 }
 
 export default function ProfilePage() {
+  const { language } = useI18n();
+  const t = (value: { bn: string; en: string }) => localize(value, language);
   const [message, setMessage] = useState("");
   const [edit, setEdit] = useState(false);
   const [copiedReferral, setCopiedReferral] = useState<"code" | "link" | null>(
@@ -193,45 +334,63 @@ export default function ProfilePage() {
 
   const identityItems = useMemo<DetailItem[]>(
     () => [
-      { label: "ID Status", value: me?.status },
-      { label: "User ID", value: me?.id },
-      { label: "Name", value: me?.name },
-      { label: "User", value: me?.role },
-      { label: "Father", value: me?.fatherName },
-      { label: "Mother", value: me?.motherName },
-      { label: "Mobile", value: me?.phone },
-      { label: "Address", value: me?.address },
-      { label: "E-mail", value: me?.email },
-      { label: "Date of Birth", value: formatDate(me?.dateOfBirth) },
-      { label: "Religion", value: me?.religion },
-      { label: "Gender", value: me?.gender },
-      { label: "Blood Group", value: me?.bloodGroup },
-      { label: "NID/BC", value: me?.nidOrBirthCertificate },
-      { label: "Join Date", value: formatDate(me?.joined) },
-      { label: "Refer to you", value: me?.referredByCode || "Direct member" },
+      // { label: "ID Status", value: me?.status },
+      // { label: "User ID", value: me?.id },
+      // { label: t(profileLabels.name), value: me?.name },
+      // { label: "User", value: me?.role },
+      { label: t(profileLabels.father), value: me?.fatherName },
+      { label: t(profileLabels.mother), value: me?.motherName },
+      { label: t(profileLabels.mobile), value: me?.phone },
+      { label: t(profileLabels.address), value: me?.address },
+      { label: t(profileLabels.email), value: me?.email },
+      {
+        label: t(profileLabels.dateOfBirth),
+        value: formatDate(me?.dateOfBirth, language),
+      },
+      {
+        label: t(profileLabels.religion),
+        value: me?.religion ? optionLabel(me.religion, language) : "",
+      },
+      {
+        label: t(profileLabels.gender),
+        value: me?.gender ? optionLabel(me.gender, language) : "",
+      },
+      { label: t(profileLabels.bloodGroup), value: me?.bloodGroup },
+      { label: t(profileLabels.nidBc), value: me?.nidOrBirthCertificate },
+      {
+        label: t(profileLabels.joinDate),
+        value: formatDate(me?.joined, language),
+      },
+      {
+        label: t(profileLabels.referToYou),
+        value: me?.referredByCode || t(profileText.directMember),
+      },
     ],
-    [me],
+    [language, me],
   );
 
   const nomineeItems = useMemo<DetailItem[]>(
     () => [
-      { label: "Nominee Name", value: me?.nomineeName },
-      { label: "Nominee Relation", value: me?.nomineeRelation },
-      { label: "Nominee Address", value: me?.nomineeAddress },
-      { label: "Nominee Village", value: me?.nomineeVillage },
-      { label: "Nominee Post office", value: me?.nomineePostOffice },
-      { label: "Nominee District", value: me?.nomineeDistrict },
+      { label: t(profileLabels.nomineeName), value: me?.nomineeName },
+      { label: t(profileLabels.nomineeRelation), value: me?.nomineeRelation },
+      { label: t(profileLabels.nomineeAddress), value: me?.nomineeAddress },
+      { label: t(profileLabels.nomineeVillage), value: me?.nomineeVillage },
+      {
+        label: t(profileLabels.nomineePostOffice),
+        value: me?.nomineePostOffice,
+      },
+      { label: t(profileLabels.nomineeDistrict), value: me?.nomineeDistrict },
     ],
-    [me],
+    [language, me],
   );
 
   async function handleProfileSave(values: ProfileFormValues) {
     try {
       await updateProfile(values).unwrap();
-      setMessage("Profile updated.");
+      setMessage(t(profileText.profileUpdated));
       setEdit(false);
     } catch (error) {
-      setMessage(getApiErrorMessage(error, "Profile update failed"));
+      setMessage(getApiErrorMessage(error, t(profileText.profileUpdateFailed)));
     }
   }
 
@@ -239,9 +398,11 @@ export default function ProfilePage() {
     try {
       await changePassword(values).unwrap();
       passwordForm.reset();
-      setMessage("Password updated.");
+      setMessage(t(profileText.passwordUpdated));
     } catch (error) {
-      setMessage(getApiErrorMessage(error, "Password update failed"));
+      setMessage(
+        getApiErrorMessage(error, t(profileText.passwordUpdateFailed)),
+      );
     }
   }
 
@@ -249,7 +410,7 @@ export default function ProfilePage() {
     if (!referralCode) return;
 
     if (!navigator.clipboard) {
-      setMessage("Clipboard is not available in this browser.");
+      setMessage(t(profileText.clipboardUnavailable));
       return;
     }
 
@@ -265,7 +426,7 @@ export default function ProfilePage() {
       setCopiedReferral(type);
       window.setTimeout(() => setCopiedReferral(null), 1800);
     } catch {
-      setMessage("Copy failed. Please try again.");
+      setMessage(t(profileText.copyFailed));
     }
   }
 
@@ -289,9 +450,11 @@ export default function ProfilePage() {
         shouldValidate: true,
       });
       await updateProfile(values).unwrap();
-      setMessage("Profile picture updated.");
+      setMessage(t(profileText.profilePictureUpdated));
     } catch (error) {
-      setMessage(getApiErrorMessage(error, "Profile picture upload failed"));
+      setMessage(
+        getApiErrorMessage(error, t(profileText.profilePictureUploadFailed)),
+      );
     } finally {
       if (profilePictureInputRef.current) {
         profilePictureInputRef.current.value = "";
@@ -300,11 +463,13 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-no-translate>
       <div>
-        <p className="text-sm font-semibold text-gold-light">Member account</p>
+        <p className="text-sm font-semibold text-gold-light">
+          {t(profileText.memberAccount)}
+        </p>
         <h2 className="heading-gradient text-3xl font-black md:text-4xl">
-          Profile
+          {t(profileText.profile)}
         </h2>
       </div>
 
@@ -317,7 +482,7 @@ export default function ProfilePage() {
                   {profilePicturePreview || me?.profilePicture ? (
                     <Image
                       src={profilePicturePreview || me?.profilePicture || ""}
-                      alt={me?.name ?? "Profile picture"}
+                      alt={me?.name ?? t(profileText.profilePicture)}
                       width={88}
                       height={88}
                       unoptimized
@@ -331,14 +496,16 @@ export default function ProfilePage() {
                         pictureUploading ? "opacity-45" : "opacity-100"
                       }`}
                     >
-                      {me ? initials(me.name) : "M"}
+                      {me
+                        ? initials(me.name)
+                        : t(profileText.memberFallback)[0]}
                     </div>
                   )}
                   {pictureUploading ? (
                     <div className="absolute inset-0 grid place-items-center rounded-full bg-foreground/35 backdrop-blur-[1px]">
                       <span
                         className="h-7 w-7 animate-spin rounded-full border-2 border-white/40 border-t-white"
-                        aria-label="Uploading profile picture"
+                        aria-label={t(profileText.uploadingProfilePicture)}
                       />
                     </div>
                   ) : null}
@@ -356,8 +523,8 @@ export default function ProfilePage() {
                     disabled={pictureUploading}
                     onClick={() => profilePictureInputRef.current?.click()}
                     className="absolute bottom-0 right-0 grid h-8 w-8 place-items-center rounded-full border border-line bg-surface text-gold-light shadow-sm transition hover:border-gold disabled:cursor-wait disabled:opacity-80"
-                    aria-label="Change profile picture"
-                    title="Change profile picture"
+                    aria-label={t(profileText.changeProfilePicture)}
+                    title={t(profileText.changeProfilePicture)}
                   >
                     {pictureUploading ? (
                       <span className="h-4 w-4 animate-spin rounded-full border-2 border-gold-light/30 border-t-gold-light" />
@@ -368,19 +535,23 @@ export default function ProfilePage() {
                 </div>
                 <div className="min-w-0">
                   <h3 className="truncate text-2xl font-black">
-                    {me?.name ?? "Member"}
+                    {me?.name ?? t(profileText.memberFallback)}
                   </h3>
                   <div className="mt-2 flex min-h-7 flex-wrap gap-2">
-                    <Badge>{me?.status ?? "Loading"}</Badge>
+                    <Badge>{me?.status ?? t(profileText.loading)}</Badge>
                     <Badge tone="muted">
                       {isMember
-                        ? `Level ${toBn(me?.level ?? 1)}`
-                        : (me?.role ?? "role")}
+                        ? `${t(profileText.level)} ${
+                            language === "bn"
+                              ? toBn(me?.level ?? 1)
+                              : (me?.level ?? 1)
+                          }`
+                        : (me?.role ?? t(profileText.roleFallback))}
                     </Badge>
                   </div>
                   {pictureUploading ? (
                     <p className="mt-1 text-xs font-semibold text-gold-light">
-                      Uploading profile picture...
+                      {t(profileText.uploadingProfilePicture)}
                     </p>
                   ) : null}
                 </div>
@@ -391,7 +562,9 @@ export default function ProfilePage() {
                   <div className="min-h-20 rounded-lg border border-gold/20 bg-gold/10 px-4 py-3 md:min-w-52">
                     <div className="flex items-center gap-2 text-gold-light">
                       <WalletCards size={18} />
-                      <p className="text-xs font-semibold">Current balance</p>
+                      <p className="text-xs font-semibold">
+                        {t(profileText.currentBalance)}
+                      </p>
                     </div>
                     <p className="mt-1 text-2xl font-black text-gold-light">
                       {taka(earnings?.balance ?? 0)}
@@ -402,7 +575,7 @@ export default function ProfilePage() {
                     <div className="flex items-center gap-2 text-gold-light">
                       <ShieldCheck size={18} />
                       <p className="text-xs font-semibold">
-                        Management account
+                        {t(profileText.managementAccount)}
                       </p>
                     </div>
                   </div>
@@ -414,7 +587,7 @@ export default function ProfilePage() {
                   onClick={() => setEdit((value) => !value)}
                 >
                   <PencilLine size={16} />
-                  {edit ? "Close edit" : "Edit profile"}
+                  {edit ? t(profileText.closeEdit) : t(profileText.editProfile)}
                 </Button>
               </div>
             </div>
@@ -423,7 +596,9 @@ export default function ProfilePage() {
               <div className="mt-4 border-t border-line pt-4">
                 <div className="flex items-center gap-2 text-gold-light">
                   <Target size={18} />
-                  <p className="text-sm font-semibold">Mission</p>
+                  <p className="text-sm font-semibold">
+                    {t(profileText.mission)}
+                  </p>
                 </div>
                 <p className="mt-1 text-sm leading-6 text-foreground">
                   {me.mission}
@@ -437,29 +612,38 @@ export default function ProfilePage() {
               <section className="rounded-lg border border-line p-4">
                 <div className="mb-3 flex items-center gap-3">
                   <IdCard size={20} className="text-gold-light" />
-                  <h3 className="text-xl font-bold md:text-2xl">User Data</h3>
+                  <h3 className="text-xl font-bold md:text-2xl">
+                    {t(profileText.userData)}
+                  </h3>
                 </div>
-                <DetailGrid items={identityItems} />
+                <DetailGrid
+                  items={identityItems}
+                  emptyValue={t(profileText.notProvided)}
+                />
               </section>
 
               <section className="rounded-lg border border-line p-4">
                 <div className="mb-3 flex items-center gap-3">
                   <Users size={20} className="text-gold-light" />
-                  <h3 className="text-xl font-bold md:text-2xl">Nominee</h3>
+                  <h3 className="text-xl font-bold md:text-2xl">
+                    {t(profileText.nominee)}
+                  </h3>
                 </div>
-                <DetailGrid items={nomineeItems} />
+                <DetailGrid
+                  items={nomineeItems}
+                  emptyValue={t(profileText.notProvided)}
+                />
               </section>
             </div>
           ) : null}
         </div>
       </Card>
 
-
       {edit ? (
         <Card className="p-6">
           <div className="mb-5 flex items-center gap-3">
             <UserRound size={22} className="text-gold-light" />
-            <h3 className="text-2xl font-bold">Edit Profile</h3>
+            <h3 className="text-2xl font-bold">{t(profileText.editProfile)}</h3>
           </div>
           <form
             className="space-y-6"
@@ -472,37 +656,44 @@ export default function ProfilePage() {
             />
 
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              <Field label="Name">
+              <Field label={t(profileLabels.name)}>
                 <Input {...profileForm.register("fullName")} />
               </Field>
-              <Field label="Mobile">
+              <Field label={t(profileLabels.mobile)}>
                 <Input {...profileForm.register("phone")} />
               </Field>
-              <Field label="Father">
+              <Field label={t(profileLabels.father)}>
                 <Input {...profileForm.register("fatherName")} />
               </Field>
-              <Field label="Mother">
+              <Field label={t(profileLabels.mother)}>
                 <Input {...profileForm.register("motherName")} />
               </Field>
-              <Field label="Date of Birth">
+              <Field label={t(profileLabels.dateOfBirth)}>
                 <Input type="date" {...profileForm.register("dateOfBirth")} />
               </Field>
-              <Field label="Religion">
-                <Input {...profileForm.register("religion")} />
-              </Field>
-              <Field label="Gender">
-                <Select {...profileForm.register("gender")}>
-                  <option value="">Select gender</option>
-                  {genderOptions.map((option) => (
+              <Field label={t(profileLabels.religion)}>
+                <Select {...profileForm.register("religion")}>
+                  <option value="">{t(profileText.selectReligion)}</option>
+                  {religionOptions.map((option) => (
                     <option key={option} value={option}>
-                      {option}
+                      {optionLabel(option, language)}
                     </option>
                   ))}
                 </Select>
               </Field>
-              <Field label="Blood Group">
+              <Field label={t(profileLabels.gender)}>
+                <Select {...profileForm.register("gender")}>
+                  <option value="">{t(profileText.selectGender)}</option>
+                  {genderOptions.map((option) => (
+                    <option key={option} value={option}>
+                      {optionLabel(option, language)}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+              <Field label={t(profileLabels.bloodGroup)}>
                 <Select {...profileForm.register("bloodGroup")}>
-                  <option value="">Select blood group</option>
+                  <option value="">{t(profileText.selectBloodGroup)}</option>
                   {bloodGroupOptions.map((option) => (
                     <option key={option} value={option}>
                       {option}
@@ -510,37 +701,37 @@ export default function ProfilePage() {
                   ))}
                 </Select>
               </Field>
-              <Field label="NID/BC">
+              <Field label={t(profileLabels.nidBc)}>
                 <Input {...profileForm.register("nidOrBirthCertificate")} />
               </Field>
-              <Field label="Nominee Name">
+              <Field label={t(profileLabels.nomineeName)}>
                 <Input {...profileForm.register("nomineeName")} />
               </Field>
-              <Field label="Nominee Relation">
+              <Field label={t(profileLabels.nomineeRelation)}>
                 <Input {...profileForm.register("nomineeRelation")} />
               </Field>
-              <Field label="Nominee Village">
+              <Field label={t(profileLabels.nomineeVillage)}>
                 <Input {...profileForm.register("nomineeVillage")} />
               </Field>
-              <Field label="Nominee Post office">
+              <Field label={t(profileLabels.nomineePostOffice)}>
                 <Input {...profileForm.register("nomineePostOffice")} />
               </Field>
-              <Field label="Nominee District">
+              <Field label={t(profileLabels.nomineeDistrict)}>
                 <Input {...profileForm.register("nomineeDistrict")} />
               </Field>
             </div>
 
             <div className="grid gap-4 lg:grid-cols-2">
-              <Field label="Address">
+              <Field label={t(profileLabels.address)}>
                 <Textarea {...profileForm.register("address")} />
               </Field>
-              <Field label="Nominee Address">
+              <Field label={t(profileLabels.nomineeAddress)}>
                 <Textarea {...profileForm.register("nomineeAddress")} />
               </Field>
             </div>
 
             <div>
-              <Field label="Mission">
+              <Field label={t(profileText.mission)}>
                 <Textarea {...profileForm.register("mission")} />
               </Field>
             </div>
@@ -562,14 +753,14 @@ export default function ProfilePage() {
             ) : null}
             <div className="flex flex-wrap gap-3">
               <Button type="submit" disabled={profileSaving}>
-                Save profile
+                {t(profileText.saveProfile)}
               </Button>
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => setEdit(false)}
               >
-                Cancel
+                {t(profileText.cancel)}
               </Button>
             </div>
           </form>
@@ -578,7 +769,9 @@ export default function ProfilePage() {
 
       <div className="grid gap-6 xl:grid-cols-2">
         <Card className="p-6">
-          <h3 className="mb-4 text-2xl font-bold">Change Password</h3>
+          <h3 className="mb-4 text-2xl font-bold">
+            {t(profileText.changePassword)}
+          </h3>
           <form
             className="space-y-4"
             onSubmit={passwordForm.handleSubmit(handlePasswordSave)}
@@ -586,24 +779,26 @@ export default function ProfilePage() {
             <Input
               type="password"
               {...passwordForm.register("current")}
-              placeholder="Current password"
+              placeholder={t(profileText.currentPassword)}
             />
             <Input
               type="password"
               {...passwordForm.register("next")}
-              placeholder="New password"
+              placeholder={t(profileText.newPassword)}
             />
             <Button type="submit" variant="outline" disabled={passwordSaving}>
-              Update password
+              {t(profileText.updatePassword)}
             </Button>
           </form>
         </Card>
 
         {isMember ? (
           <Card className="p-6">
-            <h3 className="mb-4 text-2xl font-bold">Referral Code</h3>
+            <h3 className="mb-4 text-2xl font-bold">
+              {t(profileText.referralCode)}
+            </h3>
             <div className="break-all rounded-lg border border-line bg-elevated p-4 text-3xl font-black tracking-[0.18em] text-gold-light">
-              {referralCode || "Loading..."}
+              {referralCode || t(profileText.loading)}
             </div>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               <Button
@@ -618,7 +813,9 @@ export default function ProfilePage() {
                 ) : (
                   <Copy size={16} />
                 )}
-                {copiedReferral === "code" ? "Code copied" : "Copy code"}
+                {copiedReferral === "code"
+                  ? t(profileText.codeCopied)
+                  : t(profileText.copyCode)}
               </Button>
               <Button
                 type="button"
@@ -632,7 +829,9 @@ export default function ProfilePage() {
                 ) : (
                   <Copy size={16} />
                 )}
-                {copiedReferral === "link" ? "Link copied" : "Copy referral"}
+                {copiedReferral === "link"
+                  ? t(profileText.linkCopied)
+                  : t(profileText.copyReferral)}
               </Button>
             </div>
             {/* <p

@@ -29,6 +29,7 @@ import type {
   PurchaseResponse,
   ReferralsResponse,
   ReferralPlacementTokens,
+  WingMemberDetailsResponse,
   WingsResponse,
 } from "@/lib/api-types";
 
@@ -239,6 +240,11 @@ export const api = createApi({
     getWings: builder.query<WingsResponse, void>({
       query: () => "/dashboard/wings",
       transformResponse: unwrap<WingsResponse>,
+      providesTags: ["Wings"],
+    }),
+    getWingMemberDetails: builder.query<WingMemberDetailsResponse, string>({
+      query: (memberId) => `/dashboard/wings/members/${encodeURIComponent(memberId)}`,
+      transformResponse: unwrap<WingMemberDetailsResponse>,
       providesTags: ["Wings"],
     }),
     assignWingPlacement: builder.mutation<
@@ -525,6 +531,7 @@ export const {
   useGetProductsQuery,
   useGetReferralsQuery,
   useGetReferralPlacementTokensQuery,
+  useGetWingMemberDetailsQuery,
   useGetWingsQuery,
   useLoginMutation,
   useLogoutMutation,

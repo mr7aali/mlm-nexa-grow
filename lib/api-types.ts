@@ -374,6 +374,45 @@ export type WingsResponse = {
   tree: TreeNode;
 };
 
+export type WingMemberDetailsResponse = {
+  user: AuthUser;
+  placement: {
+    parentUserId: string;
+    parentName: string;
+    sponsorUserId: string;
+    sponsorName: string;
+    sponsorCode: string;
+    sponsorWing: "Left" | "Right";
+    position: "Left" | "Right";
+    placedAt: string;
+  } | null;
+  network: {
+    directReferrals: number;
+    binaryDownline: number;
+    leftNodeCount: number;
+    rightNodeCount: number;
+    left: { id: string; name: string; active: boolean } | null;
+    right: { id: string; name: string; active: boolean } | null;
+  };
+  purchases: {
+    confirmedOrders: number;
+    totalPaid: number;
+    lastOrderAt: string | null;
+  };
+  commissions: {
+    totalEarned: number;
+    paid: number;
+    latest: Array<{
+      id: string;
+      userId: string;
+      level: string;
+      date: string;
+      amount: number;
+      status: string;
+    }>;
+  };
+};
+
 export type ReferralPlacementTokens = {
   referralCode: string;
   left: string;

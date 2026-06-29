@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import Image from "next/image";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
   CalendarClock,
   Check,
@@ -16,14 +17,21 @@ import {
   UserPlus,
   UserRound,
   Users,
+  X,
 } from "lucide-react";
 import { Badge, Card, Input, Select } from "@/components/ui";
 import {
   useAssignWingPlacementMutation,
+  useGetWingMemberDetailsQuery,
   useGetWingsQuery,
 } from "@/lib/api";
 import { getApiErrorMessage } from "@/lib/api-error";
-import type { TreeNode, WingsResponse } from "@/lib/api-types";
+import type {
+  TreeNode,
+  WingMemberDetailsResponse,
+  WingsResponse,
+} from "@/lib/api-types";
+import { useI18n } from "@/lib/i18n";
 import { initials, taka, toBn } from "@/lib/utils";
 
 type TreeFilter = {
@@ -33,15 +41,24 @@ type TreeFilter = {
 };
 
 export default function WingsPage() {
+  const { language } = useI18n();
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const [level, setLevel] = useState("all");
   const [activeOnly, setActiveOnly] = useState(false);
   const [query, setQuery] = useState("");
   const [selectedMemberId, setSelectedMemberId] = useState("");
+  const [selectedNodeUserId, setSelectedNodeUserId] = useState("");
   const [assigningMemberId, setAssigningMemberId] = useState("");
   const [placementMessage, setPlacementMessage] = useState("");
   const treeViewportRef = useRef<HTMLDivElement>(null);
   const { data, isLoading } = useGetWingsQuery();
+  const {
+    data: selectedNodeDetails,
+    isFetching: nodeDetailsLoading,
+    error: nodeDetailsError,
+  } = useGetWingMemberDetailsQuery(selectedNodeUserId, {
+    skip: !selectedNodeUserId,
+  });
   const [assignWingPlacement] = useAssignWingPlacementMutation();
   const tree = data?.tree;
   const pendingPlacements = data?.pendingPlacements ?? [];
@@ -358,6 +375,7 @@ export default function WingsPage() {
                   selectedMemberName={selectedMember?.name}
                   assigning={Boolean(assigningMemberId)}
                   onPlace={placeMember}
+                  onSelectNode={setSelectedNodeUserId}
                 />
               </ul>
             </div>
@@ -372,6 +390,23 @@ export default function WingsPage() {
           </p>
         </Card>
       )}
+
+      <MemberDetailsDrawer
+        open={Boolean(selectedNodeUserId)}
+        details={selectedNodeDetails}
+        loading={nodeDetailsLoading}
+        error={
+          nodeDetailsError
+            ? getApiErrorMessage(
+                nodeDetailsError,
+                language === "bn"
+                  ? "সদস্যের তথ্য লোড করা যায়নি"
+                  : "Member details could not be loaded",
+              )
+            : ""
+        }
+        onClose={() => setSelectedNodeUserId("")}
+      />
     </div>
   );
 }
@@ -644,6 +679,7 @@ function TreeBranch({
   selectedMemberName,
   assigning,
   onPlace,
+  onSelectNode,
 }: {
   node: TreeNode;
   collapsed: Record<string, boolean>;
@@ -651,6 +687,7 @@ function TreeBranch({
   selectedMemberName?: string;
   assigning: boolean;
   onPlace: (parentUserId: string, position: "Left" | "Right") => void;
+  onSelectNode: (userId: string) => void;
 }) {
   const hasChildren = Boolean(node.left || node.right);
   const isCollapsed = Boolean(collapsed[node.id]);
@@ -662,6 +699,7 @@ function TreeBranch({
         hasChildren={hasChildren}
         collapsed={isCollapsed}
         toggle={() => toggle(node.id)}
+        onSelect={() => onSelectNode(node.userId)}
       />
       {!isCollapsed ? (
         <ul>
@@ -674,6 +712,7 @@ function TreeBranch({
             selectedMemberName={selectedMemberName}
             assigning={assigning}
             onPlace={onPlace}
+            onSelectNode={onSelectNode}
           />
           <TreeSlot
             node={node.right}
@@ -684,6 +723,7 @@ function TreeBranch({
             selectedMemberName={selectedMemberName}
             assigning={assigning}
             onPlace={onPlace}
+            onSelectNode={onSelectNode}
           />
         </ul>
       ) : null}
@@ -700,6 +740,7 @@ function TreeSlot({
   selectedMemberName,
   assigning,
   onPlace,
+  onSelectNode,
 }: {
   node: TreeNode | null;
   parentUserId: string;
@@ -709,6 +750,7 @@ function TreeSlot({
   selectedMemberName?: string;
   assigning: boolean;
   onPlace: (parentUserId: string, position: "Left" | "Right") => void;
+  onSelectNode: (userId: string) => void;
 }) {
   if (node) {
     return (
@@ -719,6 +761,7 @@ function TreeSlot({
         selectedMemberName={selectedMemberName}
         assigning={assigning}
         onPlace={onPlace}
+        onSelectNode={onSelectNode}
       />
     );
   }
@@ -761,21 +804,32 @@ function MemberNode({
   hasChildren,
   collapsed,
   toggle,
+  onSelect,
 }: {
   node: TreeNode;
   hasChildren: boolean;
   collapsed: boolean;
   toggle: () => void;
+  onSelect: () => void;
 }) {
   const isRoot = node.id === "root";
 
   return (
     <article
+      role="button"
+      tabIndex={0}
+      onClick={onSelect}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onSelect();
+        }
+      }}
       className={`relative mx-auto w-[158px] border bg-white text-left shadow-sm sm:w-[184px] md:w-[210px] ${
         isRoot
           ? "border-gold shadow-[0_10px_28px_rgba(232,82,10,0.14)]"
           : "border-line"
-      }`}
+      } cursor-pointer outline-none transition hover:-translate-y-0.5 hover:border-gold hover:shadow-md focus-visible:ring-2 focus-visible:ring-gold/40`}
     >
       <div className={`h-1 ${isRoot ? "bg-gold" : node.active ? "bg-emerald-500" : "bg-zinc-300"}`} />
       <div className="p-3 md:p-4">
@@ -821,7 +875,11 @@ function MemberNode({
       {hasChildren ? (
         <button
           type="button"
-          onClick={toggle}
+          onClick={(event) => {
+            event.stopPropagation();
+            toggle();
+          }}
+          onKeyDown={(event) => event.stopPropagation()}
           className="absolute -bottom-3 left-1/2 z-10 grid h-7 w-7 -translate-x-1/2 place-items-center rounded-full border border-gold bg-white text-gold shadow-sm transition hover:bg-gold hover:text-white md:-bottom-4 md:h-8 md:w-8"
           aria-label={collapsed ? "শাখা খুলুন" : "শাখা বন্ধ করুন"}
           title={collapsed ? "শাখা খুলুন" : "শাখা বন্ধ করুন"}
@@ -830,6 +888,390 @@ function MemberNode({
         </button>
       ) : null}
     </article>
+  );
+}
+
+function MemberDetailsDrawer({
+  open,
+  details,
+  loading,
+  error,
+  onClose,
+}: {
+  open: boolean;
+  details?: WingMemberDetailsResponse;
+  loading: boolean;
+  error: string;
+  onClose: () => void;
+}) {
+  const { language } = useI18n();
+  const text = {
+    eyebrow: language === "bn" ? "উইং সদস্য" : "Wing member",
+    title: language === "bn" ? "সদস্যের বিস্তারিত" : "Member details",
+    closeDetails:
+      language === "bn" ? "বিস্তারিত বন্ধ করুন" : "Close member details",
+    close: language === "bn" ? "বন্ধ করুন" : "Close",
+    empty: language === "bn" ? "তথ্য নেই" : "No information",
+    loading:
+      language === "bn"
+        ? "সদস্যের তথ্য লোড হচ্ছে..."
+        : "Loading member details...",
+    active: language === "bn" ? "সক্রিয়" : "Active",
+    level: language === "bn" ? "লেভেল" : "Level",
+    root: language === "bn" ? "রুট" : "Root",
+    available: language === "bn" ? "খালি আছে" : "Available",
+    account: language === "bn" ? "অ্যাকাউন্ট" : "Account",
+    binaryPlacement:
+      language === "bn" ? "বাইনারি প্লেসমেন্ট" : "Binary Placement",
+    childSlots: language === "bn" ? "চাইল্ড স্লট" : "Child Slots",
+    commission: language === "bn" ? "কমিশন" : "Commission",
+    contactProfile:
+      language === "bn" ? "যোগাযোগ ও প্রোফাইল" : "Contact & Profile",
+    nominee: language === "bn" ? "নমিনি" : "Nominee",
+    userId: language === "bn" ? "ইউজার আইডি" : "User ID",
+    referralCode: language === "bn" ? "রেফার কোড" : "Referral Code",
+    joined: language === "bn" ? "যোগদান" : "Joined",
+    referredBy: language === "bn" ? "রেফার করেছে" : "Referred by",
+    position: language === "bn" ? "পজিশন" : "Position",
+    parent: language === "bn" ? "প্যারেন্ট" : "Parent",
+    sponsor: language === "bn" ? "স্পন্সর" : "Sponsor",
+    sponsorWing: language === "bn" ? "স্পন্সর উইং" : "Sponsor wing",
+    placedAt: language === "bn" ? "প্লেসড তারিখ" : "Placed at",
+    directReferrals: language === "bn" ? "সরাসরি রেফারেল" : "Direct referrals",
+    totalTeamMembers:
+      language === "bn" ? "মোট টিম সদস্য" : "Total team members",
+    leftWingNodes: language === "bn" ? "লেফট উইং নোড" : "Left wing nodes",
+    rightWingNodes: language === "bn" ? "রাইট উইং নোড" : "Right wing nodes",
+    paidOrders: language === "bn" ? "পেইড অর্ডার" : "Paid orders",
+    totalPaid: language === "bn" ? "মোট পেমেন্ট" : "Total paid",
+    left: language === "bn" ? "লেফট" : "Left",
+    right: language === "bn" ? "রাইট" : "Right",
+    totalEarned: language === "bn" ? "মোট আয়" : "Total earned",
+    paid: language === "bn" ? "পেইড" : "Paid",
+    phone: language === "bn" ? "মোবাইল" : "Phone",
+    email: language === "bn" ? "ই-মেইল" : "Email",
+    address: language === "bn" ? "ঠিকানা" : "Address",
+    father: language === "bn" ? "পিতা" : "Father",
+    mother: language === "bn" ? "মাতা" : "Mother",
+    dateOfBirth: language === "bn" ? "জন্ম তারিখ" : "Date of birth",
+    religion: language === "bn" ? "ধর্ম" : "Religion",
+    gender: language === "bn" ? "লিঙ্গ" : "Gender",
+    bloodGroup: language === "bn" ? "রক্তের গ্রুপ" : "Blood group",
+    nidBc: language === "bn" ? "এনআইডি/জন্ম সনদ" : "NID/BC",
+    mission: language === "bn" ? "মিশন" : "Mission",
+    name: language === "bn" ? "নাম" : "Name",
+    relation: language === "bn" ? "সম্পর্ক" : "Relation",
+    village: language === "bn" ? "গ্রাম" : "Village",
+    postOffice: language === "bn" ? "পোস্ট অফিস" : "Post office",
+    district: language === "bn" ? "জেলা" : "District",
+  };
+  const user = details?.user;
+  const empty = text.empty;
+  const positionLabel = (value?: string | null) =>
+    value === "Left"
+      ? text.left
+      : value === "Right"
+        ? text.right
+        : value === "Root"
+          ? text.root
+          : value || "";
+  const statusLabel = (value?: string | null) =>
+    value === "Active"
+      ? text.active
+      : value === "Paid"
+        ? text.paid
+        : value || "";
+
+  return (
+    <div
+      className={`fixed inset-0 z-50 transition ${
+        open ? "pointer-events-auto" : "pointer-events-none"
+      }`}
+      aria-hidden={!open}
+      data-no-translate
+    >
+      <button
+        type="button"
+        aria-label={text.closeDetails}
+        onClick={onClose}
+        className={`absolute inset-0 bg-foreground/45 transition-opacity ${
+          open ? "opacity-100" : "opacity-0"
+        }`}
+      />
+      <aside
+        className={`absolute right-0 top-0 flex h-full w-full max-w-[440px] flex-col overflow-hidden border-l border-line bg-white shadow-2xl transition-transform duration-300 sm:max-w-[480px] ${
+          open ? "translate-x-0" : "translate-x-full"
+        }`}
+        role="dialog"
+        aria-modal="true"
+        aria-label={text.title}
+      >
+        <div className="flex items-center justify-between gap-3 border-b border-line px-5 py-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-gold">
+              {text.eyebrow}
+            </p>
+            <h3 className="text-xl font-black text-foreground">
+              {text.title}
+            </h3>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="grid h-10 w-10 place-items-center rounded-full border border-line text-muted transition hover:border-gold hover:text-gold"
+            aria-label={text.close}
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className="scrollbar-soft flex-1 overflow-y-auto p-5">
+          {loading ? (
+            <div className="grid min-h-80 place-items-center text-center">
+              <div>
+                <LoaderCircle
+                  className="mx-auto animate-spin text-gold"
+                  size={30}
+                />
+                <p className="mt-3 text-sm font-semibold text-muted">
+                  {text.loading}
+                </p>
+              </div>
+            </div>
+          ) : error ? (
+            <div className="rounded-lg border border-line bg-elevated p-5 text-center">
+              <p className="font-semibold text-foreground">{error}</p>
+              <button
+                type="button"
+                onClick={onClose}
+                className="mt-4 h-10 rounded-full border border-line px-5 text-sm font-bold text-muted transition hover:border-gold hover:text-gold"
+              >
+                {text.close}
+              </button>
+            </div>
+          ) : user ? (
+            <div className="space-y-5">
+              <section className="rounded-lg border border-line bg-elevated p-4">
+                <div className="flex items-center gap-3">
+                  {user.profilePicture ? (
+                    <Image
+                      src={user.profilePicture}
+                      alt={user.name}
+                      width={64}
+                      height={64}
+                      unoptimized
+                      className="h-16 w-16 rounded-full border border-gold/30 object-cover"
+                    />
+                  ) : (
+                    <div className="grid h-16 w-16 place-items-center rounded-full bg-gold text-xl font-black text-white">
+                      {initials(user.name)}
+                    </div>
+                  )}
+                  <div className="min-w-0">
+                    <h4 className="truncate text-xl font-black text-foreground">
+                      {user.name}
+                    </h4>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      <Badge tone={user.status === "Active" ? "green" : "muted"}>
+                        {statusLabel(user.status)}
+                      </Badge>
+                      <Badge tone="muted">
+                        {text.level}{" "}
+                        {language === "bn" ? toBn(user.level) : user.level}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <DrawerSection title={text.account}>
+                <InfoRow label={text.userId} value={user.id} empty={empty} />
+                <InfoRow label={text.referralCode} value={user.referralCode} empty={empty} />
+                <InfoRow label={text.joined} value={formatJoined(user.joined, language)} empty={empty} />
+                <InfoRow label={text.referredBy} value={user.referredByCode} empty={empty} />
+              </DrawerSection>
+
+              <DrawerSection title={text.binaryPlacement}>
+                <InfoRow
+                  label={text.position}
+                  value={positionLabel(details.placement?.position ?? "Root")}
+                  empty={empty}
+                />
+                <InfoRow
+                  label={text.parent}
+                  value={details.placement?.parentName}
+                  empty={empty}
+                />
+                <InfoRow
+                  label={text.sponsor}
+                  value={details.placement?.sponsorName}
+                  empty={empty}
+                />
+                <InfoRow
+                  label={text.sponsorWing}
+                  value={positionLabel(details.placement?.sponsorWing)}
+                  empty={empty}
+                />
+                <InfoRow
+                  label={text.placedAt}
+                  value={
+                    details.placement?.placedAt
+                      ? formatJoined(details.placement.placedAt, language)
+                      : ""
+                  }
+                  empty={empty}
+                />
+              </DrawerSection>
+
+              <section className="grid grid-cols-2 gap-3">
+                <MiniStat
+                  label={text.directReferrals}
+                  value={language === "bn" ? toBn(details.network.directReferrals) : String(details.network.directReferrals)}
+                />
+                <MiniStat
+                  label={text.totalTeamMembers}
+                  value={language === "bn" ? toBn(details.network.binaryDownline) : String(details.network.binaryDownline)}
+                />
+                <MiniStat
+                  label={text.leftWingNodes}
+                  value={language === "bn" ? toBn(details.network.leftNodeCount) : String(details.network.leftNodeCount)}
+                />
+                <MiniStat
+                  label={text.rightWingNodes}
+                  value={language === "bn" ? toBn(details.network.rightNodeCount) : String(details.network.rightNodeCount)}
+                />
+                <MiniStat
+                  label={text.paidOrders}
+                  value={language === "bn" ? toBn(details.purchases.confirmedOrders) : String(details.purchases.confirmedOrders)}
+                />
+                <MiniStat
+                  label={text.totalPaid}
+                  value={taka(details.purchases.totalPaid)}
+                />
+              </section>
+
+              <DrawerSection title={text.childSlots}>
+                <InfoRow
+                  label={text.left}
+                  value={details.network.left?.name ?? text.available}
+                  empty={empty}
+                />
+                <InfoRow
+                  label={text.right}
+                  value={details.network.right?.name ?? text.available}
+                  empty={empty}
+                />
+              </DrawerSection>
+
+              <DrawerSection title={text.commission}>
+                <InfoRow
+                  label={text.totalEarned}
+                  value={taka(details.commissions.totalEarned)}
+                  empty={empty}
+                />
+                <InfoRow
+                  label={text.paid}
+                  value={taka(details.commissions.paid)}
+                  empty={empty}
+                />
+                {details.commissions.latest.length ? (
+                  <div className="mt-3 space-y-2">
+                    {details.commissions.latest.map((item) => (
+                      <div
+                        key={item.id}
+                        className="rounded-md border border-line bg-white px-3 py-2"
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <p className="text-xs font-bold text-foreground">
+                            {item.level}
+                          </p>
+                          <p className="text-xs font-black text-gold">
+                            {taka(item.amount)}
+                          </p>
+                        </div>
+                        <p className="mt-1 text-[11px] text-muted">
+                          {formatJoined(item.date, language)} · {statusLabel(item.status)}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
+              </DrawerSection>
+
+              <DrawerSection title={text.contactProfile}>
+                <InfoRow label={text.phone} value={user.phone} empty={empty} />
+                <InfoRow label={text.email} value={user.email} empty={empty} />
+                <InfoRow label={text.address} value={user.address} empty={empty} />
+                <InfoRow label={text.father} value={user.fatherName} empty={empty} />
+                <InfoRow label={text.mother} value={user.motherName} empty={empty} />
+                <InfoRow label={text.dateOfBirth} value={user.dateOfBirth} empty={empty} />
+                <InfoRow label={text.religion} value={user.religion} empty={empty} />
+                <InfoRow label={text.gender} value={user.gender} empty={empty} />
+                <InfoRow label={text.bloodGroup} value={user.bloodGroup} empty={empty} />
+                <InfoRow label={text.nidBc} value={user.nidOrBirthCertificate} empty={empty} />
+                <InfoRow label={text.mission} value={user.mission} empty={empty} />
+              </DrawerSection>
+
+              <DrawerSection title={text.nominee}>
+                <InfoRow label={text.name} value={user.nomineeName} empty={empty} />
+                <InfoRow label={text.relation} value={user.nomineeRelation} empty={empty} />
+                <InfoRow label={text.address} value={user.nomineeAddress} empty={empty} />
+                <InfoRow label={text.village} value={user.nomineeVillage} empty={empty} />
+                <InfoRow label={text.postOffice} value={user.nomineePostOffice} empty={empty} />
+                <InfoRow label={text.district} value={user.nomineeDistrict} empty={empty} />
+              </DrawerSection>
+            </div>
+          ) : null}
+        </div>
+      </aside>
+    </div>
+  );
+}
+
+function DrawerSection({
+  title,
+  children,
+}: {
+  title: string;
+  children: ReactNode;
+}) {
+  return (
+    <section className="rounded-lg border border-line bg-elevated p-4">
+      <h4 className="mb-3 text-sm font-black uppercase tracking-wide text-foreground">
+        {title}
+      </h4>
+      <div className="space-y-2">{children}</div>
+    </section>
+  );
+}
+
+function InfoRow({
+  label,
+  value,
+  empty,
+}: {
+  label: string;
+  value?: string | number | null;
+  empty: string;
+}) {
+  return (
+    <div className="grid gap-1 rounded-md border border-line bg-white px-3 py-2 sm:grid-cols-[120px_1fr]">
+      <p className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+        {label}
+      </p>
+      <p className="break-words text-sm font-bold text-foreground">
+        {value || <span className="text-muted">{empty}</span>}
+      </p>
+    </div>
+  );
+}
+
+function MiniStat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-lg border border-line bg-white p-3">
+      <p className="text-xs text-muted">{label}</p>
+      <p className="mt-1 text-lg font-black text-gold">{value}</p>
+    </div>
   );
 }
 
@@ -894,11 +1336,11 @@ function countMatchingNodes(
   );
 }
 
-function formatJoined(value: string) {
+function formatJoined(value: string, language: "bn" | "en" = "bn") {
   const date = new Date(value);
   return Number.isNaN(date.getTime())
     ? value
-    : new Intl.DateTimeFormat("bn-BD", {
+    : new Intl.DateTimeFormat(language === "bn" ? "bn-BD" : "en-GB", {
         day: "numeric",
         month: "short",
         year: "numeric",

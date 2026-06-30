@@ -2,9 +2,9 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
-import { Eye, MessageCircle, Share2, ShoppingCart, Tag } from "lucide-react";
-import { Badge, Button, CopyButton, Modal } from "@/components/ui";
+import { useEffect, useState } from "react";
+import { Check, Copy, Eye, MessageCircle, Share2, ShoppingCart, Tag } from "lucide-react";
+import { Badge, Button, Modal } from "@/components/ui";
 import {
   useGetMeQuery,
   useGetProductsQuery,
@@ -14,14 +14,41 @@ import { isOutOfStock, stockLabel, taka } from "@/lib/utils";
 
 export default function ProductsPage() {
   const [selected, setSelected] = useState<Product | null>(null);
+  const [copied, setCopied] = useState(false);
   const { data, isLoading } = useGetProductsQuery();
   const { data: me } = useGetMeQuery();
   const productRows = data ?? [];
   const selectedSoldOut = selected ? isOutOfStock(selected.stock) : false;
-  const link =
-    selected && me && !selectedSoldOut
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
+  const selectedCheckoutPath =
+    selected && me
       ? `/products/${selected.id}/checkout?ref=${encodeURIComponent(me.referralCode)}`
       : "";
+  const link =
+    selectedCheckoutPath && !selectedSoldOut
+      ? `${origin}${selectedCheckoutPath}`
+      : "";
+  const shareText = selected
+    ? `Checkout ${selected.name} from GIOTO Bangladesh`
+    : "Checkout this product from GIOTO Bangladesh";
+  const whatsappShareUrl = link
+    ? `https://wa.me/?text=${encodeURIComponent(`${shareText}: ${link}`)}`
+    : "";
+  const facebookShareUrl = link
+    ? `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(link)}`
+    : "";
+
+  useEffect(() => {
+    setCopied(false);
+  }, [selected?.id]);
+
+  async function handleCopyReferralLink() {
+    if (!link) return;
+
+    await navigator.clipboard?.writeText(link);
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 1800);
+  }
 
   return (
     <div className="space-y-6">
@@ -131,16 +158,56 @@ export default function ProductsPage() {
             </div>
             <div>
               <p className="mb-2 text-sm text-muted">প্রোডাক্ট রেফারেল চেকআউট</p>
-              <div className="break-all rounded-2xl border border-line bg-elevated p-4 text-sm text-gold-light">{selectedSoldOut ? "স্টক শেষ, চেকআউট লিংক বন্ধ আছে।" : link}</div>
+              <div className="break-all rounded-2xl border border-line bg-elevated p-4 text-sm text-gold-light">
+                {selectedSoldOut
+                  ? "স্টক শেষ, চেকআউট লিংক বন্ধ আছে।"
+                  : link || "Referral checkout link is loading..."}
+              </div>
+              {copied ? (
+                <p className="mt-2 text-sm font-semibold text-gold-light" aria-live="polite">
+                  Link copied.
+                </p>
+              ) : null}
             </div>
             <div className="grid gap-3 sm:grid-cols-3">
               {selectedSoldOut ? (
                 <p className="rounded-2xl border border-line bg-elevated px-4 py-3 text-sm text-muted sm:col-span-3">স্টক শেষ, তাই শেয়ার বন্ধ আছে।</p>
               ) : (
                 <>
-                  <CopyButton value={link} label="চেকআউট লিংক কপি" />
-                  <Button variant="outline"><MessageCircle size={16} /> WhatsApp</Button>
-                  <Button variant="outline"><Share2 size={16} /> Facebook</Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={!link}
+                    onClick={handleCopyReferralLink}
+                    className="w-full"
+                  >
+                    {copied ? <Check size={16} /> : <Copy size={16} />}
+                    {copied ? "Copied" : "Copy link"}
+                  </Button>
+                  <a
+                    href={whatsappShareUrl || "#"}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-disabled={!whatsappShareUrl}
+                    onClick={(event) => {
+                      if (!whatsappShareUrl) event.preventDefault();
+                    }}
+                    className="outline-gold inline-flex min-h-11 items-center justify-center gap-2 px-5 py-2.5 text-sm font-semibold transition hover:bg-gold/10"
+                  >
+                    <MessageCircle size={16} /> WhatsApp
+                  </a>
+                  <a
+                    href={facebookShareUrl || "#"}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-disabled={!facebookShareUrl}
+                    onClick={(event) => {
+                      if (!facebookShareUrl) event.preventDefault();
+                    }}
+                    className="outline-gold inline-flex min-h-11 items-center justify-center gap-2 px-5 py-2.5 text-sm font-semibold transition hover:bg-gold/10"
+                  >
+                    <Share2 size={16} /> Facebook
+                  </a>
                 </>
               )}
             </div>

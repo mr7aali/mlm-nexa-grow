@@ -134,6 +134,21 @@ export type Activity = {
   time: string;
 };
 
+export type NotificationItem = {
+  id: string;
+  message: string;
+  type: string;
+  readAt: string | null;
+  createdAt: string;
+  unread: boolean;
+};
+
+export type NotificationsResponse = {
+  items: NotificationItem[];
+  unreadCount: number;
+  total: number;
+};
+
 export type Referral = {
   id: string;
   name: string;

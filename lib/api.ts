@@ -18,6 +18,8 @@ import type {
   CommissionsResponse,
   DashboardResponse,
   EarningsResponse,
+  NotificationItem,
+  NotificationsResponse,
   PaginatedResponse,
   PayoutDetails,
   Product,
@@ -93,6 +95,7 @@ export const api = createApi({
     "AdminWithdrawals",
     "AdminProducts",
     "AdminOrders",
+    "Notifications",
   ],
   endpoints: (builder) => ({
     login: builder.mutation<AuthPayload, { email: string; password: string }>({
@@ -220,12 +223,53 @@ export const api = createApi({
     >({
       query: (body) => ({ url: "/orders", method: "POST", body }),
       transformResponse: unwrap<PurchaseResponse>,
-      invalidatesTags: ["Auth", "Dashboard", "Commissions", "AdminOrders"],
+      invalidatesTags: [
+        "Auth",
+        "Dashboard",
+        "Commissions",
+        "AdminOrders",
+        "Notifications",
+      ],
     }),
     getDashboard: builder.query<DashboardResponse, void>({
       query: () => "/dashboard",
       transformResponse: unwrap<DashboardResponse>,
       providesTags: ["Dashboard"],
+    }),
+    getNotifications: builder.query<NotificationsResponse, void>({
+      query: () => "/dashboard/notifications",
+      transformResponse: unwrap<NotificationsResponse>,
+      providesTags: ["Notifications"],
+    }),
+    markNotificationRead: builder.mutation<NotificationItem, string>({
+      query: (notificationId) => ({
+        url: `/dashboard/notifications/${notificationId}/read`,
+        method: "PATCH",
+      }),
+      transformResponse: unwrap<NotificationItem>,
+      invalidatesTags: ["Notifications", "Dashboard"],
+    }),
+    markAllNotificationsRead: builder.mutation<
+      { updated: number; readAt: string },
+      void
+    >({
+      query: () => ({
+        url: "/dashboard/notifications/read-all",
+        method: "PATCH",
+      }),
+      transformResponse: unwrap<{ updated: number; readAt: string }>,
+      invalidatesTags: ["Notifications", "Dashboard"],
+    }),
+    deleteNotification: builder.mutation<
+      { deleted: boolean; id: string },
+      string
+    >({
+      query: (notificationId) => ({
+        url: `/dashboard/notifications/${notificationId}`,
+        method: "DELETE",
+      }),
+      transformResponse: unwrap<{ deleted: boolean; id: string }>,
+      invalidatesTags: ["Notifications", "Dashboard"],
     }),
     getCommissions: builder.query<CommissionsResponse, void>({
       query: () => "/dashboard/commissions",
@@ -275,7 +319,13 @@ export const api = createApi({
         position: "Left" | "Right";
         placedAt: string;
       }>,
-      invalidatesTags: ["Wings", "Dashboard", "Referrals", "Commissions"],
+      invalidatesTags: [
+        "Wings",
+        "Dashboard",
+        "Referrals",
+        "Commissions",
+        "Notifications",
+      ],
     }),
     getReferralPlacementTokens: builder.query<ReferralPlacementTokens, void>({
       query: () => "/dashboard/referral-placement-tokens",
@@ -301,7 +351,7 @@ export const api = createApi({
         body,
       }),
       transformResponse: unwrap<{ id: string }>,
-      invalidatesTags: ["Earnings", "Dashboard"],
+      invalidatesTags: ["Earnings", "Dashboard", "Notifications"],
     }),
     getAdminUsers: builder.query<
       PaginatedResponse<AdminUser>,
@@ -327,7 +377,7 @@ export const api = createApi({
         body: { status },
       }),
       transformResponse: unwrap<AdminUser>,
-      invalidatesTags: ["AdminUsers"],
+      invalidatesTags: ["AdminUsers", "Notifications"],
     }),
     updateAdminUserRole: builder.mutation<
       AdminUser,
@@ -339,7 +389,7 @@ export const api = createApi({
         body: { role },
       }),
       transformResponse: unwrap<AdminUser>,
-      invalidatesTags: ["AdminUsers", "Auth"],
+      invalidatesTags: ["AdminUsers", "Auth", "Notifications"],
     }),
     creditAdminCommission: builder.mutation<
       { user: AdminUser; note: string },
@@ -351,7 +401,7 @@ export const api = createApi({
         body,
       }),
       transformResponse: unwrap<{ user: AdminUser; note: string }>,
-      invalidatesTags: ["AdminUsers"],
+      invalidatesTags: ["AdminUsers", "Notifications"],
     }),
     getAdminWithdrawals: builder.query<AdminWithdrawal[], void>({
       query: () => "/admin/withdrawals",
@@ -390,6 +440,7 @@ export const api = createApi({
         "AdminUsers",
         "Earnings",
         "Dashboard",
+        "Notifications",
       ],
     }),
     getAdminOrders: builder.query<
@@ -419,7 +470,12 @@ export const api = createApi({
         body: { status },
       }),
       transformResponse: unwrap<AdminOrder>,
-      invalidatesTags: ["AdminOrders", "Dashboard", "Commissions"],
+      invalidatesTags: [
+        "AdminOrders",
+        "Dashboard",
+        "Commissions",
+        "Notifications",
+      ],
     }),
     broadcastNotification: builder.mutation<
       { delivered: boolean },
@@ -427,6 +483,7 @@ export const api = createApi({
     >({
       query: (body) => ({ url: "/admin/broadcasts", method: "POST", body }),
       transformResponse: unwrap<{ delivered: boolean }>,
+      invalidatesTags: ["Notifications", "Dashboard"],
     }),
     getAdminProducts: builder.query<
       PaginatedResponse<Product>,
@@ -515,10 +572,12 @@ export const {
   useCreateWithdrawalMutation,
   useForgotPasswordMutation,
   useDeleteAdminProductMutation,
+  useDeleteNotificationMutation,
   useGetCommissionsQuery,
   useGetDashboardQuery,
   useGetEarningsQuery,
   useGetMeQuery,
+  useGetNotificationsQuery,
   useGetPaymentsQuery,
   useGetAdminUsersQuery,
   useGetAdminProductQuery,
@@ -535,6 +594,8 @@ export const {
   useGetWingsQuery,
   useLoginMutation,
   useLogoutMutation,
+  useMarkAllNotificationsReadMutation,
+  useMarkNotificationReadMutation,
   useRegisterMutation,
   useResetPasswordMutation,
   useUpdateAdminProductMutation,

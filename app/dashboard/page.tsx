@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import {
+  Check,
   Copy,
   Network,
   PackagePlus,
@@ -22,9 +24,12 @@ import {
   useGetDashboardQuery,
   useGetMeQuery,
 } from "@/lib/api";
+import { useI18n } from "@/lib/i18n";
 import { taka, toBn } from "@/lib/utils";
 
 export default function DashboardPage() {
+  const { language } = useI18n();
+  const [referralCopied, setReferralCopied] = useState(false);
   const { data: me, isLoading: meLoading } = useGetMeQuery();
   const isAdminRole = me?.role === "admin" || me?.role === "super-admin";
   const { data, isLoading } = useGetDashboardQuery(undefined, {
@@ -275,6 +280,35 @@ export default function DashboardPage() {
     activeMembers: 0,
   };
   const referralCode = data?.user.referralCode ?? "";
+  const copyButtonText =
+    language === "bn"
+      ? referralCopied
+        ? "কপি হয়েছে"
+        : "এক ক্লিকে কপি"
+      : referralCopied
+        ? "Copied"
+        : "Copy in one click";
+
+  async function handleReferralCopy() {
+    if (!referralCode || !navigator.clipboard) return;
+
+    await navigator.clipboard.writeText(referralCode);
+    setReferralCopied(true);
+    window.setTimeout(() => setReferralCopied(false), 1800);
+  }
+
+  function formatActivityTime(value: string) {
+    const date = new Date(value);
+    if (!Number.isFinite(date.getTime())) return value;
+
+    return new Intl.DateTimeFormat("bn-BD", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    }).format(date);
+  }
 
   return (
     <div className="space-y-6">
@@ -283,14 +317,14 @@ export default function DashboardPage() {
           <p className="text-sm text-gold-light">সদস্য প্যানেল</p>
           <h2 className="heading-gradient text-4xl font-black">ড্যাশবোর্ড</h2>
         </div>
-        <CopyButton value={referralCode} label="রেফার কোড কপি" />
+        {/* <CopyButton value={referralCode} label="রেফার কোড কপি" /> */}
       </div>
 
       {isLoading ? (
         <p className="text-sm text-muted">ডেটা লোড হচ্ছে...</p>
       ) : null}
 
-      <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2 sm:gap-3 md:gap-5 xl:grid-cols-4">
         {[
           [Network, "মোট রেফারেল", toBn(stats.totalReferrals)],
           [Sparkles, "যোগ্য পণ্য ক্রয়", toBn(stats.productPurchases)],
@@ -299,15 +333,21 @@ export default function DashboardPage() {
         ].map(([Icon, label, value]) => {
           const TypedIcon = Icon as typeof Network;
           return (
-            <Card key={String(label)} className="p-5">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted">{String(label)}</p>
-                  <p className="mt-2 text-3xl font-black text-gold-light">
+            <Card key={String(label)} className="!p-2.5 sm:p-3 md:p-5">
+              <div className="flex min-h-12 items-center justify-between gap-2 sm:min-h-14 md:min-h-0">
+                <div className="min-w-0">
+                  <p className="truncate text-[11px] font-semibold leading-tight text-muted sm:text-xs md:text-sm md:font-normal">
+                    {String(label)}
+                  </p>
+                  <p className="mt-0.5 truncate text-base font-black leading-tight text-gold-light sm:text-lg md:mt-2 md:text-3xl">
                     {String(value)}
                   </p>
                 </div>
-                <TypedIcon className="text-gold" size={32} />
+                <TypedIcon
+                  className="shrink-0 text-gold"
+                  size={20}
+                  strokeWidth={2.2}
+                />
               </div>
             </Card>
           );
@@ -325,11 +365,11 @@ export default function DashboardPage() {
           </div>
           <Button
             className="mt-4 w-full"
-            onClick={() =>
-              referralCode && navigator.clipboard?.writeText(referralCode)
-            }
+            onClick={handleReferralCopy}
+            disabled={!referralCode}
           >
-            <Copy size={16} /> এক ক্লিকে কপি
+            {referralCopied ? <Check size={16} /> : <Copy size={16} />}
+            {copyButtonText}
           </Button>
         </Card>
       </div>
@@ -365,7 +405,7 @@ export default function DashboardPage() {
                 >
                   <span className="text-sm">{activity.text}</span>
                   <span className="shrink-0 text-xs text-muted">
-                    {activity.time}
+                    {formatActivityTime(activity.time)}
                   </span>
                 </div>
               ))

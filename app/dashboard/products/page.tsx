@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { Eye, MessageCircle, Share2, Tag } from "lucide-react";
+import { Eye, MessageCircle, Share2, ShoppingCart, Tag } from "lucide-react";
 import { Badge, Button, CopyButton, Modal } from "@/components/ui";
 import {
   useGetMeQuery,
@@ -35,6 +35,7 @@ export default function ProductsPage() {
       <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
         {productRows.length ? productRows.map((product) => {
           const detailsHref = `/dashboard/products/${product.id}`;
+          const checkoutHref = `/products/${product.id}/checkout`;
           const soldOut = isOutOfStock(product.stock);
 
           return (
@@ -77,7 +78,24 @@ export default function ProductsPage() {
                   </div>
                 </div>
 
-                <div className="mt-5 grid gap-2 sm:grid-cols-2">
+                <Link
+                  href={soldOut ? "#" : checkoutHref}
+                  aria-disabled={soldOut}
+                  tabIndex={soldOut ? -1 : undefined}
+                  onClick={(event) => {
+                    if (soldOut) event.preventDefault();
+                  }}
+                  className={
+                    soldOut
+                      ? "mt-5 inline-flex min-h-11 cursor-not-allowed items-center justify-center gap-2 rounded-full border border-line bg-elevated px-4 py-2.5 text-sm font-semibold text-muted"
+                      : "gold-button mt-5 inline-flex min-h-11 items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold"
+                  }
+                >
+                  <ShoppingCart size={16} />
+                  {soldOut ? "Stock out" : "Buy now"}
+                </Link>
+
+                <div className="mt-2 grid gap-2 sm:grid-cols-2">
                   <Link
                     href={detailsHref}
                     className="gold-button inline-flex min-h-11 items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold"

@@ -53,8 +53,13 @@ const navItems = [
   },
   {
     href: "/dashboard/generation-income",
-    label: "Team info",
+    label: "টিম ইনফো",
     icon: Trophy,
+  },
+  {
+    href: "/dashboard/purchased-products",
+    label: "ক্রয়কৃত পণ্য",
+    icon: ShoppingBag,
   },
   { href: "/dashboard/products", label: "পণ্য", icon: Boxes },
   { href: "/dashboard/payments", label: "পেমেন্ট", icon: CreditCard },
@@ -90,6 +95,7 @@ const memberOnlyPaths = [
   "/dashboard/referrals",
   "/dashboard/commissions",
   "/dashboard/generation-income",
+  "/dashboard/purchased-products",
   "/dashboard/products",
   "/dashboard/earnings",
   "/dashboard/payments",

@@ -29,6 +29,7 @@ import type {
   ProductUpdateInput,
   ProfileUpdateInput,
   PurchaseResponse,
+  PurchasedProductsResponse,
   ReferralsResponse,
   ReferralPlacementTokens,
   WingMemberDetailsResponse,
@@ -96,6 +97,7 @@ export const api = createApi({
     "AdminProducts",
     "AdminOrders",
     "Notifications",
+    "PurchasedProducts",
   ],
   endpoints: (builder) => ({
     login: builder.mutation<AuthPayload, { email: string; password: string }>({
@@ -229,6 +231,7 @@ export const api = createApi({
         "Commissions",
         "AdminOrders",
         "Notifications",
+        "PurchasedProducts",
       ],
     }),
     getDashboard: builder.query<DashboardResponse, void>({
@@ -340,6 +343,22 @@ export const api = createApi({
       query: () => "/dashboard/payments",
       transformResponse: unwrap<EarningsResponse>,
       providesTags: ["Earnings"],
+    }),
+    getPurchasedProducts: builder.query<
+      PurchasedProductsResponse,
+      {
+        page?: number;
+        limit?: number;
+        search?: string;
+        status?: string;
+      } | void
+    >({
+      query: (params) => ({
+        url: "/dashboard/purchased-products",
+        params: params ?? undefined,
+      }),
+      transformResponse: unwrap<PurchasedProductsResponse>,
+      providesTags: ["PurchasedProducts"],
     }),
     createWithdrawal: builder.mutation<
       { id: string },
@@ -475,6 +494,7 @@ export const api = createApi({
         "Dashboard",
         "Commissions",
         "Notifications",
+        "PurchasedProducts",
       ],
     }),
     broadcastNotification: builder.mutation<
@@ -588,6 +608,7 @@ export const {
   useGetProductQuery,
   useGetProductCountQuery,
   useGetProductsQuery,
+  useGetPurchasedProductsQuery,
   useGetReferralsQuery,
   useGetReferralPlacementTokensQuery,
   useGetWingMemberDetailsQuery,

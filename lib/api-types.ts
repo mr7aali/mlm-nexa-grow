@@ -293,6 +293,38 @@ export type AdminOrder = Order & {
   product: Pick<Product, "id" | "name" | "sku" | "image" | "category" | "price"> | null;
 };
 
+export type PurchasedProduct = Order & {
+  product: Pick<Product, "id" | "name" | "sku" | "image" | "category" | "price"> | null;
+};
+
+export type PurchasedProductsResponse = PaginatedResponse<PurchasedProduct> & {
+  stats: {
+    totalOrders: number;
+    paidOrders: number;
+    pendingOrders: number;
+    failedOrders: number;
+    cancelledOrders: number;
+    totalSpent: number;
+    totalQuantity: number;
+    categoryBreakdown: Array<{
+      category: string;
+      count: number;
+      quantity: number;
+      totalSpent: number;
+    }>;
+    topProducts: Array<{
+      productId: string;
+      name: string;
+      image: string;
+      category: string;
+      orders: number;
+      quantity: number;
+      totalSpent: number;
+      lastPurchasedAt: string;
+    }>;
+  };
+};
+
 export type PurchaseResponse = {
   order: Order;
   auth: AuthPayload | null;

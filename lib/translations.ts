@@ -21,6 +21,8 @@ const exactBnToEn: Record<string, string> = {
   "ইউজার ম্যানেজ": "User management",
   "পণ্য যোগ": "Products",
   "Checkout Orders": "Checkout Orders",
+  "টিম ইনফো": "Team info",
+  "ক্রয়কৃত পণ্য": "Purchased Products",
   "সুপার অ্যাডমিন": "Super admin",
   অ্যাডমিন: "Admin",
   মেম্বার: "Member",

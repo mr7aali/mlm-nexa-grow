@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Download, Search, ShieldCheck, Users } from "lucide-react";
+import type { ReactNode } from "react";
+import { Download, Eye, Search, ShieldCheck, Users, X } from "lucide-react";
 import { Button, Card, Input, Select } from "@/components/ui";
 import { getApiErrorMessage } from "@/lib/api-error";
 import {
@@ -45,6 +46,7 @@ export default function SuperAdminUsersPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [role, setRole] = useState<RoleFilter>("all");
+  const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
   const [message, setMessage] = useState("");
   const query = useMemo(
     () => ({
@@ -271,7 +273,7 @@ export default function SuperAdminUsersPage() {
       </Card>
 
       <Card className="hidden overflow-x-auto p-0 scrollbar-soft md:block">
-        <table className="w-full min-w-[1080px] text-left text-sm">
+        <table className="w-full min-w-[1180px] text-left text-sm">
           <thead className="bg-elevated text-muted">
             <tr>
               {[
@@ -283,6 +285,7 @@ export default function SuperAdminUsersPage() {
                 "মোট আয়",
                 "বর্তমান ব্যালেন্স",
                 "রোল",
+                "Action",
               ].map((head) => (
                 <th key={head} className="px-5 py-4">
                   {head}
@@ -321,11 +324,22 @@ export default function SuperAdminUsersPage() {
                       <option value="super-admin">Super admin</option>
                     </Select>
                   </td>
+                  <td className="px-5 py-4">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="min-h-9 px-3 py-1 text-xs"
+                      onClick={() => setSelectedUser(user)}
+                    >
+                      <Eye size={14} />
+                      Details
+                    </Button>
+                  </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td className="px-5 py-10 text-center text-muted" colSpan={8}>
+                <td className="px-5 py-10 text-center text-muted" colSpan={9}>
                   {isLoading
                     ? "ইউজার লোড হচ্ছে..."
                     : "কোনো ইউজার পাওয়া যায়নি।"}
@@ -397,6 +411,16 @@ export default function SuperAdminUsersPage() {
                   <option value="super-admin">Super admin</option>
                 </Select>
               </div>
+
+              <Button
+                type="button"
+                variant="outline"
+                className="mt-4 w-full"
+                onClick={() => setSelectedUser(user)}
+              >
+                <Eye size={16} />
+                View details
+              </Button>
             </Card>
           ))
         ) : (
@@ -427,6 +451,156 @@ export default function SuperAdminUsersPage() {
           </Button>
         </div>
       </div>
+
+      {selectedUser ? (
+        <UserDetailsDrawer
+          user={selectedUser}
+          onClose={() => setSelectedUser(null)}
+        />
+      ) : null}
+    </div>
+  );
+}
+
+function valueOrPrompt(value?: string | number | null) {
+  if (value === undefined || value === null || value === "") return "Please provide";
+  return String(value);
+}
+
+function DetailItem({
+  label,
+  value,
+}: {
+  label: string;
+  value?: string | number | null;
+}) {
+  const missing = value === undefined || value === null || value === "";
+
+  return (
+    <div className="rounded-lg border border-line bg-elevated px-3 py-2">
+      <p className="text-xs font-semibold text-muted">{label}</p>
+      <p
+        className={
+          missing
+            ? "mt-1 text-sm font-semibold text-muted"
+            : "mt-1 break-words text-sm font-bold text-foreground"
+        }
+      >
+        {valueOrPrompt(value)}
+      </p>
+    </div>
+  );
+}
+
+function DetailSection({
+  title,
+  children,
+}: {
+  title: string;
+  children: ReactNode;
+}) {
+  return (
+    <section>
+      <h3 className="mb-3 text-sm font-black uppercase tracking-wide text-gold-light">
+        {title}
+      </h3>
+      <div className="grid gap-3 sm:grid-cols-2">{children}</div>
+    </section>
+  );
+}
+
+function UserDetailsDrawer({
+  user,
+  onClose,
+}: {
+  user: AdminUser;
+  onClose: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-50">
+      <button
+        type="button"
+        className="absolute inset-0 bg-black/35"
+        aria-label="Close user details"
+        onClick={onClose}
+      />
+      <aside className="absolute right-0 top-0 flex h-full w-full max-w-xl flex-col border-l border-line bg-background shadow-2xl">
+        <div className="flex items-start justify-between gap-4 border-b border-line px-5 py-4">
+          <div className="min-w-0">
+            <p className="text-xs font-semibold text-gold-light">
+              User details
+            </p>
+            <h2 className="truncate text-2xl font-black text-foreground">
+              {user.name}
+            </h2>
+            <p className="mt-1 truncate text-sm text-muted">{user.email}</p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-line bg-surface text-muted transition hover:border-gold hover:text-gold"
+            aria-label="Close user details"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className="scrollbar-soft flex-1 space-y-6 overflow-y-auto px-5 py-5">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="rounded-lg border border-gold/20 bg-gold/10 p-4">
+              <p className="text-xs font-semibold text-muted">Current balance</p>
+              <p className="mt-1 text-2xl font-black text-gold-light">
+                {taka(user.currentBalance ?? user.earned)}
+              </p>
+            </div>
+            <div className="rounded-lg border border-gold/20 bg-gold/10 p-4">
+              <p className="text-xs font-semibold text-muted">Total earned</p>
+              <p className="mt-1 text-2xl font-black text-gold-light">
+                {taka(user.earned)}
+              </p>
+            </div>
+          </div>
+
+          <DetailSection title="Account">
+            <DetailItem label="User ID" value={user.id} />
+            <DetailItem label="Name" value={user.name} />
+            <DetailItem label="Email" value={user.email} />
+            <DetailItem label="Mobile" value={user.phone} />
+            <DetailItem label="Role" value={roleLabel(user.role)} />
+            <DetailItem label="Status" value={user.status} />
+            <DetailItem label="Level" value={user.level} />
+            <DetailItem label="Join Date" value={formatDate(user.joined)} />
+            <DetailItem label="Referral Code" value={user.referralCode} />
+            <DetailItem label="Referred By" value={user.referredByCode} />
+            <DetailItem label="Generation Coins" value={user.generationCoins ?? 0} />
+            <DetailItem label="Direct Referrals" value={user.referrals} />
+          </DetailSection>
+
+          <DetailSection title="Profile">
+            <DetailItem label="Father" value={user.fatherName} />
+            <DetailItem label="Mother" value={user.motherName} />
+            <DetailItem label="Address" value={user.address} />
+            <DetailItem
+              label="Date of Birth"
+              value={user.dateOfBirth ? formatDate(user.dateOfBirth) : undefined}
+            />
+            <DetailItem label="Religion" value={user.religion} />
+            <DetailItem label="Gender" value={user.gender} />
+            <DetailItem label="Blood Group" value={user.bloodGroup} />
+            <DetailItem label="NID/BC" value={user.nidOrBirthCertificate} />
+            <DetailItem label="Mission" value={user.mission} />
+          </DetailSection>
+
+          <DetailSection title="Nominee">
+            <DetailItem label="Nominee Name" value={user.nomineeName} />
+            <DetailItem label="Relation" value={user.nomineeRelation} />
+            <DetailItem label="Address" value={user.nomineeAddress} />
+            <DetailItem label="Village" value={user.nomineeVillage} />
+            <DetailItem label="Post Office" value={user.nomineePostOffice} />
+            <DetailItem label="District" value={user.nomineeDistrict} />
+          </DetailSection>
+        </div>
+      </aside>
     </div>
   );
 }

@@ -11,6 +11,8 @@ import type {
   ApiResponse,
   AuthPayload,
   AuthUser,
+  AdminCommissionExpensesResponse,
+  AdminGenerationCoinsResponse,
   AdminOrder,
   AdminUser,
   AdminPaymentsResponse,
@@ -422,6 +424,42 @@ export const api = createApi({
       transformResponse: unwrap<{ user: AdminUser; note: string }>,
       invalidatesTags: ["AdminUsers", "Notifications"],
     }),
+    getAdminCommissionExpenses: builder.query<
+      AdminCommissionExpensesResponse,
+      {
+        page?: number;
+        limit?: number;
+        search?: string;
+        type?: string;
+        status?: string;
+        month?: number;
+        year?: number;
+      } | void
+    >({
+      query: (params) => ({
+        url: "/admin/commission-expenses",
+        params: params ?? undefined,
+      }),
+      transformResponse: unwrap<AdminCommissionExpensesResponse>,
+      providesTags: ["AdminUsers"],
+    }),
+    getAdminGenerationCoins: builder.query<
+      AdminGenerationCoinsResponse,
+      {
+        page?: number;
+        limit?: number;
+        search?: string;
+        role?: string;
+        coinStatus?: string;
+      } | void
+    >({
+      query: (params) => ({
+        url: "/admin/generation-coins",
+        params: params ?? undefined,
+      }),
+      transformResponse: unwrap<AdminGenerationCoinsResponse>,
+      providesTags: ["AdminUsers"],
+    }),
     getAdminWithdrawals: builder.query<AdminWithdrawal[], void>({
       query: () => "/admin/withdrawals",
       transformResponse: unwrap<AdminWithdrawal[]>,
@@ -603,6 +641,8 @@ export const {
   useGetPaymentsQuery,
   useGetAdminUsersQuery,
   useGetAdminProductQuery,
+  useGetAdminCommissionExpensesQuery,
+  useGetAdminGenerationCoinsQuery,
   useGetAdminOrdersQuery,
   useGetAdminProductsQuery,
   useGetAdminPaymentsQuery,

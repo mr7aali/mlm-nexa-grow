@@ -235,6 +235,52 @@ export type AdminPaymentsResponse = PaginatedResponse<AdminPayment> & {
   };
 };
 
+export type AdminCommissionExpense = CommissionHistoryItem & {
+  type: "Referral Bonus" | "Generation Income" | "Wings Income" | "Other";
+  userId: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    phone: string;
+    referralCode: string;
+  } | null;
+};
+
+export type AdminCommissionExpensesResponse =
+  PaginatedResponse<AdminCommissionExpense> & {
+    summary: {
+      totalAmount: number;
+      totalCount: number;
+      referralTotal: number;
+      generationTotal: number;
+      wingsTotal: number;
+    };
+  };
+
+export type AdminGenerationCoinUser = {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  role: Role;
+  status: UserStatus;
+  referralCode: string;
+  joined: string;
+  generationCoins: number;
+  earned: number;
+};
+
+export type AdminGenerationCoinsResponse =
+  PaginatedResponse<AdminGenerationCoinUser> & {
+    summary: {
+      totalCoins: number;
+      averageCoins: number;
+      usersWithCoins: number;
+      maxCoins: number;
+    };
+  };
+
 export type OrderStatus = "Pending" | "Confirmed" | "Cancelled";
 
 export type ProductInput = {

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
+  Banknote,
   Bell,
   Boxes,
   ChartNoAxesCombined,
@@ -87,6 +88,16 @@ const adminNavItems = [
     href: "/dashboard/super-admin/payments",
     label: "পেমেন্ট",
     icon: ReceiptText,
+  },
+  {
+    href: "/dashboard/super-admin/commission-expenses",
+    label: "Commission Expenses",
+    icon: Banknote,
+  },
+  {
+    href: "/dashboard/super-admin/generation-coins",
+    label: "Generation Coins",
+    icon: Coins,
   },
 ];
 

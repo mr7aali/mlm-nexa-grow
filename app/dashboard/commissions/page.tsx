@@ -198,7 +198,7 @@ function HistoryList({
 }
 
 export default function CommissionsPage() {
-  const [activeTab, setActiveTab] = useState<CommissionTab>("wings");
+  const [activeTab, setActiveTab] = useState<CommissionTab>("generation");
   const { data, isLoading } = useGetCommissionsQuery();
   const generation = data?.generationIncome ?? {
     coins: data?.productPurchases ?? 0,
@@ -269,21 +269,6 @@ export default function CommissionsPage() {
         <button
           type="button"
           role="tab"
-          aria-selected={activeTab === "wings"}
-          onClick={() => setActiveTab("wings")}
-          className={cn(
-            "flex min-h-9 items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-bold text-muted transition sm:min-h-14 sm:gap-2 sm:px-4 sm:py-3 sm:text-sm",
-            activeTab === "wings" &&
-              "bg-background text-gold shadow-sm ring-1 ring-gold/20",
-          )}
-        >
-          <GitFork size={16} className="shrink-0 sm:h-[18px] sm:w-[18px]" />
-          <span className="sm:hidden">Wings</span>
-          <span className="hidden sm:inline">Binary tree</span>
-        </button>
-        <button
-          type="button"
-          role="tab"
           aria-selected={activeTab === "generation"}
           onClick={() => setActiveTab("generation")}
           className={cn(
@@ -295,6 +280,21 @@ export default function CommissionsPage() {
           <Coins size={16} className="shrink-0 sm:h-[18px] sm:w-[18px]" />
           <span className="sm:hidden">Coins</span>
           <span className="hidden sm:inline">Global purchase coins</span>
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === "wings"}
+          onClick={() => setActiveTab("wings")}
+          className={cn(
+            "flex min-h-9 items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-bold text-muted transition sm:min-h-14 sm:gap-2 sm:px-4 sm:py-3 sm:text-sm",
+            activeTab === "wings" &&
+              "bg-background text-gold shadow-sm ring-1 ring-gold/20",
+          )}
+        >
+          <GitFork size={16} className="shrink-0 sm:h-[18px] sm:w-[18px]" />
+          <span className="sm:hidden">Wings</span>
+          <span className="hidden sm:inline">Binary tree</span>
         </button>
       </div>
 

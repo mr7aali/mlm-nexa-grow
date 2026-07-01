@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -258,7 +258,10 @@ function Field({
 
 export default function ProfilePage() {
   const { language } = useI18n();
-  const t = (value: { bn: string; en: string }) => localize(value, language);
+  const t = useCallback(
+    (value: { bn: string; en: string }) => localize(value, language),
+    [language],
+  );
   const [message, setMessage] = useState("");
   const [edit, setEdit] = useState(false);
   const [copiedReferral, setCopiedReferral] = useState<"code" | "link" | null>(
@@ -366,7 +369,7 @@ export default function ProfilePage() {
         value: me?.referredByCode || t(profileText.directMember),
       },
     ],
-    [language, me],
+    [language, me, t],
   );
 
   const nomineeItems = useMemo<DetailItem[]>(
@@ -381,7 +384,7 @@ export default function ProfilePage() {
       },
       { label: t(profileLabels.nomineeDistrict), value: me?.nomineeDistrict },
     ],
-    [language, me],
+    [me, t],
   );
 
   async function handleProfileSave(values: ProfileFormValues) {

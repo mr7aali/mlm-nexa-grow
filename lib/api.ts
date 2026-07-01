@@ -13,7 +13,7 @@ import type {
   AuthUser,
   AdminOrder,
   AdminUser,
-  AdminPayment,
+  AdminPaymentsResponse,
   AdminWithdrawal,
   CommissionsResponse,
   DashboardResponse,
@@ -428,20 +428,22 @@ export const api = createApi({
       providesTags: ["AdminWithdrawals"],
     }),
     getAdminPayments: builder.query<
-      PaginatedResponse<AdminPayment>,
+      AdminPaymentsResponse,
       {
         page?: number;
         limit?: number;
         search?: string;
         status?: string;
         method?: string;
+        month?: number;
+        year?: number;
       } | void
     >({
       query: (params) => ({
         url: "/admin/payments",
         params: params ?? undefined,
       }),
-      transformResponse: unwrap<PaginatedResponse<AdminPayment>>,
+      transformResponse: unwrap<AdminPaymentsResponse>,
       providesTags: ["AdminWithdrawals", "AdminUsers"],
     }),
     updateAdminWithdrawalStatus: builder.mutation<

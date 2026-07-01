@@ -130,7 +130,7 @@ export default function EarningsPage() {
       </Card>
 
       <Card className="p-6">
-        <WithdrawalRequestForm balance={balance} />
+        <WithdrawalRequestForm />
       </Card>
 
       <Card className="p-6">

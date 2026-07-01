@@ -16,7 +16,7 @@ const walletMethods: WithdrawalMethod[] = ["bKash", "Nagad", "Rocket"];
 const optionalText = z.string().trim().optional();
 
 const schema = z.object({
-  amount: z.string().refine((value) => Number(value) >= 200, "Minimum withdrawal is BDT 200"),
+  amount: z.string().refine((value) => Number(value) > 0, "Enter a withdrawal amount"),
   method: z.enum(withdrawalMethods),
   payoutDetails: z.object({
     accountType: optionalText,
@@ -166,7 +166,7 @@ function FieldError({ message }: { message?: string }) {
   return message ? <span className="text-sm text-gold">{message}</span> : null;
 }
 
-export function WithdrawalRequestForm({ balance }: { balance: number }) {
+export function WithdrawalRequestForm() {
   const [message, setMessage] = useState("");
   const [createWithdrawal, { isLoading }] = useCreateWithdrawalMutation();
   const {
@@ -193,11 +193,6 @@ export function WithdrawalRequestForm({ balance }: { balance: number }) {
 
   async function handleWithdrawalSubmit(values: WithdrawalForm) {
     const amount = Number(values.amount);
-
-    if (amount > balance) {
-      setMessage("Requested amount is higher than your available balance.");
-      return;
-    }
 
     const payoutDetails = buildPayoutDetails(values.method, values);
 
@@ -228,7 +223,7 @@ export function WithdrawalRequestForm({ balance }: { balance: number }) {
         <div className="grid gap-4 md:grid-cols-2">
           <label className="block">
             <span className="mb-2 block text-sm text-muted">Amount</span>
-            <Input type="number" {...register("amount")} placeholder="200" />
+            <Input type="number" {...register("amount")} placeholder="Enter amount" />
             <FieldError message={errors.amount?.message} />
           </label>
           <label className="block">
@@ -306,7 +301,7 @@ export function WithdrawalRequestForm({ balance }: { balance: number }) {
         </label>
 
         {message ? <p className="rounded-2xl bg-gold/10 px-4 py-3 text-sm text-gold">{message}</p> : null}
-        <Button className="w-full" type="submit" disabled={isLoading || balance < 200}>
+        <Button className="w-full" type="submit" disabled={isLoading}>
           Submit request
         </Button>
       </form>

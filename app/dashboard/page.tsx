@@ -15,7 +15,7 @@ import {
   Users,
   WalletCards,
 } from "lucide-react";
-import { Button, Card, CopyButton } from "@/components/ui";
+import { Button, Card } from "@/components/ui";
 import {
   useGetAdminOrdersQuery,
   useGetAdminPaymentsQuery,
@@ -317,7 +317,6 @@ export default function DashboardPage() {
           <p className="text-sm text-gold-light">সদস্য প্যানেল</p>
           <h2 className="heading-gradient text-4xl font-black">ড্যাশবোর্ড</h2>
         </div>
-        {/* <CopyButton value={referralCode} label="রেফার কোড কপি" /> */}
       </div>
 
       {isLoading ? (

@@ -226,6 +226,15 @@ export type AdminPayment = AdminWithdrawal & {
   } | null;
 };
 
+export type AdminPaymentsResponse = PaginatedResponse<AdminPayment> & {
+  summary: {
+    paidTotal: number;
+    reviewTotal: number;
+    paidCount: number;
+    reviewCount: number;
+  };
+};
+
 export type OrderStatus = "Pending" | "Confirmed" | "Cancelled";
 
 export type ProductInput = {

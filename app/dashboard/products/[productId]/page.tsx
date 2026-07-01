@@ -2,12 +2,14 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import {
   ArrowLeft,
+  Check,
   CheckCircle2,
   Clock3,
+  Copy,
   MessageCircle,
   PackageCheck,
   Share2,
@@ -15,8 +17,11 @@ import {
   Tag,
   Truck,
 } from "lucide-react";
-import { Badge, CopyButton } from "@/components/ui";
-import { useGetMeQuery, useGetProductQuery } from "@/lib/api";
+import { Badge, Button } from "@/components/ui";
+import {
+  useGetMeQuery,
+  useGetProductQuery,
+} from "@/lib/api";
 import { isOutOfStock, stockLabel, taka } from "@/lib/utils";
 
 export default function ProductDetailsPage() {
@@ -24,6 +29,11 @@ export default function ProductDetailsPage() {
   const productId = params.productId;
   const { data: product, isLoading, isError } = useGetProductQuery(productId, { skip: !productId });
   const { data: me } = useGetMeQuery();
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    setCopied(false);
+  }, [productId]);
 
   if (isLoading) {
     return <p className="text-sm text-muted">পণ্য লোড হচ্ছে...</p>;
@@ -45,12 +55,31 @@ export default function ProductDetailsPage() {
   }
 
   const soldOut = isOutOfStock(product.stock);
-  const referralUrl = me && !soldOut ? `/products/${product.id}/checkout?ref=${encodeURIComponent(me.referralCode)}` : "";
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
+  const referralPath =
+    me && !soldOut
+      ? `/products/${product.id}/checkout?ref=${encodeURIComponent(me.referralCode)}`
+      : "";
+  const referralUrl = referralPath ? `${origin}${referralPath}` : "";
   const encodedReferralUrl = encodeURIComponent(referralUrl);
   const encodedShareText = encodeURIComponent(`${product.name} - ${referralUrl}`);
+  const whatsappShareUrl = referralUrl
+    ? `https://wa.me/?text=${encodedShareText}`
+    : "";
+  const facebookShareUrl = referralUrl
+    ? `https://www.facebook.com/sharer/sharer.php?u=${encodedReferralUrl}`
+    : "";
   const highlights = product.highlights ?? [];
   const includes = product.includes ?? [];
   const details = product.details ?? [];
+
+  async function handleCopyReferralLink() {
+    if (!referralUrl) return;
+
+    await navigator.clipboard?.writeText(referralUrl);
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 1800);
+  }
 
   return (
     <div className="space-y-6">
@@ -109,27 +138,51 @@ export default function ProductDetailsPage() {
           <div className="rounded-[18px] border border-line bg-surface p-5">
             <p className="mb-2 text-sm text-muted">প্রোডাক্ট রেফারেল চেকআউট</p>
             <div className="break-all rounded-2xl border border-line bg-elevated p-4 text-sm text-gold-light">
-              {soldOut ? "স্টক শেষ, চেকআউট লিংক বন্ধ আছে।" : referralUrl || "চেকআউট লিংক লোড হচ্ছে..."}
+              {soldOut
+                ? "স্টক শেষ, চেকআউট লিংক বন্ধ আছে।"
+                : referralUrl || "চেকআউট লিংক লোড হচ্ছে..."}
             </div>
+            {copied ? (
+              <p className="mt-2 text-sm font-semibold text-gold-light" aria-live="polite">
+                Link copied.
+              </p>
+            ) : null}
             <div className="mt-4 grid gap-3 sm:grid-cols-3">
               {soldOut ? (
                 <p className="rounded-2xl border border-line bg-elevated px-4 py-3 text-sm text-muted sm:col-span-3">স্টক শেষ, তাই শেয়ার বন্ধ আছে।</p>
               ) : (
                 <>
-                  <CopyButton value={referralUrl} label="চেকআউট লিংক কপি" />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={!referralUrl}
+                    onClick={handleCopyReferralLink}
+                    className="w-full"
+                  >
+                    {copied ? <Check size={16} /> : <Copy size={16} />}
+                    {copied ? "Copied" : "Copy link"}
+                  </Button>
                   <a
-                    href={referralUrl ? `https://wa.me/?text=${encodedShareText}` : undefined}
+                    href={whatsappShareUrl || "#"}
                     target="_blank"
                     rel="noreferrer"
+                    aria-disabled={!whatsappShareUrl}
+                    onClick={(event) => {
+                      if (!whatsappShareUrl) event.preventDefault();
+                    }}
                     className="outline-gold inline-flex min-h-11 items-center justify-center gap-2 px-5 py-2.5 text-sm font-semibold transition hover:bg-gold/10"
                   >
                     <MessageCircle size={16} />
                     WhatsApp
                   </a>
                   <a
-                    href={referralUrl ? `https://www.facebook.com/sharer/sharer.php?u=${encodedReferralUrl}` : undefined}
+                    href={facebookShareUrl || "#"}
                     target="_blank"
                     rel="noreferrer"
+                    aria-disabled={!facebookShareUrl}
+                    onClick={(event) => {
+                      if (!facebookShareUrl) event.preventDefault();
+                    }}
                     className="outline-gold inline-flex min-h-11 items-center justify-center gap-2 px-5 py-2.5 text-sm font-semibold transition hover:bg-gold/10"
                   >
                     <Share2 size={16} />

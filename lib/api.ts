@@ -11,13 +11,17 @@ import type {
   ApiResponse,
   AuthPayload,
   AuthUser,
+  AdminCommissionExpensesResponse,
+  AdminGenerationCoinsResponse,
   AdminOrder,
   AdminUser,
-  AdminPayment,
+  AdminPaymentsResponse,
   AdminWithdrawal,
   CommissionsResponse,
   DashboardResponse,
   EarningsResponse,
+  NotificationItem,
+  NotificationsResponse,
   PaginatedResponse,
   PayoutDetails,
   Product,
@@ -25,8 +29,12 @@ import type {
   ProductImageUpload,
   ProductInput,
   ProductUpdateInput,
+  ProfileUpdateInput,
   PurchaseResponse,
+  PurchasedProductsResponse,
   ReferralsResponse,
+  ReferralPlacementTokens,
+  WingMemberDetailsResponse,
   WingsResponse,
 } from "@/lib/api-types";
 
@@ -90,6 +98,8 @@ export const api = createApi({
     "AdminWithdrawals",
     "AdminProducts",
     "AdminOrders",
+    "Notifications",
+    "PurchasedProducts",
   ],
   endpoints: (builder) => ({
     login: builder.mutation<AuthPayload, { email: string; password: string }>({
@@ -157,11 +167,24 @@ export const api = createApi({
     }),
     updateProfile: builder.mutation<
       AuthUser,
-      { fullName: string; phone: string }
+      ProfileUpdateInput
     >({
       query: (body) => ({ url: "/auth/profile", method: "PATCH", body }),
       transformResponse: unwrap<AuthUser>,
       invalidatesTags: ["Auth", "Dashboard"],
+    }),
+    uploadProfilePicture: builder.mutation<ProductImageUpload, File>({
+      query: (file) => {
+        const body = new FormData();
+        body.append("image", file);
+
+        return {
+          url: "/auth/profile-picture",
+          method: "POST",
+          body,
+        };
+      },
+      transformResponse: unwrap<ProductImageUpload>,
     }),
     changePassword: builder.mutation<
       { updated: boolean },
@@ -204,12 +227,54 @@ export const api = createApi({
     >({
       query: (body) => ({ url: "/orders", method: "POST", body }),
       transformResponse: unwrap<PurchaseResponse>,
-      invalidatesTags: ["Auth", "Dashboard", "Commissions", "AdminOrders"],
+      invalidatesTags: [
+        "Auth",
+        "Dashboard",
+        "Commissions",
+        "AdminOrders",
+        "Notifications",
+        "PurchasedProducts",
+      ],
     }),
     getDashboard: builder.query<DashboardResponse, void>({
       query: () => "/dashboard",
       transformResponse: unwrap<DashboardResponse>,
       providesTags: ["Dashboard"],
+    }),
+    getNotifications: builder.query<NotificationsResponse, void>({
+      query: () => "/dashboard/notifications",
+      transformResponse: unwrap<NotificationsResponse>,
+      providesTags: ["Notifications"],
+    }),
+    markNotificationRead: builder.mutation<NotificationItem, string>({
+      query: (notificationId) => ({
+        url: `/dashboard/notifications/${notificationId}/read`,
+        method: "PATCH",
+      }),
+      transformResponse: unwrap<NotificationItem>,
+      invalidatesTags: ["Notifications", "Dashboard"],
+    }),
+    markAllNotificationsRead: builder.mutation<
+      { updated: number; readAt: string },
+      void
+    >({
+      query: () => ({
+        url: "/dashboard/notifications/read-all",
+        method: "PATCH",
+      }),
+      transformResponse: unwrap<{ updated: number; readAt: string }>,
+      invalidatesTags: ["Notifications", "Dashboard"],
+    }),
+    deleteNotification: builder.mutation<
+      { deleted: boolean; id: string },
+      string
+    >({
+      query: (notificationId) => ({
+        url: `/dashboard/notifications/${notificationId}`,
+        method: "DELETE",
+      }),
+      transformResponse: unwrap<{ deleted: boolean; id: string }>,
+      invalidatesTags: ["Notifications", "Dashboard"],
     }),
     getCommissions: builder.query<CommissionsResponse, void>({
       query: () => "/dashboard/commissions",
@@ -226,6 +291,51 @@ export const api = createApi({
       transformResponse: unwrap<WingsResponse>,
       providesTags: ["Wings"],
     }),
+    getWingMemberDetails: builder.query<WingMemberDetailsResponse, string>({
+      query: (memberId) => `/dashboard/wings/members/${encodeURIComponent(memberId)}`,
+      transformResponse: unwrap<WingMemberDetailsResponse>,
+      providesTags: ["Wings"],
+    }),
+    assignWingPlacement: builder.mutation<
+      {
+        memberId: string;
+        memberName: string;
+        sponsorWing: "Left" | "Right";
+        parentUserId: string;
+        position: "Left" | "Right";
+        placedAt: string;
+      },
+      {
+        memberId: string;
+        parentUserId: string;
+        position: "Left" | "Right";
+      }
+    >({
+      query: (body) => ({
+        url: "/dashboard/wings/placements",
+        method: "POST",
+        body,
+      }),
+      transformResponse: unwrap<{
+        memberId: string;
+        memberName: string;
+        sponsorWing: "Left" | "Right";
+        parentUserId: string;
+        position: "Left" | "Right";
+        placedAt: string;
+      }>,
+      invalidatesTags: [
+        "Wings",
+        "Dashboard",
+        "Referrals",
+        "Commissions",
+        "Notifications",
+      ],
+    }),
+    getReferralPlacementTokens: builder.query<ReferralPlacementTokens, void>({
+      query: () => "/dashboard/referral-placement-tokens",
+      transformResponse: unwrap<ReferralPlacementTokens>,
+    }),
     getEarnings: builder.query<EarningsResponse, void>({
       query: () => "/dashboard/earnings",
       transformResponse: unwrap<EarningsResponse>,
@@ -235,6 +345,22 @@ export const api = createApi({
       query: () => "/dashboard/payments",
       transformResponse: unwrap<EarningsResponse>,
       providesTags: ["Earnings"],
+    }),
+    getPurchasedProducts: builder.query<
+      PurchasedProductsResponse,
+      {
+        page?: number;
+        limit?: number;
+        search?: string;
+        status?: string;
+      } | void
+    >({
+      query: (params) => ({
+        url: "/dashboard/purchased-products",
+        params: params ?? undefined,
+      }),
+      transformResponse: unwrap<PurchasedProductsResponse>,
+      providesTags: ["PurchasedProducts"],
     }),
     createWithdrawal: builder.mutation<
       { id: string },
@@ -246,7 +372,7 @@ export const api = createApi({
         body,
       }),
       transformResponse: unwrap<{ id: string }>,
-      invalidatesTags: ["Earnings", "Dashboard"],
+      invalidatesTags: ["Earnings", "Dashboard", "Notifications"],
     }),
     getAdminUsers: builder.query<
       PaginatedResponse<AdminUser>,
@@ -272,7 +398,7 @@ export const api = createApi({
         body: { status },
       }),
       transformResponse: unwrap<AdminUser>,
-      invalidatesTags: ["AdminUsers"],
+      invalidatesTags: ["AdminUsers", "Notifications"],
     }),
     updateAdminUserRole: builder.mutation<
       AdminUser,
@@ -284,7 +410,7 @@ export const api = createApi({
         body: { role },
       }),
       transformResponse: unwrap<AdminUser>,
-      invalidatesTags: ["AdminUsers", "Auth"],
+      invalidatesTags: ["AdminUsers", "Auth", "Notifications"],
     }),
     creditAdminCommission: builder.mutation<
       { user: AdminUser; note: string },
@@ -296,7 +422,43 @@ export const api = createApi({
         body,
       }),
       transformResponse: unwrap<{ user: AdminUser; note: string }>,
-      invalidatesTags: ["AdminUsers"],
+      invalidatesTags: ["AdminUsers", "Notifications"],
+    }),
+    getAdminCommissionExpenses: builder.query<
+      AdminCommissionExpensesResponse,
+      {
+        page?: number;
+        limit?: number;
+        search?: string;
+        type?: string;
+        status?: string;
+        month?: number;
+        year?: number;
+      } | void
+    >({
+      query: (params) => ({
+        url: "/admin/commission-expenses",
+        params: params ?? undefined,
+      }),
+      transformResponse: unwrap<AdminCommissionExpensesResponse>,
+      providesTags: ["AdminUsers"],
+    }),
+    getAdminGenerationCoins: builder.query<
+      AdminGenerationCoinsResponse,
+      {
+        page?: number;
+        limit?: number;
+        search?: string;
+        role?: string;
+        coinStatus?: string;
+      } | void
+    >({
+      query: (params) => ({
+        url: "/admin/generation-coins",
+        params: params ?? undefined,
+      }),
+      transformResponse: unwrap<AdminGenerationCoinsResponse>,
+      providesTags: ["AdminUsers"],
     }),
     getAdminWithdrawals: builder.query<AdminWithdrawal[], void>({
       query: () => "/admin/withdrawals",
@@ -304,20 +466,22 @@ export const api = createApi({
       providesTags: ["AdminWithdrawals"],
     }),
     getAdminPayments: builder.query<
-      PaginatedResponse<AdminPayment>,
+      AdminPaymentsResponse,
       {
         page?: number;
         limit?: number;
         search?: string;
         status?: string;
         method?: string;
+        month?: number;
+        year?: number;
       } | void
     >({
       query: (params) => ({
         url: "/admin/payments",
         params: params ?? undefined,
       }),
-      transformResponse: unwrap<PaginatedResponse<AdminPayment>>,
+      transformResponse: unwrap<AdminPaymentsResponse>,
       providesTags: ["AdminWithdrawals", "AdminUsers"],
     }),
     updateAdminWithdrawalStatus: builder.mutation<
@@ -335,6 +499,7 @@ export const api = createApi({
         "AdminUsers",
         "Earnings",
         "Dashboard",
+        "Notifications",
       ],
     }),
     getAdminOrders: builder.query<
@@ -364,7 +529,13 @@ export const api = createApi({
         body: { status },
       }),
       transformResponse: unwrap<AdminOrder>,
-      invalidatesTags: ["AdminOrders", "Dashboard", "Commissions"],
+      invalidatesTags: [
+        "AdminOrders",
+        "Dashboard",
+        "Commissions",
+        "Notifications",
+        "PurchasedProducts",
+      ],
     }),
     broadcastNotification: builder.mutation<
       { delivered: boolean },
@@ -372,6 +543,7 @@ export const api = createApi({
     >({
       query: (body) => ({ url: "/admin/broadcasts", method: "POST", body }),
       transformResponse: unwrap<{ delivered: boolean }>,
+      invalidatesTags: ["Notifications", "Dashboard"],
     }),
     getAdminProducts: builder.query<
       PaginatedResponse<Product>,
@@ -451,6 +623,7 @@ export const api = createApi({
 });
 
 export const {
+  useAssignWingPlacementMutation,
   useChangePasswordMutation,
   useCreateOrderMutation,
   useCreateAdminProductMutation,
@@ -459,13 +632,17 @@ export const {
   useCreateWithdrawalMutation,
   useForgotPasswordMutation,
   useDeleteAdminProductMutation,
+  useDeleteNotificationMutation,
   useGetCommissionsQuery,
   useGetDashboardQuery,
   useGetEarningsQuery,
   useGetMeQuery,
+  useGetNotificationsQuery,
   useGetPaymentsQuery,
   useGetAdminUsersQuery,
   useGetAdminProductQuery,
+  useGetAdminCommissionExpensesQuery,
+  useGetAdminGenerationCoinsQuery,
   useGetAdminOrdersQuery,
   useGetAdminProductsQuery,
   useGetAdminPaymentsQuery,
@@ -473,10 +650,15 @@ export const {
   useGetProductQuery,
   useGetProductCountQuery,
   useGetProductsQuery,
+  useGetPurchasedProductsQuery,
   useGetReferralsQuery,
+  useGetReferralPlacementTokensQuery,
+  useGetWingMemberDetailsQuery,
   useGetWingsQuery,
   useLoginMutation,
   useLogoutMutation,
+  useMarkAllNotificationsReadMutation,
+  useMarkNotificationReadMutation,
   useRegisterMutation,
   useResetPasswordMutation,
   useUpdateAdminProductMutation,
@@ -486,5 +668,6 @@ export const {
   useUpdateAdminUserRoleMutation,
   useUpdateAdminWithdrawalStatusMutation,
   useUpdateProfileMutation,
+  useUploadProfilePictureMutation,
   useVerifyOtpMutation,
 } = api;

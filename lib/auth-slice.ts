@@ -4,12 +4,18 @@ import type { AuthPayload, AuthUser } from "@/lib/api-types";
 type AuthState = {
   accessToken: string | null;
   user: AuthUser | null;
+  hydrated: boolean;
 };
 
 const tokenKey = "gioto_access_token";
 const userKey = "gioto_user";
+const initialState: AuthState = {
+  accessToken: null,
+  user: null,
+  hydrated: false,
+};
 
-function readInitialState(): AuthState {
+function readPersistedAuth(): Pick<AuthState, "accessToken" | "user"> {
   if (typeof window === "undefined") {
     return { accessToken: null, user: null };
   }
@@ -41,25 +47,29 @@ function persistAuth(state: AuthState) {
 
 const authSlice = createSlice({
   name: "auth",
-  initialState: readInitialState(),
+  initialState,
   reducers: {
     hydrateAuth(state) {
-      const nextState = readInitialState();
+      const nextState = readPersistedAuth();
       state.accessToken = nextState.accessToken;
       state.user = nextState.user;
+      state.hydrated = true;
     },
     setCredentials(state, action: PayloadAction<AuthPayload>) {
       state.accessToken = action.payload.accessToken;
       state.user = action.payload.user;
+      state.hydrated = true;
       persistAuth(state);
     },
     setUser(state, action: PayloadAction<AuthUser>) {
       state.user = action.payload;
+      state.hydrated = true;
       persistAuth(state);
     },
     clearCredentials(state) {
       state.accessToken = null;
       state.user = null;
+      state.hydrated = true;
       persistAuth(state);
     },
   },

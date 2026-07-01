@@ -1,18 +1,39 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Landmark, TrendingUp, WalletCards } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { WithdrawalRequestForm } from "@/components/dashboard/withdrawal-request-form";
 import { Card } from "@/components/ui";
-import { useGetEarningsQuery } from "@/lib/api";
+import { useGetCommissionsQuery, useGetEarningsQuery } from "@/lib/api";
 import { taka } from "@/lib/utils";
 
 export default function EarningsPage() {
   const [mounted, setMounted] = useState(false);
   const { data, isLoading: earningsLoading } = useGetEarningsQuery();
+  const { data: commissions } = useGetCommissionsQuery();
   const balance = data?.balance ?? 0;
+  const totalWithdraw = data?.paidWithdrawals ?? 0;
+  const totalIncome =
+    (data?.balance ?? 0) +
+    (data?.paidWithdrawals ?? 0) +
+    (data?.reservedWithdrawals ?? 0);
   const monthlyRows = data?.earningsByMonth ?? [];
   const withdrawalRows = data?.withdrawals ?? [];
+  const incomeSources = [
+    {
+      label: "Referral Bonus",
+      value: commissions?.referralIncome?.totalEarned ?? 0,
+    },
+    {
+      label: "Generation Bonus",
+      value: commissions?.generationIncome?.totalEarned ?? 0,
+    },
+    {
+      label: "Matching Commission",
+      value: commissions?.wingsIncome?.totalEarned ?? 0,
+    },
+  ];
 
   useEffect(() => setMounted(true), []);
 
@@ -25,23 +46,92 @@ export default function EarningsPage() {
 
       {earningsLoading ? <p className="text-sm text-muted">Loading earnings data...</p> : null}
 
-      <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
-        <Card className="bg-[radial-gradient(circle_at_top_right,rgba(232,82,10,0.14),#FFFFFF_45%)] p-6">
-          <p className="text-muted">Available balance</p>
-          <p className="mt-3 text-6xl font-black text-gold-light">{taka(balance)}</p>
-          <p className="mt-4 rounded-2xl border border-gold/20 bg-gold/10 px-4 py-3 text-sm text-gold-light">
-            Minimum withdrawal: BDT 200
-          </p>
+      <Card className="p-4 md:p-6">
+        <div className="mb-5 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+          <div>
+            <p className="text-sm font-semibold text-gold-light">
+              Wallet Report
+            </p>
+            <h3 className="text-2xl font-black">Income overview</h3>
+          </div>
           {data?.reservedWithdrawals ? (
-            <p className="mt-3 text-sm text-muted">
-              Reserved in pending/review/paid requests: {taka(data.reservedWithdrawals)}
+            <p className="text-sm font-semibold text-muted">
+              Pending withdraw: {taka(data.reservedWithdrawals)}
             </p>
           ) : null}
-        </Card>
-        <Card className="p-6">
-          <WithdrawalRequestForm balance={balance} />
-        </Card>
-      </div>
+        </div>
+
+        <div className="grid gap-3 md:grid-cols-3">
+          {[
+            {
+              label: "Total Income",
+              value: totalIncome,
+              icon: TrendingUp,
+            },
+            {
+              label: "Total Withdraw",
+              value: totalWithdraw,
+              icon: Landmark,
+            },
+            {
+              label: "Current Balance",
+              value: balance,
+              icon: WalletCards,
+            },
+          ].map((item) => {
+            const Icon = item.icon;
+
+            return (
+              <div
+                key={item.label}
+                className="rounded-lg border border-line bg-elevated p-4"
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-sm font-semibold text-muted">
+                    {item.label}
+                  </p>
+                  <Icon size={18} className="text-gold-light" />
+                </div>
+                <p className="mt-2 truncate text-2xl font-black text-gold-light">
+                  {taka(item.value)}
+                </p>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="mt-5 rounded-lg border border-line bg-elevated p-4">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <h4 className="text-lg font-bold">Income Sources</h4>
+            <p className="text-xs font-semibold text-muted">
+              Referral, generation, and matching
+            </p>
+          </div>
+          <div className="grid gap-3 md:grid-cols-3">
+            {incomeSources.map((source) => (
+              <div
+                key={source.label}
+                className="rounded-md border border-line bg-surface px-3 py-3"
+              >
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted">
+                  {source.label}
+                </p>
+                <p className="mt-1 text-xl font-black text-foreground">
+                  {taka(source.value)}
+                </p>
+              </div>
+            ))}
+          </div>
+          <p className="mt-3 text-sm leading-6 text-muted">
+            Referral Bonus pays BDT 100 when a new member buys a product using
+            your referral code.
+          </p>
+        </div>
+      </Card>
+
+      <Card className="p-6">
+        <WithdrawalRequestForm />
+      </Card>
 
       <Card className="p-6">
         <h3 className="mb-4 text-2xl font-bold">Monthly earnings</h3>

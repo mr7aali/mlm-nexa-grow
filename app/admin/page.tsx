@@ -34,6 +34,7 @@ const broadcastSchema = z.object({
 export default function AdminPage() {
   const router = useRouter();
   const accessToken = useAppSelector((state) => state.auth.accessToken);
+  const authHydrated = useAppSelector((state) => state.auth.hydrated);
   const [query, setQuery] = useState("");
   const [level, setLevel] = useState("all");
   const [notice, setNotice] = useState("");
@@ -54,10 +55,10 @@ export default function AdminPage() {
   const users = useMemo(() => usersPage?.items ?? [], [usersPage]);
 
   useEffect(() => {
-    if (!accessToken) {
+    if (authHydrated && !accessToken) {
       router.replace("/login");
     }
-  }, [accessToken, router]);
+  }, [accessToken, authHydrated, router]);
 
   useEffect(() => {
     if (users.length && !credit.getValues("user")) {

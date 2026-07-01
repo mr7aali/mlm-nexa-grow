@@ -1033,7 +1033,7 @@ export default function Home() {
               </p>
               <p className="flex items-start gap-3">
                 <MapPin size={16} className="mt-1 shrink-0 text-gold-light" />{" "}
-                <span>Nischintapur, Ashulia, Savar, Dhaka, Bangladesh</span>
+                <span>Sector 14, Uttara, Dhaka, Bangladesh</span>
               </p>
             </div>
             <Link

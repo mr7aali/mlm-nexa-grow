@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { CheckCircle2, CreditCard, Search, XCircle } from "lucide-react";
+import { CheckCircle2, CreditCard, Download, Search, XCircle } from "lucide-react";
 import { Button, Card, Input, Select } from "@/components/ui";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { useGetAdminPaymentsQuery, useUpdateAdminWithdrawalStatusMutation } from "@/lib/api";
@@ -9,6 +9,7 @@ import type { AdminWithdrawal, PayoutDetails } from "@/lib/api-types";
 import { taka, toBn } from "@/lib/utils";
 
 const pageSize = 10;
+const currentYear = new Date().getFullYear();
 type PaymentStatus = "all" | AdminWithdrawal["status"];
 
 function detailRows(details?: PayoutDetails, fallback?: string) {
@@ -41,11 +42,22 @@ function detailRows(details?: PayoutDetails, fallback?: string) {
   ].filter(Boolean) as string[];
 }
 
+function escapeHtml(value: string) {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 export default function SuperAdminPaymentsPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<PaymentStatus>("all");
   const [method, setMethod] = useState("");
+  const [month, setMonth] = useState("");
+  const [year, setYear] = useState(String(currentYear));
   const [message, setMessage] = useState("");
   const query = useMemo(() => ({
     page,
@@ -53,20 +65,103 @@ export default function SuperAdminPaymentsPage() {
     search: search.trim() || undefined,
     status: status === "all" ? undefined : status,
     method: method.trim() || undefined,
-  }), [method, page, search, status]);
+    month: month ? Number(month) : undefined,
+    year: year ? Number(year) : undefined,
+  }), [method, month, page, search, status, year]);
   const { data, isLoading, error } = useGetAdminPaymentsQuery(query);
   const [updatePayment, { isLoading: updating }] = useUpdateAdminWithdrawalStatusMutation();
   const payments = data?.items ?? [];
   const totalPages = data?.totalPages ?? 1;
+  const paidTotal = data?.summary?.paidTotal ?? 0;
+  const reviewTotal = data?.summary?.reviewTotal ?? 0;
 
-  async function handleStatus(withdrawalId: string, nextStatus: AdminWithdrawal["status"]) {
+  async function handleStatus(item: AdminWithdrawal, nextStatus: AdminWithdrawal["status"]) {
     setMessage("");
+    if (item.status === "Paid") {
+      setMessage("Paid withdrawals cannot be changed.");
+      return;
+    }
+    if (item.status === nextStatus) return;
+    const confirmed = window.confirm(`Update this withdrawal request to ${nextStatus}?`);
+    if (!confirmed) return;
+
     try {
-      await updatePayment({ withdrawalId, status: nextStatus }).unwrap();
+      await updatePayment({ withdrawalId: item.id, status: nextStatus }).unwrap();
       setMessage("Payment status updated.");
     } catch (err) {
       setMessage(getApiErrorMessage(err, "Payment update failed."));
     }
+  }
+
+  function handleExportPdf() {
+    const period = month
+      ? `${new Date(0, Number(month) - 1).toLocaleString("en", { month: "long" })} ${year}`
+      : `All months, ${year || "all years"}`;
+    const rows = payments.map((item) => {
+      const details = detailRows(item.payoutDetails, item.account).map(escapeHtml).join("<br />");
+      return `
+        <tr>
+          <td>${escapeHtml(item.id)}</td>
+          <td>${new Date(item.date).toLocaleDateString()}</td>
+          <td>${escapeHtml(item.user?.name ?? item.userId)}<br /><small>${escapeHtml(item.user?.email ?? "")}</small></td>
+          <td>${escapeHtml(item.method)}</td>
+          <td>${item.amount.toLocaleString()} BDT</td>
+          <td>${details}</td>
+          <td>${escapeHtml(item.status)}</td>
+        </tr>
+      `;
+    }).join("");
+    const printWindow = window.open("", "_blank", "width=1100,height=800");
+    if (!printWindow) {
+      setMessage("Allow popup windows to export the PDF.");
+      return;
+    }
+
+    printWindow.document.write(`
+      <!doctype html>
+      <html>
+        <head>
+          <title>Payments report</title>
+          <style>
+            body { font-family: Arial, sans-serif; color: #111; margin: 32px; }
+            h1 { margin: 0 0 4px; font-size: 24px; }
+            .muted { color: #666; font-size: 12px; }
+            .summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 24px 0; }
+            .card { border: 1px solid #ddd; border-radius: 8px; padding: 12px; }
+            .label { color: #666; font-size: 12px; margin-bottom: 6px; }
+            .value { font-size: 20px; font-weight: 700; }
+            table { width: 100%; border-collapse: collapse; font-size: 12px; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; vertical-align: top; }
+            th { background: #f5f5f5; }
+          </style>
+        </head>
+        <body>
+          <h1>Payments and Withdrawals Report</h1>
+          <p class="muted">Period: ${period} | Generated: ${new Date().toLocaleString()}</p>
+          <div class="summary">
+            <div class="card"><div class="label">Requests on this page</div><div class="value">${payments.length}</div></div>
+            <div class="card"><div class="label">Total paid</div><div class="value">${paidTotal.toLocaleString()} BDT</div></div>
+            <div class="card"><div class="label">Total review</div><div class="value">${reviewTotal.toLocaleString()} BDT</div></div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Request ID</th>
+                <th>Date</th>
+                <th>User</th>
+                <th>Method</th>
+                <th>Amount</th>
+                <th>Payout details</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>${rows || `<tr><td colspan="7">No payment requests found.</td></tr>`}</tbody>
+          </table>
+          <script>window.print();</script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
   }
 
   return (
@@ -86,14 +181,14 @@ export default function SuperAdminPaymentsPage() {
       {error ? <p className="rounded-2xl border border-foreground/20 bg-foreground/5 px-4 py-3 text-sm text-foreground">{getApiErrorMessage(error, "Payment load failed.")}</p> : null}
 
       <div className="grid gap-5 md:grid-cols-4">
-        <Card><p className="text-sm text-muted">This page total</p><p className="mt-2 text-3xl font-black text-gold-light">{taka(payments.reduce((sum, item) => sum + item.amount, 0))}</p></Card>
+        <Card><p className="text-sm text-muted">Total paid</p><p className="mt-2 text-3xl font-black text-gold-light">{taka(paidTotal)}</p></Card>
+        <Card><p className="text-sm text-muted">Total review</p><p className="mt-2 text-3xl font-black text-gold-light">{taka(reviewTotal)}</p></Card>
         <Card><p className="text-sm text-muted">Pending</p><p className="mt-2 text-3xl font-black text-gold-light">{toBn(payments.filter((item) => item.status === "Pending").length)}</p></Card>
-        <Card><p className="text-sm text-muted">Paid</p><p className="mt-2 text-3xl font-black text-gold-light">{toBn(payments.filter((item) => item.status === "Paid").length)}</p></Card>
         <Card><p className="text-sm text-muted">Rejected</p><p className="mt-2 text-3xl font-black text-gold-light">{toBn(payments.filter((item) => item.status === "Rejected").length)}</p></Card>
       </div>
 
       <Card className="p-5">
-        <div className="grid gap-3 lg:grid-cols-[1fr_180px_180px]">
+        <div className="grid gap-3 lg:grid-cols-[1fr_160px_160px_150px_130px_auto]">
           <div className="relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" size={16} />
             <Input
@@ -118,6 +213,24 @@ export default function SuperAdminPaymentsPage() {
             <option>Bank</option>
             <option>Card</option>
           </Select>
+          <Select value={month} onChange={(event) => { setMonth(event.target.value); setPage(1); }}>
+            <option value="">All months</option>
+            {Array.from({ length: 12 }, (_, index) => (
+              <option key={index + 1} value={index + 1}>
+                {new Date(0, index).toLocaleString("en", { month: "long" })}
+              </option>
+            ))}
+          </Select>
+          <Input
+            type="number"
+            value={year}
+            onChange={(event) => { setYear(event.target.value); setPage(1); }}
+            placeholder="Year"
+          />
+          <Button type="button" variant="outline" onClick={handleExportPdf}>
+            <Download size={16} />
+            Export PDF
+          </Button>
         </div>
       </Card>
 
@@ -147,12 +260,12 @@ export default function SuperAdminPaymentsPage() {
                 <td className="px-5 py-4">{item.status}</td>
                 <td className="px-5 py-4">
                   <div className="flex flex-wrap gap-2">
-                    <Button className="min-h-9 px-3 py-1 text-xs" disabled={updating} onClick={() => handleStatus(item.id, "Paid")}>
+                    <Button className="min-h-9 px-3 py-1 text-xs" disabled={updating || item.status === "Paid"} onClick={() => handleStatus(item, "Paid")}>
                       <CheckCircle2 size={14} />
                       Paid
                     </Button>
-                    <Button variant="outline" className="min-h-9 px-3 py-1 text-xs" disabled={updating} onClick={() => handleStatus(item.id, "Review")}>Review</Button>
-                    <Button variant="danger" className="min-h-9 px-3 py-1 text-xs" disabled={updating} onClick={() => handleStatus(item.id, "Rejected")}>
+                    <Button variant="outline" className="min-h-9 px-3 py-1 text-xs" disabled={updating || item.status === "Paid"} onClick={() => handleStatus(item, "Review")}>Review</Button>
+                    <Button variant="danger" className="min-h-9 px-3 py-1 text-xs" disabled={updating || item.status === "Paid"} onClick={() => handleStatus(item, "Rejected")}>
                       <XCircle size={14} />
                       Reject
                     </Button>

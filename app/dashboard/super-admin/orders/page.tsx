@@ -132,6 +132,7 @@ export default function SuperAdminOrdersPage() {
                 <td>${escapeHtml(order.id)}</td>
                 <td>${escapeHtml(order.user?.name ?? order.customerName)}</td>
                 <td>${escapeHtml(order.user?.email ?? order.email)}</td>
+                <td>${escapeHtml(order.address)}</td>
                 <td>${escapeHtml(productName(order))}</td>
                 <td>${escapeHtml(order.product?.sku ?? order.productId)}</td>
                 <td>${order.quantity}</td>
@@ -143,7 +144,7 @@ export default function SuperAdminOrdersPage() {
             `,
           )
           .join("")
-      : `<tr><td colspan="12" class="empty">No checkout orders found.</td></tr>`;
+      : `<tr><td colspan="13" class="empty">No checkout orders found.</td></tr>`;
     const report = `
       <!doctype html>
       <html>
@@ -195,6 +196,7 @@ export default function SuperAdminOrdersPage() {
                 <th>Order</th>
                 <th>Member</th>
                 <th>Email</th>
+                <th>Delivery Address</th>
                 <th>Product</th>
                 <th>SKU</th>
                 <th>Qty</th>
@@ -356,13 +358,14 @@ export default function SuperAdminOrdersPage() {
       </Card>
 
       <Card className="overflow-x-auto p-0 scrollbar-soft">
-        <table className="w-full min-w-[1220px] text-left text-sm">
+        <table className="w-full min-w-[1380px] text-left text-sm">
           <thead className="bg-elevated text-muted">
             <tr>
               {[
                 "Date",
                 "Order",
                 "Member",
+                "Delivery address",
                 "Product",
                 "Payment",
                 "Quantity",
@@ -398,6 +401,9 @@ export default function SuperAdminOrdersPage() {
                     <p className="mt-1 text-xs text-muted">
                       Code: {item.user?.referralCode ?? "N/A"}
                     </p>
+                  </td>
+                  <td className="px-5 py-4 text-muted">
+                    <p className="max-w-64 leading-6">{item.address}</p>
                   </td>
                   <td className="px-5 py-4">
                     <p className="font-semibold">{productName(item)}</p>
@@ -453,7 +459,7 @@ export default function SuperAdminOrdersPage() {
               ))
             ) : (
               <tr>
-                <td className="px-5 py-10 text-center text-muted" colSpan={9}>
+                <td className="px-5 py-10 text-center text-muted" colSpan={10}>
                   {isLoading
                     ? "Order history loading..."
                     : "No checkout order found."}

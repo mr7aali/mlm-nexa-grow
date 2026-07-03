@@ -26,6 +26,8 @@ import {
   useUpdateProfileMutation,
   useUploadProfilePictureMutation,
 } from "@/lib/api";
+import { setUser } from "@/lib/auth-slice";
+import { useAppDispatch } from "@/lib/hooks";
 import { useI18n } from "@/lib/i18n";
 import { initials, taka, toBn } from "@/lib/utils";
 
@@ -257,6 +259,7 @@ function Field({
 }
 
 export default function ProfilePage() {
+  const dispatch = useAppDispatch();
   const { language } = useI18n();
   const t = useCallback(
     (value: { bn: string; en: string }) => localize(value, language),
@@ -389,7 +392,8 @@ export default function ProfilePage() {
 
   async function handleProfileSave(values: ProfileFormValues) {
     try {
-      await updateProfile(values).unwrap();
+      const updated = await updateProfile(values).unwrap();
+      dispatch(setUser(updated));
       setMessage(t(profileText.profileUpdated));
       setEdit(false);
     } catch (error) {
@@ -452,7 +456,8 @@ export default function ProfilePage() {
         shouldDirty: true,
         shouldValidate: true,
       });
-      await updateProfile(values).unwrap();
+      const updated = await updateProfile(values).unwrap();
+      dispatch(setUser(updated));
       setMessage(t(profileText.profilePictureUpdated));
     } catch (error) {
       setMessage(

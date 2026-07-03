@@ -30,6 +30,7 @@ export type TreeNode = {
   id: string;
   userId: string;
   name: string;
+  profilePicture?: string;
   level: number;
   joined: string;
   referrals: number;

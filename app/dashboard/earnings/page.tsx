@@ -16,7 +16,6 @@ export default function EarningsPage() {
   const totalWithdraw = data?.paidWithdrawals ?? 0;
   const totalIncome =
     (data?.balance ?? 0) +
-    (data?.paidWithdrawals ?? 0) +
     (data?.reservedWithdrawals ?? 0);
   const monthlyRows = data?.earningsByMonth ?? [];
   const withdrawalRows = data?.withdrawals ?? [];

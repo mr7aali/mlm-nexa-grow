@@ -134,10 +134,7 @@ export default function WingsPage() {
     }, 0);
   }
 
-  async function placeMember(
-    parentUserId: string,
-    position: "Left" | "Right",
-  ) {
+  async function placeMember(parentUserId: string, position: "Left" | "Right") {
     if (!selectedMember) return;
 
     setAssigningMemberId(selectedMember.id);
@@ -249,7 +246,8 @@ export default function WingsPage() {
               <p className="mt-1 text-3xl font-black text-foreground">
                 {toBn(data?.dailyPairs.pairCount ?? 0)}
                 <span className="text-base font-semibold text-muted">
-                  {" "}/ {toBn(data?.dailyPairs.pairLimit ?? 100)}
+                  {" "}
+                  / {toBn(data?.dailyPairs.pairLimit ?? 100)}
                 </span>
               </p>
             </div>
@@ -273,7 +271,8 @@ export default function WingsPage() {
           <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-xs text-muted">
             <span className="inline-flex items-center gap-1.5">
               <CalendarClock size={14} />
-              প্রতিদিন রাত ১২টায় রিসেট ({data?.dailyPairs.resetsAtTimeZone ?? "Asia/Dhaka"})
+              প্রতিদিন রাত ১২টায় রিসেট (
+              {data?.dailyPairs.resetsAtTimeZone ?? "Asia/Dhaka"})
             </span>
             <span className="font-semibold text-gold">
               {data?.dailyPairs.commissionPaid
@@ -439,10 +438,7 @@ function MobileFilters({
         </span>
         <span className="inline-flex items-center gap-2 text-xs font-semibold text-muted">
           {toBn(shownCount)} জন
-          <ChevronDown
-            size={16}
-            className="transition group-open:rotate-180"
-          />
+          <ChevronDown size={16} className="transition group-open:rotate-180" />
         </span>
       </summary>
       <div className="grid gap-3 border-t border-line p-4">
@@ -541,7 +537,8 @@ function PendingPlacementQueue({
             </h3>
           </div>
           <p className="mt-1 hidden text-sm text-muted sm:block">
-            সদস্য নির্বাচন করুন, তারপর ট্রির যেকোনো খালি লেফট বা রাইট স্লটে ক্লিক করুন।
+            সদস্য নির্বাচন করুন, তারপর ট্রির যেকোনো খালি লেফট বা রাইট স্লটে
+            ক্লিক করুন।
           </p>
         </div>
         <Badge tone={members.length ? "gold" : "muted"}>
@@ -788,9 +785,7 @@ function TreeSlot({
         ) : (
           <UserPlus size={20} />
         )}
-        <span>
-          খালি {position === "Left" ? "লেফট" : "রাইট"} স্লট
-        </span>
+        <span>খালি {position === "Left" ? "লেফট" : "রাইট"} স্লট</span>
         <span className="text-xs font-normal">
           {selectedMemberName ? "এখানে প্লেস করুন" : "Available"}
         </span>
@@ -831,30 +826,48 @@ function MemberNode({
           : "border-line"
       } cursor-pointer outline-none transition hover:-translate-y-0.5 hover:border-gold hover:shadow-md focus-visible:ring-2 focus-visible:ring-gold/40`}
     >
-      <div className={`h-1 ${isRoot ? "bg-gold" : node.active ? "bg-emerald-500" : "bg-zinc-300"}`} />
+      <div
+        className={`h-1 ${isRoot ? "bg-gold" : node.active ? "bg-emerald-500" : "bg-zinc-300"}`}
+      />
       <div className="p-3 md:p-4">
         <div className="flex items-start gap-2 md:gap-3">
-          <div
-            className={`grid h-8 w-8 shrink-0 place-items-center rounded-full text-xs font-bold md:h-10 md:w-10 md:text-sm ${
-              isRoot ? "bg-gold text-white" : "bg-elevated text-gold"
-            }`}
-          >
-            {initials(node.name)}
-          </div>
+          {node.profilePicture ? (
+            <Image
+              src={node.profilePicture}
+              alt={node.name}
+              width={40}
+              height={40}
+              unoptimized
+              className={`h-8 w-8 shrink-0 rounded-full border object-cover md:h-10 md:w-10 ${
+                isRoot ? "border-gold" : "border-line"
+              }`}
+            />
+          ) : (
+            <div
+              className={`grid h-8 w-8 shrink-0 place-items-center rounded-full text-xs font-bold md:h-10 md:w-10 md:text-sm ${
+                isRoot ? "bg-gold text-white" : "bg-elevated text-gold"
+              }`}
+            >
+              {initials(node.name)}
+            </div>
+          )}
           <div className="min-w-0 flex-1">
-            <h3 className="truncate text-xs font-bold text-foreground md:text-sm" title={node.name}>
+            <h3
+              className="truncate text-xs font-bold text-foreground md:text-sm"
+              title={node.name}
+            >
               {node.name}
             </h3>
             <p className="mt-1 truncate text-[10px] text-muted md:text-xs">
               {isRoot
                 ? "রুট সদস্য"
-                : `${node.position === "Left" ? "লেফট" : "রাইট"} · লেভেল ${toBn(node.level)}`}
+                : `${node.position === "Left" ? "লেফট" : "রাইট"} · ${toBn(node.referrals)} রেফারেল`}{" "}
             </p>
           </div>
         </div>
 
         <div className="mt-3 flex items-center justify-between gap-1 border-t border-line pt-2 md:mt-4 md:pt-3">
-          <span
+          {/* <span
             className={`rounded-full border px-2 py-1 text-[9px] font-semibold md:text-xs ${
               node.active
                 ? "border-gold bg-gold/10 text-gold"
@@ -862,12 +875,16 @@ function MemberNode({
             }`}
           >
             {node.active ? "সক্রিয়" : "নিষ্ক্রিয়"}
+        
           </span>
           <span className="text-[9px] font-medium text-muted md:text-xs">
             {toBn(node.referrals)} রেফারেল
-          </span>
+          </span> */}
         </div>
-        <p className="mt-2 truncate text-[9px] text-muted md:mt-3 md:text-xs" title={node.joined}>
+        <p
+          className="mt-2 truncate text-[9px] text-muted md:mt-3 md:text-xs"
+          title={node.joined}
+        >
           যোগদান: {formatJoined(node.joined)}
         </p>
       </div>
@@ -1011,9 +1028,7 @@ function MemberDetailsDrawer({
             <p className="text-xs font-semibold uppercase tracking-wide text-gold">
               {text.eyebrow}
             </p>
-            <h3 className="text-xl font-black text-foreground">
-              {text.title}
-            </h3>
+            <h3 className="text-xl font-black text-foreground">{text.title}</h3>
           </div>
           <button
             type="button"
@@ -1072,7 +1087,9 @@ function MemberDetailsDrawer({
                       {user.name}
                     </h4>
                     <div className="mt-2 flex flex-wrap gap-2">
-                      <Badge tone={user.status === "Active" ? "green" : "muted"}>
+                      <Badge
+                        tone={user.status === "Active" ? "green" : "muted"}
+                      >
                         {statusLabel(user.status)}
                       </Badge>
                       <Badge tone="muted">
@@ -1086,9 +1103,21 @@ function MemberDetailsDrawer({
 
               <DrawerSection title={text.account}>
                 <InfoRow label={text.userId} value={user.id} empty={empty} />
-                <InfoRow label={text.referralCode} value={user.referralCode} empty={empty} />
-                <InfoRow label={text.joined} value={formatJoined(user.joined, language)} empty={empty} />
-                <InfoRow label={text.referredBy} value={user.referredByCode} empty={empty} />
+                <InfoRow
+                  label={text.referralCode}
+                  value={user.referralCode}
+                  empty={empty}
+                />
+                <InfoRow
+                  label={text.joined}
+                  value={formatJoined(user.joined, language)}
+                  empty={empty}
+                />
+                <InfoRow
+                  label={text.referredBy}
+                  value={user.referredByCode}
+                  empty={empty}
+                />
               </DrawerSection>
 
               <DrawerSection title={text.binaryPlacement}>
@@ -1126,23 +1155,43 @@ function MemberDetailsDrawer({
               <section className="grid grid-cols-2 gap-3">
                 <MiniStat
                   label={text.directReferrals}
-                  value={language === "bn" ? toBn(details.network.directReferrals) : String(details.network.directReferrals)}
+                  value={
+                    language === "bn"
+                      ? toBn(details.network.directReferrals)
+                      : String(details.network.directReferrals)
+                  }
                 />
                 <MiniStat
                   label={text.totalTeamMembers}
-                  value={language === "bn" ? toBn(details.network.binaryDownline) : String(details.network.binaryDownline)}
+                  value={
+                    language === "bn"
+                      ? toBn(details.network.binaryDownline)
+                      : String(details.network.binaryDownline)
+                  }
                 />
                 <MiniStat
                   label={text.leftWingNodes}
-                  value={language === "bn" ? toBn(details.network.leftNodeCount) : String(details.network.leftNodeCount)}
+                  value={
+                    language === "bn"
+                      ? toBn(details.network.leftNodeCount)
+                      : String(details.network.leftNodeCount)
+                  }
                 />
                 <MiniStat
                   label={text.rightWingNodes}
-                  value={language === "bn" ? toBn(details.network.rightNodeCount) : String(details.network.rightNodeCount)}
+                  value={
+                    language === "bn"
+                      ? toBn(details.network.rightNodeCount)
+                      : String(details.network.rightNodeCount)
+                  }
                 />
                 <MiniStat
                   label={text.paidOrders}
-                  value={language === "bn" ? toBn(details.purchases.confirmedOrders) : String(details.purchases.confirmedOrders)}
+                  value={
+                    language === "bn"
+                      ? toBn(details.purchases.confirmedOrders)
+                      : String(details.purchases.confirmedOrders)
+                  }
                 />
                 <MiniStat
                   label={text.totalPaid}
@@ -1190,7 +1239,8 @@ function MemberDetailsDrawer({
                           </p>
                         </div>
                         <p className="mt-1 text-[11px] text-muted">
-                          {formatJoined(item.date, language)} · {statusLabel(item.status)}
+                          {formatJoined(item.date, language)} ·{" "}
+                          {statusLabel(item.status)}
                         </p>
                       </div>
                     ))}
@@ -1201,24 +1251,84 @@ function MemberDetailsDrawer({
               <DrawerSection title={text.contactProfile}>
                 <InfoRow label={text.phone} value={user.phone} empty={empty} />
                 <InfoRow label={text.email} value={user.email} empty={empty} />
-                <InfoRow label={text.address} value={user.address} empty={empty} />
-                <InfoRow label={text.father} value={user.fatherName} empty={empty} />
-                <InfoRow label={text.mother} value={user.motherName} empty={empty} />
-                <InfoRow label={text.dateOfBirth} value={user.dateOfBirth} empty={empty} />
-                <InfoRow label={text.religion} value={user.religion} empty={empty} />
-                <InfoRow label={text.gender} value={user.gender} empty={empty} />
-                <InfoRow label={text.bloodGroup} value={user.bloodGroup} empty={empty} />
-                <InfoRow label={text.nidBc} value={user.nidOrBirthCertificate} empty={empty} />
-                <InfoRow label={text.mission} value={user.mission} empty={empty} />
+                <InfoRow
+                  label={text.address}
+                  value={user.address}
+                  empty={empty}
+                />
+                <InfoRow
+                  label={text.father}
+                  value={user.fatherName}
+                  empty={empty}
+                />
+                <InfoRow
+                  label={text.mother}
+                  value={user.motherName}
+                  empty={empty}
+                />
+                <InfoRow
+                  label={text.dateOfBirth}
+                  value={user.dateOfBirth}
+                  empty={empty}
+                />
+                <InfoRow
+                  label={text.religion}
+                  value={user.religion}
+                  empty={empty}
+                />
+                <InfoRow
+                  label={text.gender}
+                  value={user.gender}
+                  empty={empty}
+                />
+                <InfoRow
+                  label={text.bloodGroup}
+                  value={user.bloodGroup}
+                  empty={empty}
+                />
+                <InfoRow
+                  label={text.nidBc}
+                  value={user.nidOrBirthCertificate}
+                  empty={empty}
+                />
+                <InfoRow
+                  label={text.mission}
+                  value={user.mission}
+                  empty={empty}
+                />
               </DrawerSection>
 
               <DrawerSection title={text.nominee}>
-                <InfoRow label={text.name} value={user.nomineeName} empty={empty} />
-                <InfoRow label={text.relation} value={user.nomineeRelation} empty={empty} />
-                <InfoRow label={text.address} value={user.nomineeAddress} empty={empty} />
-                <InfoRow label={text.village} value={user.nomineeVillage} empty={empty} />
-                <InfoRow label={text.postOffice} value={user.nomineePostOffice} empty={empty} />
-                <InfoRow label={text.district} value={user.nomineeDistrict} empty={empty} />
+                <InfoRow
+                  label={text.name}
+                  value={user.nomineeName}
+                  empty={empty}
+                />
+                <InfoRow
+                  label={text.relation}
+                  value={user.nomineeRelation}
+                  empty={empty}
+                />
+                <InfoRow
+                  label={text.address}
+                  value={user.nomineeAddress}
+                  empty={empty}
+                />
+                <InfoRow
+                  label={text.village}
+                  value={user.nomineeVillage}
+                  empty={empty}
+                />
+                <InfoRow
+                  label={text.postOffice}
+                  value={user.nomineePostOffice}
+                  empty={empty}
+                />
+                <InfoRow
+                  label={text.district}
+                  value={user.nomineeDistrict}
+                  empty={empty}
+                />
               </DrawerSection>
             </div>
           ) : null}
@@ -1288,19 +1398,17 @@ function TreeSkeleton() {
   );
 }
 
-function filterTree(
-  node: TreeNode,
-  filter: TreeFilter,
-): TreeNode | null {
-  const children =
-    {
-      left: node.left ? filterTree(node.left, filter) : null,
-      right: node.right ? filterTree(node.right, filter) : null,
-    };
-  const matchesLevel = filter.level === "all" || String(node.level) === filter.level;
+function filterTree(node: TreeNode, filter: TreeFilter): TreeNode | null {
+  const children = {
+    left: node.left ? filterTree(node.left, filter) : null,
+    right: node.right ? filterTree(node.right, filter) : null,
+  };
+  const matchesLevel =
+    filter.level === "all" || String(node.level) === filter.level;
   const matchesStatus = !filter.activeOnly || node.active;
   const matchesQuery =
-    !filter.query || node.name.toLowerCase().includes(filter.query.toLowerCase());
+    !filter.query ||
+    node.name.toLowerCase().includes(filter.query.toLowerCase());
   const matchesSelf = matchesLevel && matchesStatus && matchesQuery;
 
   const hasMatchingDescendant = Boolean(children.left || children.right);

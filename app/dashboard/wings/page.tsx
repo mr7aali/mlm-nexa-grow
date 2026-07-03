@@ -363,7 +363,7 @@ export default function WingsPage() {
           </div>
           <div
             ref={treeViewportRef}
-            className="scrollbar-soft overflow-x-auto overscroll-x-contain px-2 py-6 touch-pan-x sm:px-4 md:px-5 md:py-8"
+            className="scrollbar-soft overflow-x-auto overscroll-x-contain px-2 py-6 touch-pan-x touch-pan-y sm:px-4 md:px-5 md:py-8"
           >
             <div className="network-tree mx-auto w-max min-w-full">
               <ul>

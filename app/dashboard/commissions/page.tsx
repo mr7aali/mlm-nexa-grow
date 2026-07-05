@@ -14,6 +14,9 @@ import { cn, taka, toBn } from "@/lib/utils";
 
 type CommissionTab = "wings" | "generation";
 
+const generationBaseThresholds = [6, 36, 216, 1296, 7776, 46656];
+const generationThresholdUsers = Array.from({ length: 10 }, (_, index) => index + 1);
+
 const tone = (status: string) =>
   status === "Paid"
     ? "green"
@@ -108,15 +111,23 @@ function ProgressRows({
         const progress = item.required
           ? (item.current / item.required) * 100
           : 0;
+        const isGenerationRow = type === "coins";
 
         return (
           <div
-            key={item.level}
+            key={`${item.level}-${"cycle" in item ? item.cycle ?? 1 : 1}`}
             className="rounded-lg border border-line bg-background/60 p-4"
           >
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="font-bold">Level {toBn(item.level)}</p>
+                <p className="font-bold">
+                  {isGenerationRow ? "Step" : "Level"} {toBn(item.level)}
+                </p>
+                {isGenerationRow && "cycle" in item && item.cycle ? (
+                  <p className="mt-1 text-xs font-semibold text-gold-light">
+                    User {toBn(item.cycle)}
+                  </p>
+                ) : null}
                 <p className="mt-1 text-sm text-muted">
                   {toBn(item.current)} / {toBn(item.required)}{" "}
                   {type === "coins" ? "coins" : "nodes"}
@@ -192,6 +203,43 @@ function HistoryList({
             {empty}
           </p>
         )}
+      </div>
+    </div>
+  );
+}
+
+function GenerationThresholdTable() {
+  return (
+    <div className="overflow-hidden rounded-lg border border-line bg-elevated">
+      <div className="border-b border-line px-4 py-3">
+        <p className="font-bold text-foreground">Generation payout thresholds</p>
+        <p className="mt-1 text-sm text-muted">
+          Required coins are calculated by base step coins multiplied by user
+          number.
+        </p>
+      </div>
+      <div className="scrollbar-soft overflow-x-auto">
+        <div className="min-w-[680px]">
+          <div className="grid grid-cols-7 border-b border-line bg-background/70 px-4 py-3 text-xs font-black uppercase tracking-wide text-muted">
+            <span>Users</span>
+            {generationBaseThresholds.map((_, index) => (
+              <span key={index}>Step {toBn(index + 1)}</span>
+            ))}
+          </div>
+          <div className="divide-y divide-line">
+            {generationThresholdUsers.map((userCount) => (
+              <div
+                key={userCount}
+                className="grid grid-cols-7 px-4 py-3 text-sm font-semibold text-foreground"
+              >
+                <span>{toBn(userCount)}</span>
+                {generationBaseThresholds.map((threshold) => (
+                  <span key={threshold}>{toBn(threshold * userCount)}</span>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -353,7 +401,7 @@ export default function CommissionsPage() {
         <div className="grid gap-4 md:grid-cols-3">
           <Metric label="Current coins" value={toBn(generation.coins)} />
           <Metric label="Total earned" value={taka(generation.totalEarned)} />
-          <Metric label="Total plan value" value={taka(generation.potential)} />
+          <Metric label="Current target value" value={taka(generation.potential)} />
         </div>
 
         {currentGeneration ? (
@@ -362,6 +410,9 @@ export default function CommissionsPage() {
               <div>
                 <p className="font-bold">
                   Current step {toBn(currentGeneration.level)}
+                  {currentGeneration.cycle
+                    ? ` / User ${toBn(currentGeneration.cycle)}`
+                    : ""}
                 </p>
                 <p className="text-sm text-muted">
                   {toBn(currentGeneration.current)} /{" "}
@@ -390,11 +441,14 @@ export default function CommissionsPage() {
             <span className="text-sm">Generation rule</span>
           </div>
           <p className="mt-2 leading-7 text-foreground">
-            Every successful product purchase adds 1 coin to every user. Rewards
-            are paid at Step 1 to Step 6 only; after Step 6 no more generation
-            commission is paid.
+            Every successful product purchase adds 1 coin to every eligible
+            existing user. Generation rewards repeat by user number: Step 1 pays
+            at 6, 12, 18 coins; Step 2 pays at 36, 72, 108 coins; and the same
+            multiplier continues through Step 6.
           </p>
         </div>
+
+        <GenerationThresholdTable />
 
         <ProgressRows rows={generation.levels} type="coins" />
 

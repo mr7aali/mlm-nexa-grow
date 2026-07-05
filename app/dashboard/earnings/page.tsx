@@ -122,8 +122,8 @@ export default function EarningsPage() {
             ))}
           </div>
           <p className="mt-3 text-sm leading-6 text-muted">
-            Referral Bonus pays BDT 100 when a new member buys a product using
-            your referral code.
+            Referral Bonus pays BDT 100 for every successful product purchase
+            that uses your referral code, including your own purchases.
           </p>
         </div>
       </Card>

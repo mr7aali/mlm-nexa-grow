@@ -119,6 +119,8 @@ export type PaginatedResponse<T> = {
 
 export type CommissionLevel = {
   level: number;
+  cycle?: number;
+  baseRequired?: number;
   required: number;
   requiredPurchases?: number;
   earning: number;

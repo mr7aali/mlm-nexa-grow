@@ -42,6 +42,7 @@ function escapeHtml(value: string) {
 
 function typeTone(type: AdminCommissionExpense["type"]) {
   if (type === "Referral Bonus") return "bg-emerald-50 text-emerald-700";
+  if (type === "Product Pair Commission") return "bg-fuchsia-50 text-fuchsia-700";
   if (type === "Generation Income") return "bg-sky-50 text-sky-700";
   if (type === "Wings Income") return "bg-amber-50 text-amber-700";
   return "bg-elevated text-muted";
@@ -74,6 +75,7 @@ export default function SuperAdminCommissionExpensesPage() {
     totalAmount: 0,
     totalCount: 0,
     referralTotal: 0,
+    productPairTotal: 0,
     generationTotal: 0,
     wingsTotal: 0,
   };
@@ -128,8 +130,9 @@ export default function SuperAdminCommissionExpensesPage() {
           <div class="summary">
             <div class="card"><div class="label">Total expense</div><div class="value">${summary.totalAmount.toLocaleString()} BDT</div></div>
             <div class="card"><div class="label">Referral</div><div class="value">${summary.referralTotal.toLocaleString()} BDT</div></div>
+            <div class="card"><div class="label">Product pair</div><div class="value">${summary.productPairTotal.toLocaleString()} BDT</div></div>
             <div class="card"><div class="label">Generation</div><div class="value">${summary.generationTotal.toLocaleString()} BDT</div></div>
-            <div class="card"><div class="label">Wings</div><div class="value">${summary.wingsTotal.toLocaleString()} BDT</div></div>
+            <div class="card"><div class="label">Legacy wings</div><div class="value">${summary.wingsTotal.toLocaleString()} BDT</div></div>
           </div>
           <table>
             <thead>
@@ -183,7 +186,7 @@ export default function SuperAdminCommissionExpensesPage() {
         </p>
       ) : null}
 
-      <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 xl:grid-cols-5">
         <Card className="p-4">
           <MetricHeader icon={Banknote} label="Total expense" />
           <p className="mt-2 truncate text-2xl font-black text-gold-light">
@@ -200,13 +203,19 @@ export default function SuperAdminCommissionExpensesPage() {
           </p>
         </Card>
         <Card className="p-4">
+          <MetricHeader icon={Gift} label="Product pair" />
+          <p className="mt-2 truncate text-2xl font-black text-gold-light">
+            {taka(summary.productPairTotal)}
+          </p>
+        </Card>
+        <Card className="p-4">
           <MetricHeader icon={Sparkles} label="Generation income" />
           <p className="mt-2 truncate text-2xl font-black text-gold-light">
             {taka(summary.generationTotal)}
           </p>
         </Card>
         <Card className="p-4">
-          <MetricHeader icon={GitFork} label="Wings income" />
+          <MetricHeader icon={GitFork} label="Legacy wings" />
           <p className="mt-2 truncate text-2xl font-black text-gold-light">
             {taka(summary.wingsTotal)}
           </p>
@@ -239,8 +248,9 @@ export default function SuperAdminCommissionExpensesPage() {
           >
             <option value="">All commission types</option>
             <option value="referral">Referral bonus</option>
+            <option value="product-pair">Product pair commission</option>
             <option value="generation">Generation income</option>
-            <option value="wings">Wings income</option>
+            <option value="wings">Legacy wings records</option>
           </Select>
           <Select
             value={status}

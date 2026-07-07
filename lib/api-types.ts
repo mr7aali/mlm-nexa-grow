@@ -239,7 +239,12 @@ export type AdminPaymentsResponse = PaginatedResponse<AdminPayment> & {
 };
 
 export type AdminCommissionExpense = CommissionHistoryItem & {
-  type: "Referral Bonus" | "Generation Income" | "Wings Income" | "Other";
+  type:
+    | "Referral Bonus"
+    | "Product Pair Commission"
+    | "Generation Income"
+    | "Wings Income"
+    | "Other";
   userId: string;
   user: {
     id: string;
@@ -256,6 +261,7 @@ export type AdminCommissionExpensesResponse =
       totalAmount: number;
       totalCount: number;
       referralTotal: number;
+      productPairTotal: number;
       generationTotal: number;
       wingsTotal: number;
     };
@@ -430,6 +436,13 @@ export type CommissionsResponse = {
   referralIncome?: {
     totalEarned: number;
     bonusAmount: number;
+    history: CommissionHistoryItem[];
+  };
+  productPairIncome?: {
+    totalEarned: number;
+    dailyCap: number;
+    pairSize: number;
+    pairReward: number;
     history: CommissionHistoryItem[];
   };
   generationIncome?: {

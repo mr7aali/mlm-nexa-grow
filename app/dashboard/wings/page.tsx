@@ -15,7 +15,6 @@ import {
   SlidersHorizontal,
   UserCheck,
   UserPlus,
-  UserRound,
   Users,
   X,
 } from "lucide-react";
@@ -74,15 +73,6 @@ export default function WingsPage() {
     [filter, tree],
   );
   const total = useMemo(() => (tree ? countNodes(tree) - 1 : 0), [tree]);
-  const activeMembers = useMemo(
-    () =>
-      tree
-        ? countMatchingNodes(tree.left, (node) => node.active) +
-          countMatchingNodes(tree.right, (node) => node.active)
-        : 0,
-    [tree],
-  );
-  const inactiveMembers = Math.max(0, total - activeMembers);
   const hasFilter = level !== "all" || activeOnly || Boolean(query.trim());
 
   useEffect(() => {
@@ -190,7 +180,7 @@ export default function WingsPage() {
         </div>
       </header>
 
-      <section className="grid grid-cols-2 gap-2 sm:gap-4 xl:grid-cols-5">
+      <section className="grid grid-cols-2 gap-2 sm:gap-4 xl:grid-cols-3">
         <SummaryItem
           icon={Network}
           label="মোট নেটওয়ার্ক"
@@ -200,16 +190,6 @@ export default function WingsPage() {
           icon={Users}
           label="সরাসরি শাখা"
           value={(tree?.left ? 1 : 0) + (tree?.right ? 1 : 0)}
-        />
-        <SummaryItem
-          icon={UserCheck}
-          label="সক্রিয় সদস্য"
-          value={activeMembers}
-        />
-        <SummaryItem
-          icon={UserRound}
-          label="নিষ্ক্রিয় সদস্য"
-          value={inactiveMembers}
         />
         <div className="col-span-2 xl:col-span-1">
           <SummaryItem
@@ -1429,18 +1409,6 @@ function countNodes(node: TreeNode): number {
     1 +
     (node.left ? countNodes(node.left) : 0) +
     (node.right ? countNodes(node.right) : 0)
-  );
-}
-
-function countMatchingNodes(
-  node: TreeNode | null,
-  matches: (node: TreeNode) => boolean,
-): number {
-  if (!node) return 0;
-  return (
-    (matches(node) ? 1 : 0) +
-    countMatchingNodes(node.left, matches) +
-    countMatchingNodes(node.right, matches)
   );
 }
 

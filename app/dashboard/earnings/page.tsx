@@ -25,12 +25,12 @@ export default function EarningsPage() {
       value: commissions?.referralIncome?.totalEarned ?? 0,
     },
     {
-      label: "Generation Bonus",
-      value: commissions?.generationIncome?.totalEarned ?? 0,
+      label: "Product Pair Commission",
+      value: commissions?.productPairIncome?.totalEarned ?? 0,
     },
     {
-      label: "Matching Commission",
-      value: commissions?.wingsIncome?.totalEarned ?? 0,
+      label: "Generation Bonus",
+      value: commissions?.generationIncome?.totalEarned ?? 0,
     },
   ];
 
@@ -103,7 +103,7 @@ export default function EarningsPage() {
           <div className="mb-3 flex items-center justify-between gap-3">
             <h4 className="text-lg font-bold">Income Sources</h4>
             <p className="text-xs font-semibold text-muted">
-              Referral, generation, and matching
+              Referral, product pair, and generation
             </p>
           </div>
           <div className="grid gap-3 md:grid-cols-3">

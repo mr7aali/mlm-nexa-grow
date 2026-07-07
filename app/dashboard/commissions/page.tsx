@@ -1,21 +1,14 @@
 "use client";
 
-import { Coins, GitFork, Trophy, WalletCards } from "lucide-react";
+import { Coins, WalletCards } from "lucide-react";
 import type { ReactNode } from "react";
-import { useState } from "react";
 import { Badge, Card, Progress } from "@/components/ui";
 import { useGetCommissionsQuery } from "@/lib/api";
 import type {
   CommissionHistoryItem,
   CommissionLevel,
-  WingCommissionLevel,
 } from "@/lib/api-types";
-import { cn, taka, toBn } from "@/lib/utils";
-
-type CommissionTab = "wings" | "generation";
-
-const generationBaseThresholds = [6, 36, 216, 1296, 7776, 46656];
-const generationThresholdUsers = Array.from({ length: 10 }, (_, index) => index + 1);
+import { taka, toBn } from "@/lib/utils";
 
 const tone = (status: string) =>
   status === "Paid"
@@ -61,13 +54,7 @@ function SectionTitle({
   );
 }
 
-function Metric({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
+function Metric({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-lg border border-line bg-elevated p-4">
       <p className="text-sm text-muted">{label}</p>
@@ -100,10 +87,8 @@ function SummaryMetric({
 
 function ProgressRows({
   rows,
-  type,
 }: {
-  rows: Array<CommissionLevel | WingCommissionLevel>;
-  type: "coins" | "nodes";
+  rows: CommissionLevel[];
 }) {
   return (
     <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
@@ -111,32 +96,29 @@ function ProgressRows({
         const progress = item.required
           ? (item.current / item.required) * 100
           : 0;
-        const isGenerationRow = type === "coins";
 
         return (
           <div
-            key={`${item.level}-${"cycle" in item ? item.cycle ?? 1 : 1}`}
+            key={`${item.level}-${"cycle" in item ? (item.cycle ?? 1) : 1}`}
             className="rounded-lg border border-line bg-background/60 p-4"
           >
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="font-bold">
-                  {isGenerationRow ? "Step" : "Level"} {toBn(item.level)}
+                  Step {toBn(item.level)}
                 </p>
-                {isGenerationRow && "cycle" in item && item.cycle ? (
+                {item.cycle ? (
                   <p className="mt-1 text-xs font-semibold text-gold-light">
-                    User {toBn(item.cycle)}
+                    ID {toBn(item.cycle)}
                   </p>
                 ) : null}
-                <p className="mt-1 text-sm text-muted">
+                {/* <p className="mt-1 text-sm text-muted">
                   {toBn(item.current)} / {toBn(item.required)}{" "}
                   {type === "coins" ? "coins" : "nodes"}
-                </p>
+                </p> */}
               </div>
               <Badge
-                tone={
-                  tone(item.status) as "green" | "blue" | "gold" | "muted"
-                }
+                tone={tone(item.status) as "green" | "blue" | "gold" | "muted"}
               >
                 {statusLabel(item.status)}
               </Badge>
@@ -186,11 +168,7 @@ function HistoryList({
                   </p>
                   <Badge
                     tone={
-                      tone(item.status) as
-                        | "green"
-                        | "blue"
-                        | "gold"
-                        | "muted"
+                      tone(item.status) as "green" | "blue" | "gold" | "muted"
                     }
                   >
                     {statusLabel(item.status)}
@@ -208,45 +186,7 @@ function HistoryList({
   );
 }
 
-function GenerationThresholdTable() {
-  return (
-    <div className="overflow-hidden rounded-lg border border-line bg-elevated">
-      <div className="border-b border-line px-4 py-3">
-        <p className="font-bold text-foreground">Generation payout thresholds</p>
-        <p className="mt-1 text-sm text-muted">
-          Required coins are calculated by base step coins multiplied by user
-          number.
-        </p>
-      </div>
-      <div className="scrollbar-soft overflow-x-auto">
-        <div className="min-w-[680px]">
-          <div className="grid grid-cols-7 border-b border-line bg-background/70 px-4 py-3 text-xs font-black uppercase tracking-wide text-muted">
-            <span>Users</span>
-            {generationBaseThresholds.map((_, index) => (
-              <span key={index}>Step {toBn(index + 1)}</span>
-            ))}
-          </div>
-          <div className="divide-y divide-line">
-            {generationThresholdUsers.map((userCount) => (
-              <div
-                key={userCount}
-                className="grid grid-cols-7 px-4 py-3 text-sm font-semibold text-foreground"
-              >
-                <span>{toBn(userCount)}</span>
-                {generationBaseThresholds.map((threshold) => (
-                  <span key={threshold}>{toBn(threshold * userCount)}</span>
-                ))}
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export default function CommissionsPage() {
-  const [activeTab, setActiveTab] = useState<CommissionTab>("generation");
   const { data, isLoading } = useGetCommissionsQuery();
   const generation = data?.generationIncome ?? {
     coins: data?.productPurchases ?? 0,
@@ -256,15 +196,12 @@ export default function CommissionsPage() {
     history: data?.history ?? [],
     levels: data?.levels ?? [],
   };
-  const wings = data?.wingsIncome ?? {
+  const productPair = data?.productPairIncome ?? {
     totalEarned: 0,
     dailyCap: 5000,
-    paidToday: 0,
-    remainingToday: 5000,
-    completedLevels: 0,
-    nextReward: 50,
+    pairSize: 2,
+    pairReward: 50,
     history: [],
-    levels: [],
   };
   const currentGeneration = generation.currentLevel ?? generation.levels[0];
   const currentGenerationProgress = currentGeneration
@@ -275,7 +212,7 @@ export default function CommissionsPage() {
     <div className="space-y-3 md:space-y-6">
       <div>
         <p className="text-sm font-semibold text-gold-light">
-          Binary wings and generation rewards
+          Commission rewards
         </p>
         <h2 className="heading-gradient text-2xl font-black md:text-4xl">
           Commission Dashboard
@@ -286,16 +223,11 @@ export default function CommissionsPage() {
         <p className="text-sm text-muted">Commission data is loading...</p>
       ) : null}
 
-      <div className="grid grid-cols-4 gap-1.5 sm:gap-3 xl:gap-4">
+      <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3 sm:gap-3 xl:grid-cols-3 xl:gap-4">
         <SummaryMetric
-          shortLabel="Wings"
-          label="Wings income"
-          value={taka(wings.totalEarned)}
-        />
-        <SummaryMetric
-          shortLabel="Today"
-          label="Paid today"
-          value={taka(wings.paidToday)}
+          shortLabel="Pair"
+          label="Product pair"
+          value={taka(productPair.totalEarned)}
         />
         <SummaryMetric
           shortLabel="Gen"
@@ -309,133 +241,54 @@ export default function CommissionsPage() {
         />
       </div>
 
-      <div
-        className="grid grid-cols-2 gap-1 rounded-lg border border-line bg-elevated p-1 sm:gap-2"
-        role="tablist"
-        aria-label="Commission sections"
-      >
-        <button
-          type="button"
-          role="tab"
-          aria-selected={activeTab === "generation"}
-          onClick={() => setActiveTab("generation")}
-          className={cn(
-            "flex min-h-9 items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-bold text-muted transition sm:min-h-14 sm:gap-2 sm:px-4 sm:py-3 sm:text-sm",
-            activeTab === "generation" &&
-              "bg-background text-gold shadow-sm ring-1 ring-gold/20",
-          )}
-        >
-          <Coins size={16} className="shrink-0 sm:h-[18px] sm:w-[18px]" />
-          <span className="sm:hidden">Coins</span>
-          <span className="hidden sm:inline">Global purchase coins</span>
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={activeTab === "wings"}
-          onClick={() => setActiveTab("wings")}
-          className={cn(
-            "flex min-h-9 items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-bold text-muted transition sm:min-h-14 sm:gap-2 sm:px-4 sm:py-3 sm:text-sm",
-            activeTab === "wings" &&
-              "bg-background text-gold shadow-sm ring-1 ring-gold/20",
-          )}
-        >
-          <GitFork size={16} className="shrink-0 sm:h-[18px] sm:w-[18px]" />
-          <span className="sm:hidden">Wings</span>
-          <span className="hidden sm:inline">Binary tree</span>
-        </button>
-      </div>
-
-      {activeTab === "wings" ? (
       <Card className="space-y-4 !p-3 sm:space-y-6 sm:!p-5">
-        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <SectionTitle
-            icon={<GitFork size={21} />}
-            eyebrow="Binary tree"
-            title="Wings income / commission"
+            icon={<Coins size={21} />}
+            eyebrow="Global purchase coins"
+            title="Generation income / commission"
           />
-          <div className="grid grid-cols-2 gap-3 text-sm sm:min-w-80">
-            <Metric label="Daily cap" value={taka(wings.dailyCap)} />
-            <Metric label="Remaining today" value={taka(wings.remainingToday)} />
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <Metric label="Current coins" value={toBn(generation.coins)} />
+            <Metric label="Total earned" value={taka(generation.totalEarned)} />
+            {/* <Metric
+              label="Current target value"
+              value={taka(generation.potential)}
+            /> */}
           </div>
-        </div>
 
-        <div className="grid gap-4 md:grid-cols-3">
-          <div className="rounded-lg border border-line bg-elevated p-4">
-            <div className="flex items-center gap-2 text-muted">
-              <Trophy size={18} />
-              <span className="text-sm">Completed binary levels</span>
-            </div>
-            <p className="mt-2 text-3xl font-black text-gold-light">
-              {toBn(wings.completedLevels)}
-            </p>
-          </div>
-          <div className="rounded-lg border border-line bg-elevated p-4 md:col-span-2">
-            <p className="text-sm text-muted">Rule</p>
-            <p className="mt-2 leading-7 text-foreground">
-              Level 1 pays {taka(50)}, level 2 pays {taka(100)}, level 3 pays{" "}
-              {taka(200)} and continues by doubling. Maximum wings payout per
-              day is {taka(wings.dailyCap)}.
-            </p>
-          </div>
-        </div>
-
-        <ProgressRows rows={wings.levels} type="nodes" />
-
-        <HistoryList
-          title="Wings commission history"
-          rows={wings.history}
-          empty="No wings commission has been paid yet."
-        />
-      </Card>
-      ) : null}
-
-      {activeTab === "generation" ? (
-      <Card className="space-y-4 !p-3 sm:space-y-6 sm:!p-5">
-        <SectionTitle
-          icon={<Coins size={21} />}
-          eyebrow="Global purchase coins"
-          title="Generation income / commission"
-        />
-
-        <div className="grid gap-4 md:grid-cols-3">
-          <Metric label="Current coins" value={toBn(generation.coins)} />
-          <Metric label="Total earned" value={taka(generation.totalEarned)} />
-          <Metric label="Current target value" value={taka(generation.potential)} />
-        </div>
-
-        {currentGeneration ? (
-          <div className="rounded-lg border border-line bg-elevated p-4">
-            <div className="mb-3 flex items-center justify-between gap-3">
-              <div>
-                <p className="font-bold">
-                  Current step {toBn(currentGeneration.level)}
-                  {currentGeneration.cycle
-                    ? ` / User ${toBn(currentGeneration.cycle)}`
-                    : ""}
-                </p>
-                <p className="text-sm text-muted">
-                  {toBn(currentGeneration.current)} /{" "}
-                  {toBn(currentGeneration.required)} coins
-                </p>
+          {currentGeneration ? (
+            <div className="rounded-lg border border-line bg-elevated p-4">
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <div>
+                  <p className="font-bold">
+                    Current step {toBn(currentGeneration.level)}
+                    {currentGeneration.cycle
+                      ? ` / ID ${toBn(currentGeneration.cycle)}`
+                      : ""}
+                  </p>
+                  {/* <p className="text-sm text-muted">
+                    {toBn(currentGeneration.current)} /{" "}
+                    {toBn(currentGeneration.required)} coins
+                  </p> */}
+                </div>
+                <Badge
+                  tone={
+                    tone(currentGeneration.status) as
+                      | "green"
+                      | "blue"
+                      | "gold"
+                      | "muted"
+                  }
+                >
+                  {statusLabel(currentGeneration.status)}
+                </Badge>
               </div>
-              <Badge
-                tone={
-                  tone(currentGeneration.status) as
-                    | "green"
-                    | "blue"
-                    | "gold"
-                    | "muted"
-                }
-              >
-                {statusLabel(currentGeneration.status)}
-              </Badge>
+              <Progress value={currentGenerationProgress} color="gold" />
             </div>
-            <Progress value={currentGenerationProgress} color="gold" />
-          </div>
-        ) : null}
+          ) : null}
 
-        <div className="rounded-lg border border-line bg-elevated p-4">
+          {/* <div className="rounded-lg border border-line bg-elevated p-4">
           <div className="flex items-center gap-2 text-muted">
             <WalletCards size={18} />
             <span className="text-sm">Generation rule</span>
@@ -446,19 +299,35 @@ export default function CommissionsPage() {
             at 6, 12, 18 coins; Step 2 pays at 36, 72, 108 coins; and the same
             multiplier continues through Step 6.
           </p>
-        </div>
+        </div> */}
 
-        <GenerationThresholdTable />
+          <div className="rounded-lg border border-line bg-elevated p-4">
+            <div className="flex items-center gap-2 text-muted">
+              <WalletCards size={18} />
+              <span className="text-sm">Product pair commission rule</span>
+            </div>
+            <p className="mt-2 leading-7 text-foreground">
+              For each {toBn(productPair.pairSize)} successful paid product
+              purchases in one business day using your referral code, you
+              receive {taka(productPair.pairReward)}. Maximum product pair
+              commission per day is {taka(productPair.dailyCap)}.
+            </p>
+          </div>
 
-        <ProgressRows rows={generation.levels} type="coins" />
+          <ProgressRows rows={generation.levels} />
 
-        <HistoryList
-          title="Generation commission history"
-          rows={generation.history}
-          empty="No generation commission has been paid yet."
-        />
+          <HistoryList
+            title="Product pair commission history"
+            rows={productPair.history}
+            empty="No product pair commission has been paid yet."
+          />
+
+          <HistoryList
+            title="Generation commission history"
+            rows={generation.history}
+            empty="No generation commission has been paid yet."
+          />
       </Card>
-      ) : null}
     </div>
   );
 }

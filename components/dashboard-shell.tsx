@@ -96,7 +96,7 @@ const adminNavItems = [
   },
   {
     href: "/dashboard/super-admin/generation-coins",
-    label: "Generation Coins",
+    label: "Generation Income",
     icon: Coins,
   },
 ];
